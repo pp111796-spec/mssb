@@ -1,0 +1,85 @@
+# MSSB 5범주 + 세부 항목 체크리스트 (존재/부재 코딩 대상)
+# 출처: MSSB 실시 매뉴얼.pdf §9.2 (5범주 정의), MSSB_배포.pdf ("MSSB coding" 세부 항목 목록)
+#
+# 주의: 이 5범주-세부항목 매핑은 MSSB_배포.pdf에 나열된 항목들을 계획 작성자가 5범주 틀에
+# 맞춰 잠정 배치한 것이지, 박진아 교수의 정식 "a priori aggregation" 공식을 그대로 받아온
+# 것은 아니다 — 실제 배정·가중치는 사용자가 확인·수정해야 한다.
+# (플랜 "알려진 한계 상세" 1번·2번 참고 — 항목 행동적 정의 미확정, present_count 가중치 미확정)
+
+interpretation_layer_ceiling: "2_cross_story_pattern"  # 매뉴얼 §10.1 — 층위 3/4은 다루지 않음
+
+categories:
+  empathy_warmth:
+    display_name_ko: "공감/온화"
+    items:
+      - id: sharing
+        display_name_ko: "공유"
+      - id: empathy_help
+        display_name_ko: "공감/도움"
+      - id: togetherness
+        display_name_ko: "함께하기"
+      - id: affection_expression
+        display_name_ko: "애정표현"
+      - id: politeness
+        display_name_ko: "예의바름"
+
+  performance_anxiety:
+    display_name_ko: "(수행)불안"
+    items:
+      - id: anxious_behavior
+        display_name_ko: "불안행동"
+      - id: worry_affect
+        display_name_ko: "걱정(정서)"
+      - id: examiner_avoidance
+        display_name_ko: "검사자에 대한 회피적 태도"
+
+  avoidant_withdrawal:
+    display_name_ko: "회피/위축"
+    items:
+      - id: self_isolation
+        display_name_ko: "자기고립"
+      - id: repetition
+        display_name_ko: "반복"
+      - id: denial
+        display_name_ko: "부인"
+      - id: passive_refusal_of_help
+        display_name_ko: "공감/도움의 수동적 거부"
+      - id: sudden_sleep
+        display_name_ko: "갑작스런 수면"
+      - id: topic_deflection
+        display_name_ko: "주제이탈"
+      - id: family_disruption
+        display_name_ko: "가족파괴"
+
+  dysregulated_aggression:
+    display_name_ko: "조절되지 않은 공격성"
+    items:
+      - id: aggression
+        display_name_ko: "공격성"
+      - id: aggression_escalation
+        display_name_ko: "공격상승"
+      - id: interpersonal_harm
+        display_name_ko: "대인상해"
+      - id: atypical_response
+        display_name_ko: "비전형적 반응"
+      - id: sexualized_behavior
+        display_name_ko: "성적인 행동"
+
+  emotional_integration:
+    display_name_ko: "정서적 통합"
+    items:
+      - id: narrative_coherence
+        display_name_ko: "이야기 일관성"
+      - id: positive_resolution
+        display_name_ko: "긍정적 해결"
+      - id: context_appropriate_affect
+        display_name_ko: "상황에 맞는 정서표현"
+      - id: emotional_incoherence_negative_resolution
+        display_name_ko: "정서적 비일관성·부정적 해결 (반대방향)"
+
+# 집계: present_count = 범주 안에서 present=true인 항목 개수 (잠정, 동일 가중치)
+# 정식 집계(가중치) 공식이 확인되면 이 파일에 severity 필드 등을 추가해 교체할 것.
+aggregation:
+  method: "present_count"
+  weighted: false
+  note: "동일 가중치 단순 카운트 — 심리측정학적 타당성 미확인 (문제점.md 2번 참고)"

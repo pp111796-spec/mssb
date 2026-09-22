@@ -1,0 +1,131 @@
+# MSSB 실제 배터리 10편 + 워밍업/윈드다운 정의
+# 출처: reference/story_script_transcribed.md (MSSB 간이 대본, 최우선), MSSB_배포.pdf, MSSB 실시 매뉴얼.pdf (보충)
+# story_specific_notes 필드는 채점 시 AI 코딩 프롬프트에 그대로 전달된다 (파이프라인 10단계, "코드 의미가 이야기마다 다르다" 원칙, 매뉴얼 §2.3)
+
+completion_request_phrase: "자 이제 OO차례야. 그 다음에 어떻게 되었을까? 인형을 잡고 보여줄래?"
+# OO = 아동 이름 플레이스홀더. 모든 이야기·워밍업·마무리에 동일하게 반복되는 구간분리·화자태깅 주 앵커.
+
+warm_up:
+  id: warm_up
+  order: 0
+  display_name_ko: "생일파티"
+  scored: false
+  purpose: "과제 이해도 확인용"
+  keywords: ["생일", "케이크"]
+
+stems:
+  - id: spilled_juice
+    order: 1
+    display_name_ko: "엎지러진 주스"
+    manual_name_ko: "주스 엎지르기"
+    scored: true
+    issue: "위반 시 부모=애착/권위 · 복구"
+    keywords: ["주스", "쏟"]
+    story_specific_notes: "—"
+
+  - id: lost_dog
+    order: 2
+    display_name_ko: "뽀삐가 없어졌어요"
+    manual_name_ko: "잃어버린 강아지 (1·2부)"
+    scored: true
+    issue: "상실 슬픔 · (있다면) 재회 반응의 질"
+    keywords: ["뽀삐", "강아지", "없어"]
+    doll_name_hint: "뽀삐"
+    story_specific_notes: >
+      간이대본에는 "사라짐" 파트만 고정 대본으로 있음. 재회(2부)는 고정 대본이 아니라
+      검사자가 아이 이야기 흐름에 따라 재량으로 즉흥 추가하는 선택적 질문
+      (예: "뽀삐가 다시 돌아왔어. 이 다음은 어떻게 될까?" — 문구도 고정 아님).
+      대부분 세션에는 없을 것으로 예상 — segmentation.py의 additional_examiner_segments_s가 처리.
+
+  - id: mothers_headache
+    order: 3
+    display_name_ko: "엄마의 두통"
+    manual_name_ko: "엄마의 두통"
+    scored: true
+    issue: "공감/순응 vs 친구요구 · 유혹저항"
+    keywords: ["두통", "머리", "TV"]
+    story_specific_notes: "딜레마 양쪽 인정 비율이 3.5세→5.5세로 증가하는 발달 지표 — child_age_months 감안해서 채점."
+
+  - id: three_is_too_many
+    order: 4
+    display_name_ko: "셋은 너무 많아요"
+    manual_name_ko: "셋은 너무 많아"
+    scored: true
+    issue: "친구의리 vs 형제의리"
+    keywords: ["공", "동생", "같이 놀아"]
+    story_specific_notes: "—"
+
+  - id: hot_gravy
+    order: 5
+    display_name_ko: "뜨거운 냄비"
+    manual_name_ko: "뜨거운 국물(Hot Gravy)"
+    scored: true
+    issue: "불순응 · 부모=권위/애착"
+    keywords: ["냄비", "뜨거워", "가스레인지"]
+    story_specific_notes: "원문 '그레이비'는 문화적 번안(국물 냄비)."
+
+  - id: parental_quarrel
+    order: 6
+    display_name_ko: "잃어버린 열쇠"
+    manual_name_ko: "부모의 다툼 (통칭 Lost Keys)"
+    scored: true
+    issue: "부모 갈등에 대한 아동 반응"
+    keywords: ["열쇠", "화난"]
+    story_specific_notes: "정식 명칭은 Parental Quarrel — 열쇠는 소재일 뿐, 핵심은 부모 갈등에 대한 반응."
+
+  - id: candy_theft
+    order: 7
+    display_name_ko: "사탕 훔치기"
+    manual_name_ko: "사탕 훔치기"
+    scored: true
+    issue: "들킴 · 잘못 인정"
+    keywords: ["사탕", "가게"]
+    story_specific_notes: "—"
+
+  - id: departure
+    order: 8
+    display_name_ko: "여행 떠나기"
+    manual_name_ko: "부모의 외출 (Departure)"
+    scored: true
+    issue: "분리 불안"
+    keywords: ["여행", "할머니"]
+    speaker_gender_dependent: true
+    story_specific_notes: >
+      대사 화자가 아동 성별에 따라 엄마/아빠로 바뀜("대상이 남아면 아빠").
+      세션 메타데이터(아동 성별)를 화자 태깅 로직 입력으로 반영. reunion(재결합)과 짝으로 해석.
+
+  - id: reunion
+    order: 9
+    display_name_ko: "재결합"
+    manual_name_ko: "재회 (Reunion)"
+    scored: true
+    issue: "재회의 질"
+    keywords: ["차", "할머니", "돌아왔"]
+    story_specific_notes: >
+      애착 연구에서 가장 정보가 많은 지점 중 하나. 간이대본 지시: "차를 탁자 밑에서 꺼내지만
+      절대로 아동 곁으로 가져가지 말 것" — 인형/소품 추적이 기대할 소품 궤적(차량이 아동과
+      일정 거리 유지)과 일치.
+
+  - id: big_rock
+    order: 10
+    display_name_ko: "큰 바위 오르기"
+    manual_name_ko: "바위 오르기"
+    scored: true
+    issue: "숙달감 · 사고 · 부모의 위로"
+    keywords: ["바위", "올라"]
+    story_specific_notes: "숙달형/고통-위로형 둘 다 정답 — 어느 쪽도 오답 아님."
+
+wind_down:
+  id: wind_down
+  order: 11
+  display_name_ko: "즐거운 가족"
+  scored: false
+  purpose: "정서 회복용 (자유놀이)"
+  keywords: ["놀아요", "쉬는 날"]
+
+excluded_from_this_battery:
+  # 매뉴얼 원판 14편 중 이 배터리에서 의도적으로 제외된 4편 — story_stems 목록에 정의하지 않음
+  - "엄마·아빠 선물"
+  - "약장"
+  - "부모의 배제"
+  - "과자통"

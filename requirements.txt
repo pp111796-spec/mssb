@@ -1,0 +1,19 @@
+# 계획 "설정 절차 (Windows / PowerShell)" 섹션 참고.
+# 전부 실제로 설치·import 검증됨 (C:\mssb_venv — OneDrive/한글 경로 밖에 venv를 만들 것, README 참고)
+
+anthropic
+faster-whisper
+mediapipe
+ultralytics
+opensmile
+py-feat
+pydantic>=2
+pyyaml
+streamlit
+python-dotenv
+pytest
+
+# OpenFace(계획의 원래 1순위)는 pip 패키지가 아니라 Windows 사전빌드 바이너리를 수동 설치해야 해서
+# 이 환경에서 자동화하지 못했다 — 그래서 계획이 이미 명시한 대체 경로인 Py-Feat을 1차 구현으로 채택함:
+# https://github.com/TadasBaltrusaitis/OpenFace/wiki/Windows-Installation (나중에 직접 설치하면 OpenFace로 교체 가능)
+# PyAFAR(Infant AFAR, subject_type=child 전용 아동 특화 모델)는 아직 미구현: https://github.com/AffectAnalysisGroup/PyAFAR

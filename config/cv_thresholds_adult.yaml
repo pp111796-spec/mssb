@@ -1,0 +1,28 @@
+# CV 이벤트 판정 임계값 — 성인(subject_type=adult) 프로파일
+#
+# TODO(문제점.md 3번, 미해결): 아래 수치는 전부 아직 비어있는 자리표시자다.
+# 실제 값은 마일스톤 A(배선 검증) 단계에서 성인 대역 영상의 실제 CV 산출물을 눈으로
+# 보면서 경험적으로 채우고, 이후 사람 검토 피드백으로 반복 조정한다.
+# 이 파일은 "코드가 이 값들을 어디서 읽는지"를 확정하는 스켈레톤이지, 확정된 임계값이 아니다.
+
+posture:
+  torso_tilt_avoidance_deg: null   # TODO: 몸통이 이 각도 이상 기울어지면 회피 이벤트로 판정
+  sudden_movement_threshold: null  # TODO: 프레임간 이동량 — 이 값 이상이면 "급격한 움직임" 이벤트
+
+facial_au:
+  # TODO: AU 강도 임계값(예: AU04 - 눈썹 내림 = 분노) — OpenFace AU 번호 체계 기준.
+  # 마일스톤 -1(CAFE/PSYCAFE 검증) 결과를 참고해 채울 것.
+  intensity_thresholds: {}
+  low_confidence_flag:
+    enabled: true
+    note: "머리 숙임 각도·랜드마크 검출 신뢰도가 낮으면 low_confidence 플래그 (문제점.md 옛 8번 — 완화 반영됨)"
+
+doll_tracking:
+  proximity_seeking_distance_px: null  # TODO: 두 인형 간 이 거리 이하면 "근접 추구"로 판정
+  throw_movement_threshold: null       # TODO: 프레임간 위치 변화 — 이 값 이상이면 "던지는 동작"으로 추정
+  tracking_lost_min_frames: null       # TODO: 이 프레임 수 이상 경계상자 연속 소실 시 tracking_lost 플래그
+
+voice_prosody:
+  normalization: "within_session_relative_zscore"  # 절대 임계값 대신 세션 내 상대 정규화 (계획 "음성 운율" 섹션)
+  baseline_segment: "warm_up"  # 이 구간의 평균 피치·음량을 아동 자신의 기준선으로 사용
+  zscore_notable_threshold: null  # TODO: 이 z-score 이상이면 "평소보다 튀었다"로 판정

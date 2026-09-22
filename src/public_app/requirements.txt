@@ -1,0 +1,7 @@
+# Streamlit Community Cloud는 앱 파일과 같은 폴더의 requirements.txt를 자동으로 찾는다
+# (루트의 requirements.txt에는 여기 필요 없는 무거운 CV 라이브러리가 들어있어 따로 둠).
+# 이 앱(src/public_app/app.py)은 이미 처리된 JSON 결과만 읽고 보여주므로 가볍다.
+
+streamlit
+pydantic>=2
+pyyaml

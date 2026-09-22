@@ -1,0 +1,25 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# 공개 사이트(src/public_app/app.py) 비밀번호 — Streamlit Cloud에서는 Secrets 탭에 직접 입력,
+# 로컬 테스트용은 .streamlit/secrets.toml.example을 복사해서 만들 것 (커밋 금지)
+.streamlit/secrets.toml
+
+# 검사 도구 보안: MSSB 실제 대본·매뉴얼·배포자료는 검사 타당성·저작권 문제로 저장소에 올리지 않는다.
+# 로컬에만 두고 story_stems.yaml 작성 시 참고용으로만 쓴다 (README 참고).
+reference/
+문제점.md
+플랜.md
+
+# 원본 영상·세션 데이터는 MSSB_DATA_DIR(OneDrive 밖)에 있어야 하지만, 혹시라도 리포 안에
+# 생기는 경우까지 대비
+data/
+mssb_data/
+
+# 파인튜닝된 YOLO 가중치 — 학습 스크립트는 커밋하되 가중치 파일 자체는 커밋하지 않음
+models/doll_yolo/*.pt
+models/doll_yolo/*.onnx

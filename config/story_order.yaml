@@ -1,0 +1,8 @@
+# (선택) 이 기관/연구에서 실제로 쓰는 고정 실시 순서.
+# 있으면 segmentation.py의 자동 구간분리 정확도가 올라가고(보조 힌트), 없어도 동작한다
+# (그 경우 story_stems.yaml의 order 필드를 기본 순서로만 참고).
+#
+# 실제 실시 순서가 story_stems.yaml의 기본 순서와 다르면 아래 목록을 채워서 override할 것.
+# 비워두면(빈 리스트) segmentation.py가 이 파일을 무시한다.
+
+fixed_order: []
