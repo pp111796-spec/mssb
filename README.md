@@ -53,11 +53,13 @@ python scripts\run_pipeline.py --session sample_01 --child-age-months 54 --child
 pytest
 ```
 
-## 공개 사이트 (결과 뷰어) — Streamlit Community Cloud
+## 공개 사이트 (결과 뷰어) — Streamlit Community Cloud, 사업단 공유용
 
-**중요**: 영상 분석은 항상 로컬에서만 이루어진다. 공개 사이트(`src/public_app/app.py`)는 영상·`MSSB_DATA_DIR`에 전혀 접근하지 않고, 로컬에서 만든 "내보내기 번들"(JSON, 영상 미포함)을 업로드해야만 결과를 보여준다. 업로드한 내용은 저장되지 않고 브라우저 세션이 끝나면 사라진다 — 이건 아동 평가 결과를 제3자 무료 클라우드에 계속 쌓아두지 않기 위한 의도적 설계다.
+**중요**: 영상 분석은 항상 로컬에서만 이루어진다. 공개 사이트(`src/public_app/app.py`)는 영상·`MSSB_DATA_DIR`에 전혀 접근하지 않는다.
 
-**로컬에서 결과 내보내기**: `streamlit run src\review_app\app.py`로 세션을 열고 **"🌐 공개 사이트 업로드용 내보내기 (.json)"** 버튼으로 번들 파일을 받는다.
+**게시 방식**: 로컬 검토 화면에서 **"🚀 사업단 공유 사이트에 게시"** 버튼을 누르면 결과(JSON, 영상 미포함)가 이 저장소의 `results/<session_id>.json`으로 커밋·푸시된다. Streamlit Cloud는 push를 감지하면 자동으로 앱을 재배포하므로, 1~2분 뒤 공개 사이트의 세션 목록에 나타난다 — 팀원이 각자 업로드할 필요 없이 비밀번호만 알면 모두 볼 수 있다. (파일을 직접 업로드해서 저장 없이 잠깐만 미리보는 탭도 별도로 있다.)
+
+**주의**: `results/`에 게시된 데이터는 비밀번호를 아는 모든 사람이 모든 세션에 접근 가능하다는 뜻이고, git 특성상 나중에 지워도 과거 커밋 기록에는 남는다.
 
 **저장소는 Private로 둔다** — `reference/`(MSSB 실제 대본·매뉴얼·배포자료), `문제점.md`, `플랜.md`는 검사 타당성·저작권 문제로 `.gitignore`에 아예 추가해 저장소에 올리지 않는다(로컬에만 존재). Private여도 Streamlit Community Cloud에서 문제없이 배포된다.
 
@@ -85,7 +87,8 @@ pytest
 - `facial_expression.py` — Py-Feat 실제 연동 코드 작성됨. **단, 실제 얼굴이 있는 이미지로 끝까지 검증하지는 못함** — 합성 테스트 이미지로는 얼굴 탐지 자체가 안 되기 때문. 마일스톤 A에서 실제 영상으로 첫 검증 필요
 - `segmentation.call_segmentation`, `claude_client.call_stem_coding`, `session_synthesis.call_session_synthesis` — Anthropic API 실제 호출 코드 작성됨. `ANTHROPIC_API_KEY` 필요 (API 응답 형식은 실제 호출 전까지 미검증)
 - `schema.py`/`storage.py`/`coding_systems.py`/`posture_metrics.py`/`feature_summary.py` — pydantic 검증까지 포함해 완전히 테스트됨 (`pytest`, 외부 설치 불필요)
-- `src/review_app/app.py` — Streamlit 기동 확인됨
+- `src/review_app/app.py` / `src/public_app/app.py` — Streamlit 기동 확인됨
+- `bundle.py`/`report.py`/`storage.publish_session_bundle_to_repo` — 결과 내보내기·게시 로직 전부 테스트됨. `review_app`의 실제 git add/commit/push 자체는 실제 세션이 있어야 끝까지 검증 가능(로직은 준비됨)
 
 **여전히 미확정(TODO)**:
 - `config/cv_thresholds_adult.yaml` / `cv_thresholds_child.yaml`의 임계값은 전부 `null` — 마일스톤 A에서 실측 채울 것 (`문제점.md` 3번)

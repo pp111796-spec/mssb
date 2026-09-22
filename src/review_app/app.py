@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -25,6 +26,34 @@ from mssb_coder.schema import SessionSynthesis
 load_dotenv()
 
 st.set_page_config(page_title="MSSB AI 코딩 검토", layout="wide")
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def publish_to_shared_site(session_id: str) -> tuple[bool, str]:
+    """results/<session_id>.json을 만들고 git add/commit/push — 사업단 공유 사이트가 읽는 곳.
+
+    영상은 이 함수가 다루는 대상이 아니다 — storage.publish_session_bundle_to_repo가 만드는
+    이미 처리된 JSON 결과만 커밋한다. 저장소가 private이라도 이 파일은 git 히스토리에
+    영구히 남는다는 점을 화면에 함께 안내한다(호출하는 쪽에서 표시).
+    """
+    path = storage.publish_session_bundle_to_repo(session_id)
+    rel_path = path.relative_to(REPO_ROOT)
+    try:
+        subprocess.run(
+            ["git", "add", str(rel_path)], cwd=REPO_ROOT, check=True, capture_output=True, text=True
+        )
+        commit = subprocess.run(
+            ["git", "commit", "-m", f"세션 결과 게시: {session_id}"],
+            cwd=REPO_ROOT, capture_output=True, text=True,
+        )
+        if commit.returncode != 0 and "nothing to commit" not in (commit.stdout + commit.stderr):
+            return False, f"커밋 실패:\n{commit.stderr or commit.stdout}"
+        subprocess.run(["git", "push"], cwd=REPO_ROOT, check=True, capture_output=True, text=True)
+        return True, "게시 완료 — 1~2분 뒤 공유 사이트에 반영됩니다."
+    except subprocess.CalledProcessError as exc:
+        return False, f"게시 실패:\n{exc.stderr or exc.stdout}"
 
 
 def list_sessions() -> list[str]:
@@ -80,7 +109,7 @@ def render_session_synthesis(session_id: str) -> None:
     except FileNotFoundError:
         stem_results = []
     report_markdown = build_session_report_markdown(synthesis, stem_results=stem_results)
-    dl_col1, dl_col2 = st.columns(2)
+    dl_col1, dl_col2, dl_col3 = st.columns(3)
     with dl_col1:
         st.download_button(
             "📄 분석 결과 보고서 다운로드 (.md)",
@@ -91,12 +120,17 @@ def render_session_synthesis(session_id: str) -> None:
     with dl_col2:
         bundle = storage.build_session_export_bundle(session_id)
         st.download_button(
-            "🌐 공개 사이트 업로드용 내보내기 (.json)",
+            "💾 결과 파일만 내보내기 (.json)",
             data=json.dumps(bundle, ensure_ascii=False, indent=2),
             file_name=f"{session_id}_mssb_bundle.json",
             mime="application/json",
             help="영상은 포함되지 않습니다 — 이미 처리된 결과(JSON)만 담습니다.",
         )
+    with dl_col3:
+        if st.button("🚀 사업단 공유 사이트에 게시", help="results/ 폴더에 저장 후 git push — 공유 사이트에 자동 반영됩니다."):
+            with st.spinner("게시 중..."):
+                ok, message = publish_to_shared_site(session_id)
+            (st.success if ok else st.error)(message)
 
     edited_patterns = []
     st.header("반복되는 패턴")

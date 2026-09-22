@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import TypeVar
@@ -75,8 +76,6 @@ def save_stem_timestamps(session_id: str, timestamps: list[StemTimestamp]) -> Pa
 
 
 def load_stem_timestamps(session_id: str) -> list[StemTimestamp]:
-    import json
-
     path = session_dir(session_id) / "stem_timestamps.json"
     raw = json.loads(path.read_text(encoding="utf-8"))
     return [StemTimestamp.model_validate(item) for item in raw]
@@ -132,3 +131,22 @@ def build_session_export_bundle(session_id: str) -> dict:
     synthesis = load_session_synthesis(session_id, reviewed=reviewed_exists)
     stem_results = load_all_stem_codings(session_id)
     return build_bundle_dict(synthesis, stem_results)
+
+
+# --- 사업단 공유 사이트 게시 (results/ — git 저장소 안, MSSB_DATA_DIR과 다름) ----
+
+REPO_RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
+
+
+def publish_session_bundle_to_repo(session_id: str) -> Path:
+    """번들을 저장소의 results/<session_id>.json으로 저장한다 (git add/commit/push는 호출 쪽 책임).
+
+    MSSB_DATA_DIR이 아니라 이 코드 저장소 안에 쓴다 — 공개 사이트(src/public_app/app.py)가
+    같은 저장소에서 이 폴더를 읽어 보여주기 때문. 영상은 절대 여기 들어가지 않는다 —
+    build_session_export_bundle이 만드는, 이미 처리된 JSON 결과만 저장한다.
+    """
+    bundle = build_session_export_bundle(session_id)
+    REPO_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPO_RESULTS_DIR / f"{session_id}.json"
+    path.write_text(json.dumps(bundle, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path

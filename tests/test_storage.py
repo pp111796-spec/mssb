@@ -134,3 +134,29 @@ def test_build_session_export_bundle_prefers_reviewed():
 
     bundle = storage.build_session_export_bundle("s1")
     assert bundle["synthesis"]["stems_administered_count"] == 99
+
+
+def test_publish_session_bundle_to_repo_writes_json_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "REPO_RESULTS_DIR", tmp_path / "results")
+
+    synthesis = SessionSynthesis(
+        session_id="s1",
+        stems_included=["spilled_juice"],
+        stems_administered_count=1,
+        recurring_patterns=[],
+        model_version="claude-opus-5",
+    )
+    storage.save_session_synthesis("s1", synthesis)
+    storage.save_stem_coding("s1", "spilled_juice", _sample_stem_result())
+
+    path = storage.publish_session_bundle_to_repo("s1")
+    assert path == tmp_path / "results" / "s1.json"
+    assert path.exists()
+
+    from mssb_coder.bundle import parse_bundle_dict
+    import json
+
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    parsed_synthesis, parsed_stems = parse_bundle_dict(raw)
+    assert parsed_synthesis.session_id == "s1"
+    assert len(parsed_stems) == 1

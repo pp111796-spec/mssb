@@ -1,17 +1,20 @@
-"""공개 배포용 결과 뷰어 — Streamlit Community Cloud 등 인터넷에 올리는 앱.
+"""공개 배포용 결과 뷰어 — Streamlit Community Cloud 등 인터넷에 올리는 앱, 사업단 전체 공유용.
 
-**로컬 분석 도구(src/review_app/app.py)와 완전히 분리돼 있다.** 이 앱은 MSSB_DATA_DIR에
-전혀 접근하지 않는다 — 영상 분석·전사·AI 채점은 전부 로컬 컴퓨터에서 끝낸 뒤, 그 결과를
-"세션 내보내기" 번들(JSON)로 다운로드해서 여기 업로드해야만 볼 수 있다. **영상 원본은
-이 앱에 절대 올라오지 않는다** — 애초에 업로드 대상이 아니다.
+**로컬 분석 도구(src/review_app/app.py)와 완전히 분리돼 있다.** 이 앱은 MSSB_DATA_DIR·영상에
+전혀 접근하지 않는다 — 영상 분석·전사·AI 채점은 항상 로컬 컴퓨터에서 끝낸다. **영상 원본은
+이 앱에 절대 올라오지 않는다.**
+
+이 앱이 보여주는 세션 목록은 이 저장소의 `results/` 폴더에서 온다 — 로컬 검토 화면의
+"🚀 사업단 공유 사이트에 게시" 버튼이 그 폴더에 결과(JSON)를 커밋·푸시하면, Streamlit Cloud가
+자동으로 재배포하면서 이 목록에 반영된다(보통 1~2분). 파일 직접 업로드(임시 미리보기, 저장 안 함)
+탭도 별도로 제공한다.
 
 비밀번호 게이트: Streamlit Cloud 앱 설정 > Secrets에 다음을 추가해야 한다.
     APP_PASSWORD = "원하는 비밀번호"
 비밀번호가 설정돼 있지 않으면 이 앱은 접근을 막고 안내만 보여준다(열어두지 않음).
 
-저장 안 함: 업로드한 파일은 그 브라우저 세션에만 존재한다. 이 앱은 어디에도 데이터를
-쓰지 않는다 — 새로고침하거나 다시 방문하면 다시 업로드해야 한다(의도된 설계). 민감한
-아동 평가 결과를 제3자 무료 클라우드에 계속 쌓아두지 않기 위한 선택.
+주의: `results/` 폴더에 게시된 데이터는 이 비밀번호를 아는 모든 사람이 모든 세션에 접근할
+수 있다는 뜻이다 — 또한 git 특성상 나중에 파일을 지워도 과거 커밋 기록에는 남는다.
 """
 
 from __future__ import annotations
@@ -27,6 +30,8 @@ import streamlit as st
 from mssb_coder.bundle import BundleParseError, parse_bundle_dict
 from mssb_coder.coding_systems import load_coding_system
 from mssb_coder.report import build_session_report_markdown
+
+REPO_RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 
 st.set_page_config(page_title="MSSB 분석 결과", layout="wide", page_icon="📋")
 
@@ -118,33 +123,55 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
                         st.caption(category_code.rationale)
 
 
+def _list_published_sessions() -> list[Path]:
+    if not REPO_RESULTS_DIR.exists():
+        return []
+    return sorted(REPO_RESULTS_DIR.glob("*.json"))
+
+
+def _load_and_render(raw_bytes: bytes, coding_system) -> None:
+    try:
+        raw = json.loads(raw_bytes.decode("utf-8"))
+        synthesis, stem_results = parse_bundle_dict(raw)
+    except (BundleParseError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+        st.error(f"파일을 읽을 수 없습니다: {exc}")
+        return
+    render_synthesis_readonly(synthesis, stem_results, coding_system)
+
+
 def main() -> None:
     if not check_password():
         return
 
     st.title("📋 MSSB 분석 결과 뷰어")
-    st.caption(
-        "로컬에서 처리된 결과만 업로드해서 볼 수 있습니다. 영상 원본은 이 사이트에 올라오지 "
-        "않으며, 업로드한 내용은 저장되지 않고 이 세션이 끝나면 사라집니다."
-    )
-
-    uploaded = st.file_uploader(
-        "세션 내보내기 파일 업로드 (로컬 앱의 '🌐 공개 사이트 업로드용 내보내기' 버튼으로 받은 .json)",
-        type=["json"],
-    )
-    if uploaded is None:
-        st.stop()
-
-    try:
-        raw = json.loads(uploaded.read().decode("utf-8"))
-        synthesis, stem_results = parse_bundle_dict(raw)
-    except (BundleParseError, json.JSONDecodeError, UnicodeDecodeError) as exc:
-        st.error(f"파일을 읽을 수 없습니다: {exc}")
-        st.stop()
-        return
-
     coding_system = load_coding_system()
-    render_synthesis_readonly(synthesis, stem_results, coding_system)
+
+    tab_published, tab_upload = st.tabs(["게시된 세션 보기", "파일 직접 업로드 (임시)"])
+
+    with tab_published:
+        published = _list_published_sessions()
+        if not published:
+            st.info(
+                "아직 게시된 세션이 없습니다. 로컬 검토 화면에서 "
+                "'🚀 사업단 공유 사이트에 게시' 버튼을 눌러 세션을 게시하세요."
+            )
+        else:
+            session_names = [p.stem for p in published]
+            selected = st.selectbox("세션 선택", session_names)
+            selected_path = REPO_RESULTS_DIR / f"{selected}.json"
+            _load_and_render(selected_path.read_bytes(), coding_system)
+
+    with tab_upload:
+        st.caption(
+            "게시하지 않고 파일만 잠깐 확인하고 싶을 때 사용하세요 — 업로드한 내용은 저장되지 "
+            "않고 새로고침하면 사라집니다."
+        )
+        uploaded = st.file_uploader(
+            "세션 내보내기 파일 업로드 (로컬 앱의 '💾 결과 파일만 내보내기' 버튼으로 받은 .json)",
+            type=["json"],
+        )
+        if uploaded is not None:
+            _load_and_render(uploaded.read(), coding_system)
 
 
 if __name__ == "__main__":
