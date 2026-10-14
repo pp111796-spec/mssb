@@ -77,7 +77,36 @@ def scrub_english_ids(text: str, coding_system: CodingSystem, story_stems: Story
         # 바로 뒤에 한글이 붙으면 경계로 인식되지 않는다. ASCII 식별자 문자만 경계 판정에 쓴다.
         pattern = rf"(?<![A-Za-z0-9_]){re.escape(raw_id)}(?![A-Za-z0-9_])"
         text = re.sub(pattern, ko, text)
+    text = _AU_RUN_RE.sub(_plain_au_run, text)
+    for jargon, plain in _JARGON_KO.items():
+        text = text.replace(jargon, plain)
     return text
+
+
+# "AU23/AU24", "AU04+AU20", "AU23=0.7, AU24=0.6"처럼 이어 붙은 AU 코드 묶음 — 학부모가 읽는 글에는
+# 코드·수치 대신 얼굴에서 보인 모습만 남긴다.
+_AU_ONE = r"AU\d{2}(?:\s*=\s*[\d.]+)?"
+_AU_RUN_RE = re.compile(
+    rf"{_AU_ONE}(?:\s*(?:[/+,·]|및|와|과)\s*{_AU_ONE})*(?P<tail>\s*(?:등|중심|동반|상승|표정))?"
+)
+
+_JARGON_KO = {
+    "긴장 계열": "긴장과 관련된",
+    "자기수정": "말을 고쳐 말하는 모습",
+}
+
+
+def _plain_au_run(match: re.Match) -> str:
+    names: list[str] = []
+    for code in re.findall(r"AU\d{2}", match.group(0)):
+        name = _AU_GLOSS.get(code, "").split("(")[0]
+        if name and name not in names:
+            names.append(name)
+    tail = match.group("tail") or ""
+    body = "·".join(names) if names else "표정 변화"
+    # 뒤에 '표정'이 이미 붙어 있으면 그대로 두고, 아니면 '표정'을 덧붙여 명사구로 만든다.
+    suffix = "" if tail.strip() == "표정" else " 표정"
+    return body + suffix + (" " if tail and tail[0].isspace() else "") + tail.strip()
 
 
 _EVIDENCE_SOURCE_KO = {
@@ -147,6 +176,7 @@ _AU_GLOSS = {
     "AU17": "턱 올림",
     "AU20": "입 가로 당김(공포·긴장)",
     "AU23": "입술 조임",
+    "AU24": "입술 누름",
     "AU25": "입 벌림",
     "AU26": "턱 벌림",
     "AU28": "입술 빨기",
