@@ -175,6 +175,11 @@ def render_session_synthesis(session_id: str) -> None:
                 ok, message = publish_to_shared_site(session_id)
             (st.success if ok else st.error)(message)
 
+    st.header("검사 중 행동관찰")
+    edited_observation = st.text_area(
+        "행동관찰 (수정 가능)", value=synthesis.behavioral_observation, key="behavioral_observation"
+    )
+
     edited_patterns = []
     st.header("반복되는 패턴")
     for i, pattern in enumerate(synthesis.recurring_patterns):
@@ -198,8 +203,32 @@ def render_session_synthesis(session_id: str) -> None:
             label = category_label(coding_system, signal.category)
             st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
 
+    st.header("강점과 지원이 필요한 영역")
+    edited_strengths = st.text_area("강점 (수정 가능)", value=synthesis.strengths, key="strengths")
+    edited_support_areas = st.text_area(
+        "지원이 필요한 영역 (수정 가능)", value=synthesis.support_areas, key="support_areas"
+    )
+
+    st.header("제언")
+    st.warning("제언은 AI가 작성한 초안입니다. 진단·위험 판단이 섞이지 않았는지 반드시 확인하고 수정하세요.")
+    edited_recommendations_text = st.text_area(
+        "제언 (한 줄에 하나씩, 수정 가능)",
+        value="\n".join(synthesis.recommendations),
+        key="recommendations",
+    )
+
     if st.button("종합 초안 저장 (session_summary_reviewed.json)"):
-        updated = synthesis.model_copy(update={"recurring_patterns": edited_patterns})
+        updated = synthesis.model_copy(
+            update={
+                "recurring_patterns": edited_patterns,
+                "behavioral_observation": edited_observation,
+                "strengths": edited_strengths,
+                "support_areas": edited_support_areas,
+                "recommendations": [
+                    line.strip() for line in edited_recommendations_text.splitlines() if line.strip()
+                ],
+            }
+        )
         storage.save_session_synthesis(session_id, updated, reviewed=True)
         st.success("저장했습니다.")
 

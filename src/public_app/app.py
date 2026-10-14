@@ -92,6 +92,10 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
         mime="text/markdown",
     )
 
+    if synthesis.behavioral_observation:
+        st.header("검사 중 행동관찰")
+        st.write(synthesis.behavioral_observation)
+
     st.header("반복되는 패턴")
     if not synthesis.recurring_patterns:
         st.write("발견된 반복 패턴 없음")
@@ -110,6 +114,18 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
         for signal in synthesis.single_story_notable_signals:
             label = category_label(coding_system, signal.category)
             st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
+
+    if synthesis.strengths or synthesis.support_areas:
+        st.header("강점과 지원이 필요한 영역")
+        if synthesis.strengths:
+            st.write(f"**강점** {synthesis.strengths}")
+        if synthesis.support_areas:
+            st.write(f"**지원이 필요한 영역** {synthesis.support_areas}")
+
+    if synthesis.recommendations:
+        st.header("제언")
+        for recommendation in synthesis.recommendations:
+            st.write(f"- {recommendation}")
 
     if stem_results:
         st.header("이야기별 상세 (부록)")

@@ -114,3 +114,29 @@ def test_report_handles_no_recurring_patterns():
     )
     report = build_session_report_markdown(synthesis)
     assert "반복적으로 관찰된 패턴은 없었다" in report
+
+
+def test_report_includes_new_sections_when_present():
+    synthesis = _synthesis().model_copy(
+        update={
+            "behavioral_observation": "검사 내내 협조적이었다.",
+            "strengths": "감정을 말로 표현하는 모습이 돋보였다.",
+            "support_areas": "갈등 장면에서 화제를 돌리는 경향이 보였다.",
+            "recommendations": ["가정에서 감정을 말로 표현해 보는 놀이를 함께 해 본다."],
+        }
+    )
+    report = build_session_report_markdown(synthesis, stem_results=[_stem_result()])
+    for heading in ["## 인적 사항", "## 검사 개요", "## 의뢰 사유 및 배경", "## 검사 중 행동관찰",
+                    "## 강점과 지원이 필요한 영역", "## 제언", "## 해석상 유의점"]:
+        assert heading in report
+    assert "54개월" in report
+    assert "(전체 종합 보고서에서 가져올 예정)" in report
+    assert "감정을 말로 표현해 보는 놀이" in report
+
+
+def test_report_omits_optional_sections_for_old_synthesis_without_new_fields():
+    report = build_session_report_markdown(_synthesis())
+    assert "## 검사 중 행동관찰" not in report
+    assert "## 제언" not in report
+    assert "## 강점과 지원이 필요한 영역" not in report
+    assert "## 해석상 유의점" in report

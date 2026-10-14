@@ -30,6 +30,16 @@ SYNTHESIS_SYSTEM_PROMPT = (
     "작성하세요 — 예: \"~양상이 반복적으로 관찰되었다\", \"~로 나타났다\", \"~하는 경향을 보였다\" "
     "같은 종결형을 쓰고, 개조식 나열이나 영어 용어를 쓰지 마세요. 이야기명은 영문 id가 아니라 "
     "자연스러운 한국어 문장 속에 풀어서 서술하세요.\n\n"
+    "추가로 다음 네 항목도 같은 문체로 작성하세요.\n"
+    "- behavioral_observation(검사 중 행동관찰): 검사 태도·협조도·검사자에 대한 태도, 그리고 표정·자세·목소리·"
+    "인형 조작 같은 비언어 단서를 한 단락으로 서술. 스템별 채점 근거에 실제로 나온 내용만 쓰고, 근거가 없는 "
+    "항목은 추측해서 채우지 마세요.\n"
+    "- strengths(강점): 이야기 전반에서 잘 나타난 부분을 한 단락으로 서술.\n"
+    "- support_areas(지원이 필요한 영역): 살펴보거나 도움이 필요해 보이는 부분을 한 단락으로 서술. "
+    "'~로 보인다' 수준의 관찰 표현만 쓰고 단정하지 마세요.\n"
+    "- recommendations(제언): 가정이나 기관에서 아이를 도울 수 있는 구체적 방법 2~5개를 문장으로. "
+    "이 제언은 사람 검사자가 반드시 확인하는 초안입니다. 진단명·장애명·위험 수준 판단·약물/치료 권고는 "
+    "절대 쓰지 말고, 추가 평가는 '필요하다면 전문가와 상담해 볼 수 있다' 정도의 일반적 표현으로만 언급하세요.\n\n"
     f"{NON_DIAGNOSTIC_CONSTRAINT}"
 )
 
@@ -106,8 +116,15 @@ SYNTHESIS_TOOL = {
                     "required": ["stem_name", "category", "note"],
                 },
             },
+            "behavioral_observation": {"type": "string"},
+            "strengths": {"type": "string"},
+            "support_areas": {"type": "string"},
+            "recommendations": {"type": "array", "items": {"type": "string"}},
         },
-        "required": ["stems_included", "stems_administered_count", "recurring_patterns"],
+        "required": [
+            "stems_included", "stems_administered_count", "recurring_patterns",
+            "behavioral_observation", "strengths", "support_areas", "recommendations",
+        ],
     },
 }
 

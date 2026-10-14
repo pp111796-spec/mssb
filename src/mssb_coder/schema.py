@@ -185,6 +185,15 @@ class SessionSynthesis(BaseModel):
     stems_administered_count: int = Field(ge=0, description="세션 전체에서 정상 실시된 스템 수 (분모)")
     recurring_patterns: list[RecurringPattern]
     single_story_notable_signals: list[SingleStoryNotableSignal] = Field(default_factory=list)
+    # 보고서 섹션용 서술 필드 — 예전에 저장된 JSON(필드 없음)도 읽혀야 하므로 전부 기본값을 둔다.
+    behavioral_observation: str = Field(
+        default="", description="검사 중 행동관찰: 검사 태도·협조도·비언어 단서(표정/자세/목소리/인형 조작) 서술"
+    )
+    strengths: str = Field(default="", description="이야기 전반에서 잘 나타난 강점 서술")
+    support_areas: str = Field(default="", description="살펴보거나 지원이 필요해 보이는 영역 서술 (진단 아님)")
+    recommendations: list[str] = Field(
+        default_factory=list, description="가정·기관에서의 지원 제언 (AI 초안, 검사자 확인 필수 — 진단·위험분류 아님)"
+    )
     not_included_by_design: str = (
         "이 요약은 다른 자료(부모 보고·행동관찰 등)와의 통합이나 임상적 진단·위험 분류를 포함하지 않는다"
     )
@@ -231,6 +240,50 @@ class StemVerbatimRecord(BaseModel):
     generated_at: str = Field(default_factory=utc_now_iso)
     # Claude 호출 아님(순수 결합 로직) — 버전 표시만 위한 상수
     model_version: Literal["rule_based_join_v1"] = "rule_based_join_v1"
+
+
+# ---------------------------------------------------------------------------
+# 스템별 CV 원본 수치 타임라인 — cv/<stem>_cv.json (기준값 보정·이벤트 재계산용, Claude 호출 없음)
+# ---------------------------------------------------------------------------
+# 시간 기준은 기존 모듈과 같다: 표정·자세·인형 = 스템 시작 기준 상대 초, 음성 = handoff 기준 상대 초.
+
+
+class CvFacialSample(BaseModel):
+    t: float
+    aus: dict[str, float]  # AU 확률(0~1)
+    head_pitch_deg: float
+    head_yaw_deg: float
+    landmark_confidence: float
+
+
+class CvPoseSample(BaseModel):
+    t: float
+    landmarks: dict[str, tuple[float, float]]
+    is_facing_camera: bool
+
+
+class CvProsodySample(BaseModel):
+    t: float
+    pitch_hz: float
+    loudness: float
+
+
+class CvDollSample(BaseModel):
+    t: float
+    doll_id: str
+    bbox: tuple[float, float, float, float] | None  # 0~1 정규화 좌표, 탐지 실패면 None
+    track_id: int | None = None
+
+
+class StemCvTimeline(BaseModel):
+    session_id: str
+    stem_name: str
+    fps: float
+    facial: list[CvFacialSample] = Field(default_factory=list)
+    pose: list[CvPoseSample] = Field(default_factory=list)
+    prosody: list[CvProsodySample] = Field(default_factory=list)
+    doll: list[CvDollSample] = Field(default_factory=list)
+    generated_at: str = Field(default_factory=utc_now_iso)
 
 
 class SessionMetadata(BaseModel):

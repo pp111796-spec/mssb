@@ -18,6 +18,20 @@ from mssb_coder.schema import ResponseMode, SessionSynthesis, StemCodingResult
 from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
 
 
+PLACEHOLDER = "(전체 종합 보고서에서 가져올 예정)"
+
+TEST_OVERVIEW = (
+    "이 검사는 인형으로 짧은 이야기의 시작 부분을 보여 준 뒤, 아이가 이야기를 어떻게 이어 가는지 "
+    "살펴보는 놀이 형식의 검사이다. 아이가 이야기 속 인물의 마음과 행동, 갈등이 풀리는 방식을 "
+    "어떻게 표현하는지를 통해 아이가 관계와 감정을 어떻게 이해하고 있는지 살펴본다."
+)
+
+INTERPRETATION_CAVEAT = (
+    "이 보고서는 한 번의 검사 장면에서 관찰된 내용에 근거한 것으로, 아이의 전체 모습을 대표하지 않을 수 있다. "
+    "내용은 인공지능이 작성한 초안을 검사자가 검토해 확정한 것이며, 제언은 참고용 안내이다."
+)
+
+
 def _completion_sentence(result: StemCodingResult) -> str:
     if result.response_mode == ResponseMode.SPONTANEOUS:
         return "아이는 이 이야기를 검사자의 프롬프트 없이 자발적으로 완성했다."
@@ -64,6 +78,30 @@ def build_session_report_markdown(
         )
     lines.append("")
 
+    age_months = stem_results[0].child_age_months if stem_results else None
+    lines.append("## 인적 사항")
+    lines.append("")
+    lines.append(f"- 아동 연령: {f'{age_months}개월' if age_months else PLACEHOLDER}")
+    lines.append(f"- 검사일: {PLACEHOLDER}")
+    lines.append(f"- 검사자: {PLACEHOLDER}")
+    lines.append("")
+
+    lines.append("## 검사 개요")
+    lines.append("")
+    lines.append(TEST_OVERVIEW)
+    lines.append("")
+
+    lines.append("## 의뢰 사유 및 배경")
+    lines.append("")
+    lines.append(PLACEHOLDER)
+    lines.append("")
+
+    if synthesis.behavioral_observation:
+        lines.append("## 검사 중 행동관찰")
+        lines.append("")
+        lines.append(scrub_english_ids(synthesis.behavioral_observation, coding_system, story_stems))
+        lines.append("")
+
     if stem_results:
         lines.append("## 이야기별 해석")
         for result in sorted(stem_results, key=lambda r: r.stem_name):
@@ -102,7 +140,28 @@ def build_session_report_markdown(
             )
         lines.append("")
 
+    if synthesis.strengths or synthesis.support_areas:
+        lines.append("## 강점과 지원이 필요한 영역")
+        lines.append("")
+        if synthesis.strengths:
+            lines.append(f"**강점** {scrub_english_ids(synthesis.strengths, coding_system, story_stems)}")
+            lines.append("")
+        if synthesis.support_areas:
+            lines.append(f"**지원이 필요한 영역** {scrub_english_ids(synthesis.support_areas, coding_system, story_stems)}")
+            lines.append("")
+
+    if synthesis.recommendations:
+        lines.append("## 제언")
+        lines.append("")
+        for recommendation in synthesis.recommendations:
+            lines.append(f"- {scrub_english_ids(recommendation, coding_system, story_stems)}")
+        lines.append("")
+
     lines.append("---")
+    lines.append("")
+    lines.append("## 해석상 유의점")
+    lines.append("")
+    lines.append(INTERPRETATION_CAVEAT)
     lines.append("")
     lines.append(synthesis.not_included_by_design)
 
