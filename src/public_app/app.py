@@ -29,7 +29,9 @@ import streamlit as st
 
 from mssb_coder.bundle import BundleParseError, parse_bundle_dict
 from mssb_coder.coding_systems import load_coding_system
+from mssb_coder.labels import category_label, completion_status_label, item_label, stem_label
 from mssb_coder.report import build_session_report_markdown
+from mssb_coder.segmentation import load_story_stems
 
 REPO_RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 
@@ -66,17 +68,22 @@ def check_password() -> bool:
 
 
 def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
+    story_stems = load_story_stems()
+
     st.title(f"세션 종합 분석 — {synthesis.session_id}")
     st.info(synthesis.disclaimer)
     st.caption(
         f"정상 실시된 스템: {synthesis.stems_administered_count}개 "
-        f"(포함: {', '.join(synthesis.stems_included) or '없음'})"
+        f"(포함: {', '.join(stem_label(story_stems, s) for s in synthesis.stems_included) or '없음'})"
     )
     if synthesis.stems_missing_or_partial:
-        st.warning(f"미실시/부분실시: {', '.join(synthesis.stems_missing_or_partial)}")
+        st.warning(
+            "미실시/부분실시: "
+            f"{', '.join(stem_label(story_stems, s) for s in synthesis.stems_missing_or_partial)}"
+        )
 
     report_markdown = build_session_report_markdown(
-        synthesis, stem_results=stem_results, coding_system=coding_system
+        synthesis, stem_results=stem_results, coding_system=coding_system, story_stems=story_stems
     )
     st.download_button(
         "📄 보고서 다운로드 (.md)",
@@ -85,38 +92,36 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
         mime="text/markdown",
     )
 
-    def _category_label(category_id: str) -> str:
-        for category in coding_system.categories:
-            if category.id == category_id:
-                return category.display_name_ko
-        return category_id
-
     st.header("반복되는 패턴")
     if not synthesis.recurring_patterns:
         st.write("발견된 반복 패턴 없음")
     for pattern in synthesis.recurring_patterns:
-        label = _category_label(pattern.category)
+        label = category_label(coding_system, pattern.category)
         st.subheader(
             f"{label} — {len(pattern.observed_in_stems)}/"
             f"{pattern.stems_administered_count_for_pattern}개 이야기"
         )
         st.write(pattern.pattern_description)
         for ev in pattern.evidence:
-            st.caption(f"근거: {ev.stem_name} ({ev.timestamp_s:.1f}초) — {ev.note}")
+            st.caption(f"근거: {stem_label(story_stems, ev.stem_name)} ({ev.timestamp_s:.1f}초) — {ev.note}")
 
     if synthesis.single_story_notable_signals:
         st.header("단발성 신호 (패턴 아님)")
         for signal in synthesis.single_story_notable_signals:
-            st.write(f"**{signal.stem_name}** ({_category_label(signal.category)}): {signal.note}")
+            label = category_label(coding_system, signal.category)
+            st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
 
     if stem_results:
         st.header("이야기별 상세 (부록)")
         for result in sorted(stem_results, key=lambda r: r.stem_name):
-            with st.expander(f"{result.stem_name} ({result.completion_status.value})"):
+            stem_display = stem_label(story_stems, result.stem_name)
+            with st.expander(f"{stem_display} ({completion_status_label(result.completion_status)})"):
                 for category_id, category_code in result.codes.items():
-                    label = _category_label(category_id)
+                    label = category_label(coding_system, category_id)
                     present_items = [
-                        item_id for item_id, item in category_code.items.items() if item.present
+                        item_label(coding_system, category_id, item_id)
+                        for item_id, item in category_code.items.items()
+                        if item.present
                     ]
                     st.write(f"**{label}** (존재 {category_code.present_count}개): {', '.join(present_items) or '없음'}")
                     if category_code.rationale:

@@ -200,6 +200,39 @@ class SessionSynthesis(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# 축어록(언어+행동분석 통합) — <stem>_verbatim.json
+# ---------------------------------------------------------------------------
+
+
+class VerbatimSpeaker(str, Enum):
+    EXAMINER = "examiner"
+    CHILD = "child"
+
+
+class VerbatimLine(BaseModel):
+    """축어록 한 줄 — 발화(speech) 또는 행동 신호(behavior) 중 하나."""
+
+    timestamp_s: float  # 세션 절대 시각 (StemTimestamp.start_s와 같은 축)
+    kind: Literal["speech", "behavior"]
+    speaker: VerbatimSpeaker | None = None  # kind=="speech"일 때만
+    text: str | None = None  # kind=="speech"일 때 전사 텍스트
+    source: EvidenceSource | None = None  # kind=="behavior"일 때
+    label_ko: str | None = None  # kind=="behavior"일 때 저장 시점에 완성된 한글 서술
+    raw_value: float | None = None  # 감사용 원본 수치(각도/zscore 등) — 화면엔 label_ko만 노출
+
+
+class StemVerbatimRecord(BaseModel):
+    """스템 1편의 언어+행동 통합 축어록. 영상/이미지는 담지 않고, 이미 계산된 타임스탬프·텍스트만."""
+
+    session_id: str
+    stem_name: str
+    lines: list[VerbatimLine]
+    generated_at: str = Field(default_factory=utc_now_iso)
+    # Claude 호출 아님(순수 결합 로직) — 버전 표시만 위한 상수
+    model_version: Literal["rule_based_join_v1"] = "rule_based_join_v1"
+
+
 class SessionMetadata(BaseModel):
     session_id: str
     child_age_months: int = Field(gt=0)

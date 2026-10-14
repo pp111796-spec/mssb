@@ -10,6 +10,7 @@
     stem_timestamps.json
     coding/<stem_name>_ai_codes.json
     coding/<stem_name>_reviewed.json        (선택, 사람이 스템 상세를 고친 경우만)
+    coding/<stem_name>_verbatim.json        (축어록 — 언어+행동분석 통합)
     session_summary_ai_draft.json
     session_summary_reviewed.json
 """
@@ -24,7 +25,7 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from mssb_coder.bundle import build_bundle_dict
-from mssb_coder.schema import SessionSynthesis, StemCodingResult, StemTimestamp
+from mssb_coder.schema import SessionSynthesis, StemCodingResult, StemTimestamp, StemVerbatimRecord
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -102,6 +103,17 @@ def load_all_stem_codings(session_id: str, reviewed: bool = False) -> list[StemC
     for path in sorted(coding_dir.glob(f"*_{suffix}.json")):
         results.append(_read_model(path, StemCodingResult))
     return results
+
+
+# --- <stem>_verbatim.json (축어록 — 언어+행동분석 통합, 파이프라인 5~10단계 중 생성) ----------
+
+
+def save_stem_verbatim(session_id: str, stem_name: str, record: StemVerbatimRecord) -> Path:
+    return _write_model(session_dir(session_id) / "coding" / f"{stem_name}_verbatim.json", record)
+
+
+def load_stem_verbatim(session_id: str, stem_name: str) -> StemVerbatimRecord:
+    return _read_model(session_dir(session_id) / "coding" / f"{stem_name}_verbatim.json", StemVerbatimRecord)
 
 
 # --- session_summary_*.json (파이프라인 12·13단계) -----------------------------

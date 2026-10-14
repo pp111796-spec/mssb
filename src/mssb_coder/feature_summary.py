@@ -13,6 +13,7 @@ AI 코딩(10단계)에 닿는 유일한 통로다 — 이 모듈의 출력 품�
 from __future__ import annotations
 
 from mssb_coder.facial_expression import FacialFrame, is_low_confidence
+from mssb_coder.labels import au_gloss, doll_event_kind_label, posture_event_kind_label, prosody_event_kind_label
 from mssb_coder.object_tracking import DollEvent
 from mssb_coder.posture_metrics import PostureEvent
 from mssb_coder.voice_prosody import ProsodyEvent
@@ -40,14 +41,17 @@ def _facial_event_lines(facial_frames: list[FacialFrame]) -> list[str]:
         if not frame.au_intensities:
             continue
         conf_tag = " [저신뢰]" if is_low_confidence(frame) else ""
-        au_desc = ", ".join(f"{au}={val:.1f}" for au, val in sorted(frame.au_intensities.items()))
-        lines.append(f"[{frame.timestamp_s:.1f}s] (facial){conf_tag} {au_desc}")
+        au_desc = ", ".join(
+            f"{au_gloss(au)}={val:.1f}" for au, val in sorted(frame.au_intensities.items())
+        )
+        lines.append(f"[{frame.timestamp_s:.1f}s] (표정){conf_tag} {au_desc}")
     return lines
 
 
 def _posture_event_lines(events: list[PostureEvent]) -> list[str]:
     return [
-        f"[{e.timestamp_s:.1f}s] (posture) {e.kind}={e.value:.1f}" + (f" — {e.note}" if e.note else "")
+        f"[{e.timestamp_s:.1f}s] (자세) {posture_event_kind_label(e.kind)}={e.value:.1f}"
+        + (f" — {e.note}" if e.note else "")
         for e in events
     ]
 
@@ -56,16 +60,20 @@ def _doll_event_lines(events: list[DollEvent]) -> list[str]:
     lines = []
     for e in events:
         dolls = ", ".join(e.doll_ids)
+        kind_ko = doll_event_kind_label(e.kind)
         if e.kind == "tracking_lost":
-            lines.append(f"[{e.timestamp_s:.1f}s] (doll_tracking) [추적소실] {dolls} — {e.note}")
+            lines.append(f"[{e.timestamp_s:.1f}s] (인형추적) [추적소실] {dolls} — {e.note}")
         else:
             value_str = f"={e.value:.2f}" if e.value is not None else ""
-            lines.append(f"[{e.timestamp_s:.1f}s] (doll_tracking) {e.kind}{value_str}: {dolls}")
+            lines.append(f"[{e.timestamp_s:.1f}s] (인형추적) {kind_ko}{value_str}: {dolls}")
     return lines
 
 
 def _prosody_event_lines(events: list[ProsodyEvent]) -> list[str]:
-    return [f"[{e.timestamp_s:.1f}s] (voice_prosody) {e.kind} z={e.zscore:+.2f}" for e in events]
+    return [
+        f"[{e.timestamp_s:.1f}s] (음성운율) {prosody_event_kind_label(e.kind)} z={e.zscore:+.2f}"
+        for e in events
+    ]
 
 
 def summarize_stem_features(

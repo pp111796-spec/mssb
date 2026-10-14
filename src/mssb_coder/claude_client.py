@@ -12,7 +12,8 @@ from __future__ import annotations
 import os
 
 from mssb_coder.coding_systems import CodingSystem, build_claude_tool_schema
-from mssb_coder.schema import STANDARD_DISCLAIMER
+from mssb_coder.labels import response_mode_label
+from mssb_coder.schema import STANDARD_DISCLAIMER, ResponseMode
 
 MODEL_VERSION = "claude-opus-5"
 
@@ -55,7 +56,8 @@ def build_stem_coding_user_message(
     """10단계 메시지 본문 — 해당 스템 전사문 + 비언어 요약 + 스템 고유 주의사항 + 아동 연령."""
     return (
         f"아동 연령: {child_age_months}개월\n"
-        f"완료 방식: {response_mode} (쟁점 프롬프트 사용 횟수: {issue_prompt_count})\n"
+        f"완료 방식: {response_mode_label(ResponseMode(response_mode))} "
+        f"(쟁점 프롬프트 사용 횟수: {issue_prompt_count})\n"
         f"이 스템의 코드 의미 주의사항:\n{story_specific_notes}\n\n"
         f"--- 전사문 (아동 발화 구간) ---\n{transcript_text}\n\n"
         f"--- 비언어 신호 요약 ---\n{nonverbal_summary}\n"
@@ -101,15 +103,25 @@ def call_stem_coding(
 
     response = client.messages.create(
         model=MODEL_VERSION,
-        max_tokens=4096,
+        max_tokens=16000,  # 5범주 x 5~7항목 x (present+evidence) 전부 채우기엔 4096으로 부족함 (실측으로 확인 — 빈 tool_use 응답 원인)
         system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
         tools=[tool],
         tool_choice={"type": "tool", "name": tool["name"]},
         messages=[{"role": "user", "content": user_message}],
     )
 
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError(
+            "Claude 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음. "
+            "max_tokens를 늘리거나 스키마를 단순화할 것."
+        )
+
     for block in response.content:
         if block.type == "tool_use":
+            if not block.input:
+                raise RuntimeError(
+                    f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})"
+                )
             return block.input
 
-    raise RuntimeError("Claude 응답에 tool_use 블록이 없음")
+    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")

@@ -8,7 +8,15 @@
 from __future__ import annotations
 
 from mssb_coder.claude_client import NON_DIAGNOSTIC_CONSTRAINT
-from mssb_coder.schema import StemCodingResult
+from mssb_coder.schema import CategoryId, StemCodingResult
+import typing
+
+_CATEGORY_ENUM = list(typing.get_args(CategoryId))
+_CATEGORY_SCHEMA = {
+    "type": "string",
+    "enum": _CATEGORY_ENUM,
+    "description": "5범주 id 중 정확히 하나만 — 괄호로 하위항목을 덧붙이지 말 것",
+}
 
 SYNTHESIS_SYSTEM_PROMPT = (
     "당신은 MSSB 세션 하나에서 나온 여러 이야기 스템의 AI 채점 결과를 종합해, 이야기 전반에 걸쳐 "
@@ -18,6 +26,10 @@ SYNTHESIS_SYSTEM_PROMPT = (
     "무엇인지(패턴이 아니라 단발성 신호로 별도 표시) 근거(스템명+타임스탬프)와 함께 정리하세요. "
     "분모(전체 유효 스템 수, 그 패턴에 사용된 유효 스템 수)를 반드시 함께 표기하세요 — "
     "\"3개 이야기에서 반복\"이 10개 중 3개인지 5개 중 3개인지는 해석이 완전히 다릅니다.\n\n"
+    "pattern_description은 실제 임상 심리평가 보고서의 문장처럼, 격식 있는 서술형 문어체로 "
+    "작성하세요 — 예: \"~양상이 반복적으로 관찰되었다\", \"~로 나타났다\", \"~하는 경향을 보였다\" "
+    "같은 종결형을 쓰고, 개조식 나열이나 영어 용어를 쓰지 마세요. 이야기명은 영문 id가 아니라 "
+    "자연스러운 한국어 문장 속에 풀어서 서술하세요.\n\n"
     f"{NON_DIAGNOSTIC_CONSTRAINT}"
 )
 
@@ -59,7 +71,7 @@ SYNTHESIS_TOOL = {
                 "items": {
                     "type": "object",
                     "properties": {
-                        "category": {"type": "string"},
+                        "category": _CATEGORY_SCHEMA,
                         "observed_in_stems": {"type": "array", "items": {"type": "string"}},
                         "stems_administered_count_for_pattern": {"type": "integer", "minimum": 0},
                         "pattern_description": {"type": "string"},
@@ -88,7 +100,7 @@ SYNTHESIS_TOOL = {
                     "type": "object",
                     "properties": {
                         "stem_name": {"type": "string"},
-                        "category": {"type": "string"},
+                        "category": _CATEGORY_SCHEMA,
                         "note": {"type": "string"},
                     },
                     "required": ["stem_name", "category", "note"],
@@ -115,15 +127,20 @@ def call_session_synthesis(stem_results: list[StemCodingResult]) -> dict:
 
     response = client.messages.create(
         model=MODEL_VERSION,
-        max_tokens=4096,
+        max_tokens=16000,  # claude_client.call_stem_coding에서 겪은 것과 같은 문제(4096 부족) 예방
         system=[{"type": "text", "text": SYNTHESIS_SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
         tools=[SYNTHESIS_TOOL],
         tool_choice={"type": "tool", "name": SYNTHESIS_TOOL["name"]},
         messages=[{"role": "user", "content": user_message}],
     )
 
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError("Claude 종합 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음.")
+
     for block in response.content:
         if block.type == "tool_use":
+            if not block.input:
+                raise RuntimeError(f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})")
             return block.input
 
-    raise RuntimeError("Claude 응답에 tool_use 블록이 없음")
+    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")

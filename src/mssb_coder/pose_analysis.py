@@ -5,6 +5,13 @@
 여기서는 얼굴 랜드마크(코) 검출 신뢰도를 그 규칙의 대리 지표로 쓴다 — 검사자는
 카메라에 얼굴이 거의 안 잡히니 코 visibility가 낮게 나올 것으로 기대된다. 이 대리 지표
 자체가 실측으로 검증된 적은 없다 — 마일스톤 A에서 실제 영상으로 확인할 것.
+
+**mediapipe 1.0의 API 변경(실측으로 확인)**: 예전에 흔히 쓰던 `mp.solutions.pose.Pose(...)`
+(Solutions API)가 mediapipe 1.0부터 완전히 제거됐다 — `AttributeError: module 'mediapipe'
+has no attribute 'solutions'`. 새 Tasks API(`mediapipe.tasks.vision.PoseLandmarker`)로
+다시 짰다. 이 API는 모델 파일(.task)을 명시적으로 내려받아야 하는데, openSMILE 때와 똑같은
+이유로 OneDrive 한글 경로에 모델을 두면 네이티브 라이브러리가 못 연다 — 그래서
+MSSB_DATA_DIR(ASCII 경로) 아래에 내려받는다.
 """
 
 from __future__ import annotations
@@ -46,31 +53,56 @@ _LANDMARK_INDEX = {
 }
 
 
+_MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/pose_landmarker/"
+    "pose_landmarker_lite/float16/latest/pose_landmarker_lite.task"
+)
+
+
+def _ascii_safe_model_path() -> Path:
+    """openSMILE과 같은 이유로, 모델 파일을 MSSB_DATA_DIR(ASCII 경로) 아래 캐싱한다."""
+    import urllib.request  # noqa: PLC0415
+
+    from mssb_coder.storage import get_data_dir  # noqa: PLC0415
+
+    model_path = get_data_dir() / "models" / "mediapipe" / "pose_landmarker_lite.task"
+    if not model_path.exists():
+        model_path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(_MODEL_URL, model_path)
+    return model_path
+
+
 def run_pose_analysis(frames_dir: Path, fps: float = 2.0) -> list[PoseFrame]:
     """frames_dir(video_prep.extract_stem_frames의 출력)에 있는 frame_%06d.png들을 순서대로 처리.
 
     fps는 프레임 추출 때 쓴 값과 같아야 timestamp_s가 정확하다 (video_prep.extract_stem_frames 참고).
     """
-    import cv2  # noqa: PLC0415
     import mediapipe as mp  # noqa: PLC0415
+
+    BaseOptions = mp.tasks.BaseOptions
+    PoseLandmarker = mp.tasks.vision.PoseLandmarker
+    PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
+    VisionRunningMode = mp.tasks.vision.RunningMode
+
+    options = PoseLandmarkerOptions(
+        base_options=BaseOptions(model_asset_path=str(_ascii_safe_model_path())),
+        running_mode=VisionRunningMode.IMAGE,
+    )
 
     frame_paths = sorted(Path(frames_dir).glob("frame_*.png"))
     results: list[PoseFrame] = []
 
-    with mp.solutions.pose.Pose(static_image_mode=True) as pose:
+    with PoseLandmarker.create_from_options(options) as landmarker:
         for i, frame_path in enumerate(frame_paths):
-            image = cv2.imread(str(frame_path))
-            if image is None:
-                continue
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            detection = pose.process(image_rgb)
-
             timestamp_s = i / fps
-            if detection.pose_landmarks is None:
+            mp_image = mp.Image.create_from_file(str(frame_path))
+            detection = landmarker.detect(mp_image)
+
+            if not detection.pose_landmarks:
                 results.append(PoseFrame(timestamp_s=timestamp_s, landmarks={}, is_facing_camera=False))
                 continue
 
-            lm = detection.pose_landmarks.landmark
+            lm = detection.pose_landmarks[0]
             landmarks = {
                 name: (lm[idx].x, lm[idx].y)
                 for name, idx in _LANDMARK_INDEX.items()

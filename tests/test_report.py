@@ -56,8 +56,9 @@ def test_report_includes_disclaimer_and_patterns():
     report = build_session_report_markdown(_synthesis())
     assert "진단이 아니라" in report
     assert "회피/위축" in report  # category id가 한글 라벨로 치환됐는지
-    assert "화제 전환" in report
-    assert "spilled_juice" in report
+    assert "엎지러진 주스" in report  # 정상 실시된 스템 안내문의 stem id가 한글 라벨로 치환됐는지
+    assert "spilled_juice" not in report
+    assert "12.3초" not in report  # 종합 해석에는 근거 인용(타임스탬프)이 더 이상 없음
 
 
 def test_report_includes_single_story_signals():
@@ -66,15 +67,41 @@ def test_report_includes_single_story_signals():
     assert "정서적 통합" in report
 
 
-def test_report_appendix_included_when_stem_results_given():
+def test_report_includes_stem_interpretation_when_stem_results_given():
     report = build_session_report_markdown(_synthesis(), stem_results=[_stem_result()])
-    assert "부록" in report
+    assert "이야기별 해석" in report
+    assert "엎지러진 주스" in report  # stem id(spilled_juice)가 한글 라벨로 치환됐는지
     assert "테스트 근거" in report
+    assert "존재 " not in report  # 체크리스트("존재 N개") 형식이 빠졌는지
+    assert "spilled_juice" not in report
 
 
-def test_report_omits_appendix_when_no_stem_results():
+def test_report_omits_stem_interpretation_when_no_stem_results():
     report = build_session_report_markdown(_synthesis())
-    assert "부록" not in report
+    assert "이야기별 해석" not in report
+
+
+def test_report_scrubs_english_ids_embedded_in_claude_free_text():
+    synthesis = SessionSynthesis(
+        session_id="s1",
+        stems_included=["spilled_juice", "lost_dog"],
+        stems_administered_count=2,
+        recurring_patterns=[
+            RecurringPattern(
+                category="avoidant_withdrawal",
+                observed_in_stems=["spilled_juice", "lost_dog"],
+                stems_administered_count_for_pattern=2,
+                pattern_description="spilled_juice와 lost_dog 모두에서 회피 반응이 나타났다.",
+                evidence=[],
+            )
+        ],
+        model_version="claude-opus-5",
+    )
+    report = build_session_report_markdown(synthesis)
+    assert "spilled_juice" not in report
+    assert "lost_dog" not in report
+    assert "엎지러진 주스" in report
+    assert "뽀삐가 없어졌어요" in report
 
 
 def test_report_handles_no_recurring_patterns():
@@ -86,4 +113,4 @@ def test_report_handles_no_recurring_patterns():
         model_version="claude-opus-5",
     )
     report = build_session_report_markdown(synthesis)
-    assert "발견된 반복 패턴 없음" in report
+    assert "반복적으로 관찰된 패턴은 없었다" in report

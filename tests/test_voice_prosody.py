@@ -27,3 +27,14 @@ def test_zscore_events_detects_spike():
     assert len(events) == 1
     assert events[0].kind == "pitch_spike"
     assert events[0].timestamp_s == 21.0
+
+
+def test_zscore_events_returns_empty_when_threshold_is_none():
+    """cv_thresholds_*.yaml의 zscore_notable_threshold가 아직 null인 상태에서도
+    크래시 없이 빈 리스트를 반환해야 한다 (실제 파이프라인 실행에서 발견된 버그)."""
+    warm_up = [ProsodyFrame(timestamp_s=i, pitch_hz=200.0, loudness=0.5) for i in range(10)]
+    baseline = compute_baseline(warm_up)
+    child_frames = [ProsodyFrame(timestamp_s=21.0, pitch_hz=350.0, loudness=0.5)]
+
+    events = compute_zscore_events(child_frames, baseline, notable_threshold=None)
+    assert events == []

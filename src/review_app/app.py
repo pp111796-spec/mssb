@@ -20,8 +20,19 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from mssb_coder import storage
+from mssb_coder.coding_systems import CodingSystem, load_coding_system
+from mssb_coder.labels import (
+    category_label,
+    completion_status_label,
+    evidence_source_label,
+    item_label,
+    response_mode_label,
+    stem_label,
+)
 from mssb_coder.report import build_session_report_markdown
-from mssb_coder.schema import SessionSynthesis
+from mssb_coder.schema import SessionSynthesis, VerbatimSpeaker
+from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
+from mssb_coder.verbatim import render_verbatim_markdown
 
 load_dotenv()
 
@@ -66,8 +77,10 @@ def list_sessions() -> list[str]:
     return sorted(p.name for p in sessions_root.iterdir() if p.is_dir())
 
 
-def render_stem_detail(session_id: str, stem_name: str) -> None:
-    st.subheader(f"스템 상세 — {stem_name}")
+def render_stem_detail(
+    session_id: str, stem_name: str, coding_system: CodingSystem, story_stems: StoryStemsConfig
+) -> None:
+    st.subheader(f"스템 상세 — {stem_label(story_stems, stem_name)}")
     try:
         reviewed_exists = (storage.session_dir(session_id) / "coding" / f"{stem_name}_reviewed.json").exists()
         result = storage.load_stem_coding(session_id, stem_name, reviewed=reviewed_exists)
@@ -76,22 +89,47 @@ def render_stem_detail(session_id: str, stem_name: str) -> None:
         return
 
     st.caption(
-        f"완료상태: {result.completion_status.value} · 자발/프롬프트후: {result.response_mode.value} "
+        f"완료상태: {completion_status_label(result.completion_status)} · "
+        f"자발/프롬프트후: {response_mode_label(result.response_mode)} "
         f"· 쟁점프롬프트 횟수: {result.issue_prompt_count}"
     )
     st.info(result.disclaimer)
 
+    with st.expander("축어록 (언어+행동분석)", expanded=False):
+        try:
+            verbatim = storage.load_stem_verbatim(session_id, stem_name)
+        except FileNotFoundError:
+            st.caption("축어록 데이터 없음 — 이 세션은 재분석이 필요합니다.")
+        else:
+            for line in verbatim.lines:
+                if line.kind == "speech":
+                    speaker_ko = "검사자" if line.speaker == VerbatimSpeaker.EXAMINER else "아동"
+                    st.write(f"[{line.timestamp_s:.1f}s] **{speaker_ko}**: {line.text}")
+                else:
+                    st.caption(f"[{line.timestamp_s:.1f}s] 🔹 {line.label_ko}")
+            st.download_button(
+                "📄 축어록 다운로드 (.md)",
+                data=render_verbatim_markdown(verbatim),
+                file_name=f"{session_id}_{stem_name}_verbatim.md",
+                mime="text/markdown",
+                key=f"verbatim_dl_{session_id}_{stem_name}",
+            )
+
     for category_id, category_code in result.codes.items():
-        with st.expander(f"{category_id} — 존재 항목 {category_code.present_count}개", expanded=False):
+        label = category_label(coding_system, category_id)
+        with st.expander(f"{label} — 존재 항목 {category_code.present_count}개", expanded=False):
             st.write(category_code.rationale)
             for item_id, item in category_code.items.items():
                 mark = "✅" if item.present else "—"
-                st.write(f"{mark} **{item_id}**")
+                st.write(f"{mark} **{item_label(coding_system, category_id, item_id)}**")
                 for ev in item.evidence:
-                    st.caption(f"  [{ev.timestamp_s:.1f}s] ({ev.source.value}) {ev.note}")
+                    st.caption(f"  [{ev.timestamp_s:.1f}s] ({evidence_source_label(ev.source)}) {ev.note}")
 
 
 def render_session_synthesis(session_id: str) -> None:
+    coding_system = load_coding_system()
+    story_stems = load_story_stems()
+
     reviewed_path = storage.session_dir(session_id) / "session_summary_reviewed.json"
     synthesis = storage.load_session_synthesis(session_id, reviewed=reviewed_path.exists())
 
@@ -99,16 +137,21 @@ def render_session_synthesis(session_id: str) -> None:
     st.info(synthesis.disclaimer)
     st.caption(
         f"정상 실시된 스템: {synthesis.stems_administered_count}개 "
-        f"(포함: {', '.join(synthesis.stems_included)})"
+        f"(포함: {', '.join(stem_label(story_stems, s) for s in synthesis.stems_included)})"
     )
     if synthesis.stems_missing_or_partial:
-        st.warning(f"미실시/부분실시: {', '.join(synthesis.stems_missing_or_partial)}")
+        st.warning(
+            "미실시/부분실시: "
+            f"{', '.join(stem_label(story_stems, s) for s in synthesis.stems_missing_or_partial)}"
+        )
 
     try:
         stem_results = storage.load_all_stem_codings(session_id)
     except FileNotFoundError:
         stem_results = []
-    report_markdown = build_session_report_markdown(synthesis, stem_results=stem_results)
+    report_markdown = build_session_report_markdown(
+        synthesis, stem_results=stem_results, coding_system=coding_system, story_stems=story_stems
+    )
     dl_col1, dl_col2, dl_col3 = st.columns(3)
     with dl_col1:
         st.download_button(
@@ -135,7 +178,8 @@ def render_session_synthesis(session_id: str) -> None:
     edited_patterns = []
     st.header("반복되는 패턴")
     for i, pattern in enumerate(synthesis.recurring_patterns):
-        st.subheader(f"{pattern.category} — {len(pattern.observed_in_stems)}/{pattern.stems_administered_count_for_pattern}개 이야기")
+        label = category_label(coding_system, pattern.category)
+        st.subheader(f"{label} — {len(pattern.observed_in_stems)}/{pattern.stems_administered_count_for_pattern}개 이야기")
         edited_desc = st.text_area(
             "패턴 서술 (수정 가능)", value=pattern.pattern_description, key=f"pattern_{i}"
         )
@@ -144,13 +188,15 @@ def render_session_synthesis(session_id: str) -> None:
         cols = st.columns(len(pattern.evidence) or 1)
         for col, ev in zip(cols, pattern.evidence):
             with col:
-                if st.button(f"{ev.stem_name} · {ev.timestamp_s:.1f}s", key=f"ev_{i}_{ev.stem_name}_{ev.timestamp_s}"):
+                stem_display = stem_label(story_stems, ev.stem_name)
+                if st.button(f"{stem_display} · {ev.timestamp_s:.1f}s", key=f"ev_{i}_{ev.stem_name}_{ev.timestamp_s}"):
                     st.session_state["drilldown_stem"] = ev.stem_name
 
     if synthesis.single_story_notable_signals:
         st.header("단발성 신호 (패턴 아님)")
         for signal in synthesis.single_story_notable_signals:
-            st.write(f"**{signal.stem_name}** ({signal.category}): {signal.note}")
+            label = category_label(coding_system, signal.category)
+            st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
 
     if st.button("종합 초안 저장 (session_summary_reviewed.json)"):
         updated = synthesis.model_copy(update={"recurring_patterns": edited_patterns})
@@ -160,7 +206,7 @@ def render_session_synthesis(session_id: str) -> None:
     st.divider()
     drilldown_stem = st.session_state.get("drilldown_stem")
     if drilldown_stem:
-        render_stem_detail(session_id, drilldown_stem)
+        render_stem_detail(session_id, drilldown_stem, coding_system, story_stems)
     else:
         st.caption("위 근거 버튼을 클릭하면 해당 스템의 상세(AI 채점 근거)가 여기 표시됩니다.")
 

@@ -55,8 +55,12 @@ def compute_baseline(warm_up_frames: list[ProsodyFrame]) -> ProsodyBaseline:
 
 
 def compute_zscore_events(
-    frames: list[ProsodyFrame], baseline: ProsodyBaseline, notable_threshold: float
+    frames: list[ProsodyFrame], baseline: ProsodyBaseline, notable_threshold: float | None
 ) -> list[ProsodyEvent]:
+    """notable_threshold가 None이면(cv_thresholds_*.yaml 미확정, 문제점.md 3번) 조용히 빈 리스트를
+    반환한다 — posture_metrics.compute_posture_events와 같은 원칙(값을 지어내지 않음)."""
+    if notable_threshold is None:
+        return []
     events: list[ProsodyEvent] = []
     for frame in frames:
         pitch_z = (frame.pitch_hz - baseline.pitch_mean) / baseline.pitch_stdev

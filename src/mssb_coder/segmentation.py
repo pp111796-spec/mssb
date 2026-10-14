@@ -169,15 +169,20 @@ def call_segmentation(story_stems: StoryStemsConfig, full_transcript_text: str) 
 
     response = client.messages.create(
         model=MODEL_VERSION,
-        max_tokens=4096,
+        max_tokens=8000,  # 세그먼트 14개 기준 실측 ~1600 토큰이었으나 여유를 둠
         system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
         tools=[SEGMENTATION_TOOL],
         tool_choice={"type": "tool", "name": SEGMENTATION_TOOL["name"]},
         messages=[{"role": "user", "content": user_message}],
     )
 
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError("Claude 구간분리 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음.")
+
     for block in response.content:
         if block.type == "tool_use":
+            if not block.input:
+                raise RuntimeError(f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})")
             return block.input["segments"]
 
-    raise RuntimeError("Claude 응답에 tool_use 블록이 없음")
+    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")
