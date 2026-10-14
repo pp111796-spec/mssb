@@ -11,6 +11,7 @@
     coding/<stem_name>_ai_codes.json
     coding/<stem_name>_reviewed.json        (선택, 사람이 스템 상세를 고친 경우만)
     coding/<stem_name>_verbatim.json        (축어록 — 언어+행동분석 통합)
+    cv/<stem_name>_cv.json                  (표정·자세·음성·인형 원본 수치 — 임계값 보정용)
     session_summary_ai_draft.json
     session_summary_reviewed.json
 """
@@ -25,7 +26,13 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from mssb_coder.bundle import build_bundle_dict
-from mssb_coder.schema import SessionSynthesis, StemCodingResult, StemTimestamp, StemVerbatimRecord
+from mssb_coder.schema import (
+    SessionSynthesis,
+    StemCodingResult,
+    StemCvTimeline,
+    StemTimestamp,
+    StemVerbatimRecord,
+)
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -114,6 +121,25 @@ def save_stem_verbatim(session_id: str, stem_name: str, record: StemVerbatimReco
 
 def load_stem_verbatim(session_id: str, stem_name: str) -> StemVerbatimRecord:
     return _read_model(session_dir(session_id) / "coding" / f"{stem_name}_verbatim.json", StemVerbatimRecord)
+
+
+# --- cv/<stem>_cv.json (CV 원본 수치 타임라인 — 임계값 보정·이벤트 재계산용) -----------------
+
+
+def _cv_path(session_id: str, stem_name: str) -> Path:
+    return session_dir(session_id) / "cv" / f"{stem_name}_cv.json"
+
+
+def save_stem_cv_timeline(session_id: str, stem_name: str, timeline: StemCvTimeline) -> Path:
+    return _write_model(_cv_path(session_id, stem_name), timeline)
+
+
+def load_stem_cv_timeline(session_id: str, stem_name: str) -> StemCvTimeline:
+    return _read_model(_cv_path(session_id, stem_name), StemCvTimeline)
+
+
+def cv_timeline_exists(session_id: str, stem_name: str) -> bool:
+    return _cv_path(session_id, stem_name).exists()
 
 
 # --- session_summary_*.json (파이프라인 12·13단계) -----------------------------

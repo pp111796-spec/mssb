@@ -1,4 +1,4 @@
-from mssb_coder.facial_expression import FacialFrame
+from mssb_coder.facial_expression import FacialEvent
 from mssb_coder.object_tracking import DollEvent
 from mssb_coder.posture_metrics import PostureEvent
 from mssb_coder.schema import StemTimestamp, VerbatimSpeaker
@@ -22,11 +22,11 @@ def _stem(**overrides) -> StemTimestamp:
 
 def test_build_stem_verbatim_converts_offsets_correctly():
     stem = _stem()
-    facial_frames = [FacialFrame(timestamp_s=2.0, au_intensities={"AU04": 1.0})]
-    prosody_events = [ProsodyEvent(timestamp_s=3.0, kind="pitch_spike", zscore=2.5)]
+    facial_events = [FacialEvent(timestamp_s=2.0, au="AU12", tier="reliable", peak_probability=0.9, frames=2)]
+    prosody_events = [ProsodyEvent(timestamp_s=3.0, kind="pitch_high", zscore=2.5)]
 
     lines = build_stem_verbatim(
-        stem, {"examiner": [], "child": []}, facial_frames, [], [], prosody_events
+        stem, {"examiner": [], "child": []}, facial_events, [], [], prosody_events
     )
 
     facial_line = next(l for l in lines if l.source == "facial_au")

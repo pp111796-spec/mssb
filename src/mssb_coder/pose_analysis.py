@@ -72,10 +72,21 @@ def _ascii_safe_model_path() -> Path:
     return model_path
 
 
-def run_pose_analysis(frames_dir: Path, fps: float = 2.0) -> list[PoseFrame]:
+def select_primary_pose(poses: list, nose_index: int = 0):
+    """검출된 사람이 여럿이면 코 visibility가 가장 높은(=카메라를 가장 정면으로 보는) 사람을 아동으로 본다.
+
+    num_poses 기본값(1)이면 검사자가 먼저 검출될 수 있어서 2명까지 받아 고른다.
+    """
+    return max(poses, key=lambda lm: lm[nose_index].visibility)
+
+
+def run_pose_analysis(
+    frames_dir: Path, fps: float = 2.0, landmark_visibility_min: float = 0.5
+) -> list[PoseFrame]:
     """frames_dir(video_prep.extract_stem_frames의 출력)에 있는 frame_%06d.png들을 순서대로 처리.
 
     fps는 프레임 추출 때 쓴 값과 같아야 timestamp_s가 정확하다 (video_prep.extract_stem_frames 참고).
+    landmark_visibility_min 미만인 랜드마크는 버린다 (미취학 MediaPipe 연구도 0.5 미만을 무효 처리).
     """
     import mediapipe as mp  # noqa: PLC0415
 
@@ -87,6 +98,7 @@ def run_pose_analysis(frames_dir: Path, fps: float = 2.0) -> list[PoseFrame]:
     options = PoseLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=str(_ascii_safe_model_path())),
         running_mode=VisionRunningMode.IMAGE,
+        num_poses=2,
     )
 
     frame_paths = sorted(Path(frames_dir).glob("frame_*.png"))
@@ -102,11 +114,11 @@ def run_pose_analysis(frames_dir: Path, fps: float = 2.0) -> list[PoseFrame]:
                 results.append(PoseFrame(timestamp_s=timestamp_s, landmarks={}, is_facing_camera=False))
                 continue
 
-            lm = detection.pose_landmarks[0]
+            lm = select_primary_pose(detection.pose_landmarks, _LANDMARK_INDEX["nose"])
             landmarks = {
                 name: (lm[idx].x, lm[idx].y)
                 for name, idx in _LANDMARK_INDEX.items()
-                if lm[idx].visibility >= 0.1
+                if lm[idx].visibility >= landmark_visibility_min
             }
             is_facing_camera = lm[_LANDMARK_INDEX["nose"]].visibility >= FACE_VISIBILITY_THRESHOLD
             results.append(

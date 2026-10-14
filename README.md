@@ -43,6 +43,9 @@ OpenFace는 pip으로 안 깔리는 Windows 바이너리라 대신 **Py-Feat을 
 python scripts\run_pipeline.py --session sample_01 --video <mp4 경로> --child-age-months 54 --child-gender female --subject-type adult --stage segmentation
 # 여기서 Streamlit으로 구간분리 결과를 확인·수정 (4단계, 사람 확인)
 streamlit run src\review_app\app.py
+# (선택) Claude 호출 없이 표정·자세·인형·음성 원본 수치만 저장 → 임계값 보정 리포트 확인
+python scripts\run_pipeline.py --session sample_01 --video <mp4 경로> --child-age-months 54 --child-gender female --subject-type adult --stage cv
+python scripts\calibrate_cv.py --session sample_01 --subject-type adult
 python scripts\run_pipeline.py --session sample_01 --video <mp4 경로> --child-age-months 54 --child-gender female --subject-type adult --stage coding
 python scripts\run_pipeline.py --session sample_01 --child-age-months 54 --child-gender female --subject-type adult --stage synthesis
 ```
@@ -90,7 +93,12 @@ pytest
 - `src/review_app/app.py` / `src/public_app/app.py` — Streamlit 기동 확인됨
 - `bundle.py`/`report.py`/`storage.publish_session_bundle_to_repo` — 결과 내보내기·게시 로직 전부 테스트됨. `review_app`의 실제 git add/commit/push 자체는 실제 세션이 있어야 끝까지 검증 가능(로직은 준비됨)
 
+**CV 임계값 (2026-10-14 갱신)**: `config/cv_thresholds_*.yaml`에 공개 문헌·라이브러리 조사로 얻은 시작값을 채웠다.
+각 값에 근거 등급이 주석으로 붙어 있다 — [A] 문헌 근거, [B] 근거를 상황에 맞게 조정, [C] 문헌이 없어 공학적 기본값(반드시 아동 영상으로 조정).
+자세·음성은 그 아이의 워밍업 구간 대비 상대 z-score, 표정은 AU 확률 0.5 이상이 연속 프레임 유지 + 아동 평가에서 신뢰할 만한 AU만 쓴다.
+기준값 보정 순서: `run_pipeline.py --stage cv`(Claude 호출 없음) → `calibrate_cv.py --session <id>` 리포트 확인 → 후보 프레임을 눈으로 확인 → yaml 수정.
+
 **여전히 미확정(TODO)**:
-- `config/cv_thresholds_adult.yaml` / `cv_thresholds_child.yaml`의 임계값은 전부 `null` — 마일스톤 A에서 실측 채울 것 (`문제점.md` 3번)
-- `models/doll_yolo/`에 파인튜닝된 가중치 없음 — 마일스톤 0(인형 라벨링) 필요
-- Py-Feat 실제 검증 — 마일스톤 A에서 실제 영상 필요
+- [C]등급 임계값은 실제 아동 영상 분포로 조정 필요 (`문제점.md` 3번). 이 신호들을 MSSB 채점 항목(불안·회피 등)에 직접 연결해 검증한 공개 기준은 없다
+- `models/doll_yolo/`에 파인튜닝된 가중치 없음 — 마일스톤 0(인형 라벨링) 필요. 없으면 인형 신호는 계속 빈 결과
+- Py-Feat 실제 아동 얼굴 검증 — 현재 성인 데이터로 학습된 모델이라 아동 정확도가 낮을 수 있음(자폐 아동 대상 평가에서 평균 F1 약 0.28). CAFE/PSYCAFE 또는 자체 FACS 코딩 샘플로 확인 필요

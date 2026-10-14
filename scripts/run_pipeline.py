@@ -15,7 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from dotenv import load_dotenv  # noqa: E402
 
-from mssb_coder.pipeline import run_coding_stage, run_segmentation_stage, run_synthesis_stage  # noqa: E402
+from mssb_coder.pipeline import (  # noqa: E402
+    run_coding_stage,
+    run_cv_stage,
+    run_segmentation_stage,
+    run_synthesis_stage,
+)
 from mssb_coder.schema import SessionMetadata, SubjectType  # noqa: E402
 
 
@@ -33,8 +38,13 @@ def main() -> None:
         help="adult=성인 대역(마일스톤 A), child=실제 아동(마일스톤 B)",
     )
     parser.add_argument(
-        "--stage", choices=["segmentation", "coding", "synthesis", "all"], default="all",
-        help="segmentation 실행 후 Streamlit에서 4단계(사람 확인)를 거치고 coding부터 이어서 실행",
+        "--stage", choices=["segmentation", "cv", "coding", "synthesis", "all"], default="all",
+        help="segmentation 실행 후 Streamlit에서 4단계(사람 확인)를 거치고 coding부터 이어서 실행. "
+        "cv는 Claude 호출 없이 표정·자세·인형·음성운율 원본 수치만 저장 (임계값 보정용)",
+    )
+    parser.add_argument(
+        "--recompute-cv", action="store_true",
+        help="cv 단계에서 저장된 타임라인이 있어도 다시 계산 (프레임·오디오가 이미 있으면 영상 없이도 가능)",
     )
     args = parser.parse_args()
 
@@ -53,6 +63,11 @@ def main() -> None:
         if metadata is None:
             parser.error("--child-age-months와 --child-gender는 segmentation 단계에 필요함")
         run_segmentation_stage(args.video, metadata)
+
+    if args.stage == "cv":
+        if metadata is None:
+            parser.error("--child-age-months와 --child-gender는 cv 단계에 필요함")
+        run_cv_stage(args.video, metadata, recompute=args.recompute_cv)
 
     if args.stage in ("coding", "all"):
         if args.video is None or metadata is None:

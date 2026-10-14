@@ -15,7 +15,7 @@ float 필드로 정렬한다.
 
 from __future__ import annotations
 
-from mssb_coder.facial_expression import FacialFrame, is_low_confidence
+from mssb_coder.facial_expression import FacialEvent
 from mssb_coder.labels import au_gloss, doll_event_kind_label, doll_id_label, load_doll_labels, posture_event_kind_label, prosody_event_kind_label
 from mssb_coder.object_tracking import DollEvent
 from mssb_coder.posture_metrics import PostureEvent
@@ -27,7 +27,7 @@ from mssb_coder.voice_prosody import ProsodyEvent
 def build_stem_verbatim(
     stem: StemTimestamp,
     speaker_tagged: dict[str, list[TranscriptSegment]],
-    facial_frames: list[FacialFrame],
+    facial_events: list[FacialEvent],
     posture_events: list[PostureEvent],
     doll_events: list[DollEvent],
     prosody_events: list[ProsodyEvent],
@@ -42,17 +42,19 @@ def build_stem_verbatim(
                 VerbatimLine(timestamp_s=seg.start_s, kind="speech", speaker=speaker_enum, text=seg.text)
             )
 
-    for frame in facial_frames:
-        if not frame.au_intensities:
-            continue
-        conf_tag = " [저신뢰]" if is_low_confidence(frame) else ""
-        au_desc = ", ".join(au_gloss(au) for au in sorted(frame.au_intensities))
+    for event in facial_events:
+        tags = ""
+        if event.tier == "reference":
+            tags += " [참고용]"
+        if event.caution:
+            tags += " [머리 회전 주의]"
         lines.append(
             VerbatimLine(
-                timestamp_s=stem.start_s + frame.timestamp_s,
+                timestamp_s=stem.start_s + event.timestamp_s,
                 kind="behavior",
                 source=EvidenceSource.FACIAL_AU,
-                label_ko=f"표정 변화{conf_tag}: {au_desc}",
+                label_ko=f"표정 변화{tags}: {au_gloss(event.au)} (확률 {event.peak_probability:.2f}, {event.frames}프레임 지속)",
+                raw_value=event.peak_probability,
             )
         )
 

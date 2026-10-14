@@ -5,11 +5,15 @@
     Claude 3개 호출(구간분리·스템채점·세션종합) — 실제 구현됨. ANTHROPIC_API_KEY만 있으면 동작.
   - 인형/소품 추적(YOLO) — 코드는 실제 구현됐지만, 마일스톤 0(라벨링·파인튜닝)이 없으면
     가중치 파일이 없어 빈 결과를 반환함(의도된 동작 — 가짜 탐지보다 나음).
-  - 표정 분석(OpenFace/PyAFAR/Py-Feat) — 아직 미구현.
+  - 표정 분석(Py-Feat) — 코드는 있으나 실제 아동 얼굴로는 아직 검증 전.
 
 4단계(사람 빠른 확인)는 이 파일이 하지 않는다 — Streamlit 앱(src/review_app/app.py)의 몫이다.
 그래서 run_pipeline은 "3단계까지 자동 실행 후 저장"과 "확정된 stem_timestamps.json을 입력으로
 5단계부터 재개"를 별도 함수로 나눈다.
+
+5~7단계(CV 분석)는 run_cv_stage로 따로 돌릴 수 있다 — Claude를 호출하지 않고 원본 수치를
+cv/<stem>_cv.json에 저장하므로, 임계값을 바꿔가며 보정(scripts/calibrate_cv.py)할 때 비용이 들지 않는다.
+run_coding_stage는 저장된 타임라인이 있으면 재사용한다.
 """
 
 from __future__ import annotations
@@ -22,11 +26,12 @@ import yaml
 from mssb_coder import storage, video_prep
 from mssb_coder.claude_client import call_stem_coding
 from mssb_coder.coding_systems import load_coding_system
+from mssb_coder.cv_events import CvThresholdSet, compute_baselines, derive_events
+from mssb_coder.cv_timeline import StemCvFrames, from_timeline, to_timeline
 from mssb_coder.facial_expression import run_facial_expression
 from mssb_coder.feature_summary import summarize_stem_features
-from mssb_coder.object_tracking import detect_tracking_lost_segments, run_object_tracking
+from mssb_coder.object_tracking import run_object_tracking
 from mssb_coder.pose_analysis import run_pose_analysis
-from mssb_coder.posture_metrics import compute_posture_events
 from mssb_coder.schema import (
     SessionMetadata,
     SessionSynthesis,
@@ -38,15 +43,13 @@ from mssb_coder.segmentation import call_segmentation, load_story_stems
 from mssb_coder.session_synthesis import call_session_synthesis
 from mssb_coder.transcribe import tag_speakers, transcribe_session
 from mssb_coder.verbatim import build_stem_verbatim
-from mssb_coder.voice_prosody import ProsodyBaseline, compute_baseline, compute_zscore_events, run_voice_prosody
-
-# TODO(문제점.md 3번과 같은 미확정 임계값 범주): cv_thresholds_*.yaml에 아직 해당 키가 없어
-# 임시로 코드에 둔 값 — 실측 후 doll_tracking.tracking_lost_min_frames로 옮길 것.
-_DEFAULT_TRACKING_LOST_MIN_FRAMES = 3
+from mssb_coder.voice_prosody import run_voice_prosody
 
 logger = logging.getLogger("mssb_coder.pipeline")
 
 CV_THRESHOLDS_DIR = Path(__file__).resolve().parents[2] / "config"
+DOLL_WEIGHTS_DIR = Path(__file__).resolve().parents[2] / "models" / "doll_yolo"
+FRAME_FPS = 2.0  # video_prep.extract_stem_frames / pose / facial / object_tracking이 모두 같은 값을 써야 함
 
 
 def _load_cv_thresholds(subject_type) -> dict:
@@ -71,53 +74,108 @@ def run_segmentation_stage(video_path: Path, metadata: SessionMetadata) -> list[
     return timestamps
 
 
-def _compute_prosody_baseline(
-    video_path: Path, metadata: SessionMetadata, timestamps: list[StemTimestamp]
-) -> ProsodyBaseline | None:
-    """워밍업 구간 음성으로 그 아동(연기자)의 피치·음량 기준선을 한 번 계산 (세션 전체에서 재사용).
+def _ensure_stem_media(
+    video_path: Path | None, metadata: SessionMetadata, stem: StemTimestamp
+) -> tuple[Path, Path]:
+    """스템의 프레임 폴더·아동 오디오 구간이 이미 디스크에 있으면 재사용하고, 없을 때만 ffmpeg로 추출한다."""
+    session_dir = storage.session_dir(metadata.session_id)
+    frames_dir = session_dir / "frames" / stem.stem_name
+    child_audio_path = session_dir / "audio_segments" / f"{stem.stem_name}_child_segment.wav"
 
-    warm_up 스템이 없거나 프레임이 너무 적으면(음성 데이터 부족) None을 반환 — 이 경우
-    run_coding_stage가 모든 스템의 음성운율 이벤트를 빈 리스트로 처리한다 (값을 지어내지 않음).
+    if not any(frames_dir.glob("frame_*.png")):
+        if video_path is None:
+            raise FileNotFoundError(f"{stem.stem_name}: 프레임이 없고 --video도 주어지지 않음")
+        video_prep.extract_stem_frames(video_path, stem, frames_dir.parent, fps=FRAME_FPS)
+    if not child_audio_path.exists():
+        if video_path is None:
+            raise FileNotFoundError(f"{stem.stem_name}: 아동 오디오 구간이 없고 --video도 주어지지 않음")
+        child_audio_path = video_prep.extract_stem_audio(video_path, stem, child_audio_path.parent)
+    return frames_dir, child_audio_path
+
+
+def compute_stem_cv(
+    video_path: Path | None, metadata: SessionMetadata, stem: StemTimestamp, cv_config: dict
+) -> StemCvFrames:
+    """스템 1편의 CV 4종 원본 프레임을 계산한다 (임계값은 아직 적용하지 않음)."""
+    frames_dir, child_audio_path = _ensure_stem_media(video_path, metadata, stem)
+    doll_cfg = cv_config["doll_tracking"]
+    return StemCvFrames(
+        facial=run_facial_expression(frames_dir, metadata.subject_type, fps=FRAME_FPS),
+        pose=run_pose_analysis(
+            frames_dir,
+            fps=FRAME_FPS,
+            landmark_visibility_min=cv_config["posture"]["landmark_visibility_min"] or 0.5,
+        ),
+        prosody=run_voice_prosody(child_audio_path),
+        doll=run_object_tracking(
+            frames_dir,
+            DOLL_WEIGHTS_DIR,
+            fps=FRAME_FPS,
+            conf_min=doll_cfg["detection_conf_min"] or 0.25,
+            class_min_seen_frames=doll_cfg["class_min_seen_frames"] or 2,
+        ),
+    )
+
+
+def _load_or_compute_cv(
+    video_path: Path | None, metadata: SessionMetadata, stem: StemTimestamp, cv_config: dict
+) -> StemCvFrames:
+    if storage.cv_timeline_exists(metadata.session_id, stem.stem_name):
+        return from_timeline(storage.load_stem_cv_timeline(metadata.session_id, stem.stem_name))
+    frames = compute_stem_cv(video_path, metadata, stem, cv_config)
+    storage.save_stem_cv_timeline(
+        metadata.session_id, stem.stem_name, to_timeline(metadata.session_id, stem.stem_name, FRAME_FPS, frames)
+    )
+    return frames
+
+
+def _cv_target_stems(timestamps: list[StemTimestamp]) -> list[StemTimestamp]:
+    """채점 대상 스템 + 기준선용 워밍업."""
+    return [t for t in timestamps if t.scored or t.stem_name == "warm_up"]
+
+
+def run_cv_stage(video_path: Path | None, metadata: SessionMetadata, recompute: bool = False) -> None:
+    """5~7단계만: 표정·자세·인형·음성운율 원본 수치를 스템별로 계산해 cv/<stem>_cv.json에 저장.
+
+    Claude를 호출하지 않는다 — 임계값 보정(scripts/calibrate_cv.py)을 비용 없이 반복하기 위한 단계.
+    프레임·오디오가 이미 디스크에 있으면 video_path 없이도 돌 수 있다. recompute=True면 기존 타임라인을 덮어쓴다.
     """
-    warm_up = next((t for t in timestamps if t.stem_name == "warm_up"), None)
-    if warm_up is None:
-        logger.warning("warm_up 구간을 찾을 수 없어 음성운율 기준선을 계산할 수 없음 — 이 신호는 생략됨")
-        return None
-
-    warm_up_audio_dir = storage.session_dir(metadata.session_id) / "audio_segments"
-    warm_up_audio_path = video_prep.extract_stem_audio(video_path, warm_up, warm_up_audio_dir)
-    warm_up_frames = run_voice_prosody(warm_up_audio_path)
-
-    if len(warm_up_frames) < 2:
-        logger.warning(
-            "warm_up 구간의 유성음 프레임이 %d개뿐이라 기준선 계산 불가 — 음성운율 신호 생략됨",
-            len(warm_up_frames),
+    timestamps = storage.load_stem_timestamps(metadata.session_id)
+    cv_config = _load_cv_thresholds(metadata.subject_type)
+    for stem in _cv_target_stems(timestamps):
+        if not recompute and storage.cv_timeline_exists(metadata.session_id, stem.stem_name):
+            logger.info("스템 %s: 저장된 CV 타임라인 재사용", stem.stem_name)
+            continue
+        logger.info("스템 %s: CV 분석", stem.stem_name)
+        try:
+            frames = compute_stem_cv(video_path, metadata, stem, cv_config)
+        except FileNotFoundError as exc:
+            logger.warning("스템 %s 건너뜀: %s", stem.stem_name, exc)
+            continue
+        storage.save_stem_cv_timeline(
+            metadata.session_id, stem.stem_name, to_timeline(metadata.session_id, stem.stem_name, FRAME_FPS, frames)
         )
-        return None
-
-    return compute_baseline(warm_up_frames)
 
 
-def run_coding_stage(video_path: Path, metadata: SessionMetadata) -> list[StemCodingResult]:
+def run_coding_stage(video_path: Path | None, metadata: SessionMetadata) -> list[StemCodingResult]:
     """5~11단계: 사람이 확정한 stem_timestamps.json을 입력으로, 스템별 AI 채점까지 자동 진행.
 
     이 단계까지는 사람이 개입하지 않는다 (계획 파이프라인 10단계 설명 참고).
     """
     timestamps = storage.load_stem_timestamps(metadata.session_id)
-    cv_thresholds = _load_cv_thresholds(metadata.subject_type)
-    if cv_thresholds["posture"]["torso_tilt_avoidance_deg"] is None:
-        logger.warning(
-            "cv_thresholds_%s.yaml의 posture 임계값이 아직 null임 — "
-            "자세 이벤트(torso_tilt/sudden_movement) 없이 진행 (문제점.md 3번 참고)",
-            metadata.subject_type.value,
-        )
+    cv_config = _load_cv_thresholds(metadata.subject_type)
+    thresholds = CvThresholdSet.from_config(cv_config)
     coding_system = load_coding_system()
     story_stems = {s.id: s for s in load_story_stems().stems}
 
     session_audio_path = storage.session_dir(metadata.session_id) / "audio.wav"
     transcript = transcribe_session(session_audio_path)
 
-    prosody_baseline = _compute_prosody_baseline(video_path, metadata, timestamps)
+    warm_up = next((t for t in timestamps if t.stem_name == "warm_up"), None)
+    warm_up_frames = _load_or_compute_cv(video_path, metadata, warm_up, cv_config) if warm_up else None
+    baselines = compute_baselines(warm_up_frames, thresholds)
+    for note in baselines.notes:
+        logger.warning("%s — 해당 신호는 이벤트 없이 진행", note)
 
     results: list[StemCodingResult] = []
     for stem in timestamps:
@@ -125,48 +183,25 @@ def run_coding_stage(video_path: Path, metadata: SessionMetadata) -> list[StemCo
             continue
         logger.info("스템 %s 처리 시작", stem.stem_name)
 
-        stem_frames_dir = storage.session_dir(metadata.session_id) / "frames" / stem.stem_name
-        video_prep.extract_stem_frames(video_path, stem, stem_frames_dir.parent)
-        child_audio_path = video_prep.extract_stem_audio(
-            video_path, stem, storage.session_dir(metadata.session_id) / "audio_segments"
-        )
-
-        facial_frames = run_facial_expression(stem_frames_dir, metadata.subject_type)
-        pose_frames = run_pose_analysis(stem_frames_dir)
-        posture_events = compute_posture_events(
-            pose_frames,
-            torso_tilt_avoidance_deg=cv_thresholds["posture"]["torso_tilt_avoidance_deg"],
-            sudden_movement_threshold=cv_thresholds["posture"]["sudden_movement_threshold"],
-        )
-        doll_frames = run_object_tracking(
-            stem_frames_dir, Path(__file__).resolve().parents[2] / "models" / "doll_yolo"
-        )
-        tracking_lost_min_frames = (
-            cv_thresholds["doll_tracking"]["tracking_lost_min_frames"] or _DEFAULT_TRACKING_LOST_MIN_FRAMES
-        )
-        doll_events = [
-            event
-            for doll_id in {f.doll_id for f in doll_frames}
-            for event in detect_tracking_lost_segments(doll_frames, doll_id, tracking_lost_min_frames)
-        ]
-        prosody_frames = run_voice_prosody(child_audio_path)
-        prosody_events = (
-            compute_zscore_events(
-                prosody_frames, prosody_baseline, cv_thresholds["voice_prosody"]["zscore_notable_threshold"]
-            )
-            if prosody_baseline is not None
-            else []
-        )
+        frames = _load_or_compute_cv(video_path, metadata, stem, cv_config)
+        events = derive_events(frames, thresholds, baselines)
 
         nonverbal_summary = summarize_stem_features(
-            stem.stem_name, facial_frames, posture_events, doll_events, prosody_events
+            stem.stem_name,
+            frames.facial,
+            events.facial,
+            events.posture,
+            events.doll,
+            events.prosody,
+            quality_notes=list(baselines.notes) + events.quality_notes,
+            facial_thresholds=thresholds.facial,
         )
 
         speaker_tagged = tag_speakers(transcript, stem)
         transcript_text = "\n".join(seg.text for seg in speaker_tagged["child"])
 
         verbatim_lines = build_stem_verbatim(
-            stem, speaker_tagged, facial_frames, posture_events, doll_events, prosody_events
+            stem, speaker_tagged, events.facial, events.posture, events.doll, events.prosody
         )
         storage.save_stem_verbatim(
             metadata.session_id,

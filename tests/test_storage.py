@@ -88,6 +88,25 @@ def test_stem_timestamps_round_trip():
     assert loaded[0].stem_name == "spilled_juice"
 
 
+def test_stem_cv_timeline_round_trip():
+    from mssb_coder.schema import CvDollSample, CvFacialSample, StemCvTimeline
+
+    timeline = StemCvTimeline(
+        session_id="s1",
+        stem_name="spilled_juice",
+        fps=2.0,
+        facial=[CvFacialSample(t=0.0, aus={"AU06": 0.8}, head_pitch_deg=5.0, head_yaw_deg=2.0, landmark_confidence=0.9)],
+        doll=[CvDollSample(t=0.0, doll_id="dog_doll", bbox=None)],
+    )
+    assert not storage.cv_timeline_exists("s1", "spilled_juice")
+    storage.save_stem_cv_timeline("s1", "spilled_juice", timeline)
+    assert storage.cv_timeline_exists("s1", "spilled_juice")
+
+    loaded = storage.load_stem_cv_timeline("s1", "spilled_juice")
+    assert loaded.facial[0].aus == {"AU06": 0.8}
+    assert loaded.doll[0].bbox is None
+
+
 def test_session_synthesis_round_trip():
     synthesis = SessionSynthesis(
         session_id="s1",

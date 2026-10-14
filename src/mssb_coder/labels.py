@@ -113,8 +113,10 @@ _DOLL_KIND_KO = {
 }
 
 _PROSODY_KIND_KO = {
-    "pitch_spike": "음높이 급상승",
-    "loudness_spike": "음량 급상승",
+    "pitch_high": "음높이 평소보다 높음",
+    "pitch_low": "음높이 평소보다 낮음",
+    "loudness_high": "목소리 평소보다 큼",
+    "loudness_low": "목소리 평소보다 작음",
 }
 
 

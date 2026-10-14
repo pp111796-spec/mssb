@@ -27,7 +27,7 @@ class ProsodyFrame:
 @dataclass(frozen=True)
 class ProsodyEvent:
     timestamp_s: float
-    kind: str  # "pitch_spike" | "loudness_spike"
+    kind: str  # "pitch_high" | "pitch_low" | "loudness_high" | "loudness_low"
     zscore: float
     note: str = ""
 
@@ -54,25 +54,87 @@ def compute_baseline(warm_up_frames: list[ProsodyFrame]) -> ProsodyBaseline:
     )
 
 
-def compute_zscore_events(
-    frames: list[ProsodyFrame], baseline: ProsodyBaseline, notable_threshold: float | None
+FRAME_STEP_S = 0.01  # openSMILE LLD 프레임 간격(10ms)
+
+
+@dataclass(frozen=True)
+class ProsodyThresholds:
+    pitch_valid_min_hz: float
+    pitch_valid_max_hz: float
+    baseline_min_voiced_frames: int
+    window_s: float
+    window_min_voiced_ratio: float
+    zscore_notable_threshold: float
+
+    @classmethod
+    def from_config(cls, cfg: dict) -> "ProsodyThresholds | None":
+        """cv_thresholds_*.yaml의 voice_prosody 블록. 값이 하나라도 null이면 None — 이벤트를 만들지 않는다."""
+        keys = (
+            "pitch_valid_min_hz", "pitch_valid_max_hz", "baseline_min_voiced_frames",
+            "window_s", "window_min_voiced_ratio", "zscore_notable_threshold",
+        )
+        if any(cfg.get(k) is None for k in keys):
+            return None
+        return cls(**{k: cfg[k] for k in keys})
+
+
+def filter_valid_pitch(frames: list[ProsodyFrame], thresholds: ProsodyThresholds) -> list[ProsodyFrame]:
+    """아동 목소리로 타당한 피치 범위 밖의 프레임은 피치 추적 오류로 보고 버린다."""
+    return [
+        f for f in frames
+        if thresholds.pitch_valid_min_hz <= f.pitch_hz <= thresholds.pitch_valid_max_hz
+    ]
+
+
+def compute_prosody_baseline(
+    warm_up_frames: list[ProsodyFrame], thresholds: ProsodyThresholds
+) -> ProsodyBaseline | None:
+    """워밍업 유성음이 baseline_min_voiced_frames보다 적으면 None — 기준선이 불안정하니 음성 신호를 끈다."""
+    voiced = filter_valid_pitch(warm_up_frames, thresholds)
+    if len(voiced) < max(thresholds.baseline_min_voiced_frames, 2):
+        return None
+    return compute_baseline(voiced)
+
+
+def compute_prosody_events(
+    frames: list[ProsodyFrame], baseline: ProsodyBaseline | None, thresholds: ProsodyThresholds | None
 ) -> list[ProsodyEvent]:
-    """notable_threshold가 None이면(cv_thresholds_*.yaml 미확정, 문제점.md 3번) 조용히 빈 리스트를
-    반환한다 — posture_metrics.compute_posture_events와 같은 원칙(값을 지어내지 않음)."""
-    if notable_threshold is None:
+    """창(window_s) 단위 중앙값 z-score로 판정한다 — 10ms 프레임마다 이벤트를 만들면 폭주하기 때문.
+
+    기준선이나 임계값이 없으면(cv_thresholds_*.yaml 미확정, 문제점.md 3번) 조용히 빈 리스트를
+    반환한다 — posture_metrics.compute_posture_events와 같은 원칙(값을 지어내지 않음).
+    kind에 방향(높음/낮음)을 담는다: pitch_high/pitch_low/loudness_high/loudness_low.
+    """
+    if baseline is None or thresholds is None:
         return []
+
+    windows: dict[int, list[ProsodyFrame]] = {}
+    for frame in filter_valid_pitch(frames, thresholds):
+        windows.setdefault(int(frame.timestamp_s // thresholds.window_s), []).append(frame)
+
+    min_frames = thresholds.window_min_voiced_ratio * thresholds.window_s / FRAME_STEP_S
     events: list[ProsodyEvent] = []
-    for frame in frames:
-        pitch_z = (frame.pitch_hz - baseline.pitch_mean) / baseline.pitch_stdev
-        if abs(pitch_z) >= notable_threshold:
-            events.append(
-                ProsodyEvent(timestamp_s=frame.timestamp_s, kind="pitch_spike", zscore=pitch_z)
-            )
-        loudness_z = (frame.loudness - baseline.loudness_mean) / baseline.loudness_stdev
-        if abs(loudness_z) >= notable_threshold:
-            events.append(
-                ProsodyEvent(timestamp_s=frame.timestamp_s, kind="loudness_spike", zscore=loudness_z)
-            )
+    for index in sorted(windows):
+        window = windows[index]
+        if len(window) < min_frames:
+            continue
+        start_s = index * thresholds.window_s
+        pitch_z = statistics.median(
+            (f.pitch_hz - baseline.pitch_mean) / baseline.pitch_stdev for f in window
+        )
+        loudness_z = statistics.median(
+            (f.loudness - baseline.loudness_mean) / baseline.loudness_stdev for f in window
+        )
+        for name, z in (("pitch", pitch_z), ("loudness", loudness_z)):
+            if abs(z) >= thresholds.zscore_notable_threshold:
+                events.append(
+                    ProsodyEvent(
+                        timestamp_s=start_s,
+                        kind=f"{name}_{'high' if z > 0 else 'low'}",
+                        zscore=z,
+                        note=f"{thresholds.window_s:g}초 창 유성음 {len(window)}프레임 중앙값",
+                    )
+                )
     return events
 
 

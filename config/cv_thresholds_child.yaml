@@ -2,29 +2,58 @@
 #
 # 이 파일은 cv_thresholds_adult.yaml과 완전히 독립된 별도 파일이다 — 성인 값이 아동 값의
 # 초기값이 되거나 영향을 주지 않는다 (계획 "설정 프로파일 분리" 섹션 참고).
-# 아동 실측 영상이 아직 없어 지금은 빈 틀이다. 마일스톤 B(실제 아동 영상)에서 채울 것.
 #
-# TODO(문제점.md 6번, 미해결): 3~8세를 한 구간으로 뭉뚱그린 상태 — 나이 구간별(예:
-# 3~4세/5~6세/7~8세) 세분화가 이상적이지만, 실측 데이터 없이는 구간별 값을 채울 근거가 없다.
+# 값의 근거 등급 (공개 문헌·라이브러리 소스 조사 결과, 2026-10-14):
+#   [A] 문헌/라이브러리에 근거가 있는 값
+#   [B] 근거는 있으나 이 프로젝트 상황에 맞춰 조정한 값
+#   [C] 문헌이 없어 공학적 기본값으로 시작한 값 — 실제 아동 영상 분포를 보고 반드시 조정할 것
+#       (scripts/calibrate_cv.py로 분포 확인 → 후보 프레임 육안 확인 → 이 파일 수정)
+# 값을 null로 두면 해당 신호는 이벤트를 만들지 않는다 (값을 지어내지 않는 원칙).
+#
+# TODO(문제점.md 6번, 미해결): 3~8세를 한 구간으로 뭉뚱그린 상태 — 나이 구간별 세분화가 이상적이나
+# 실측 데이터가 모이기 전에는 구간별 값을 채울 근거가 없다. 대신 자세·음성은 워밍업 대비 상대값을
+# 써서 아동 체격·활동성 차이를 흡수한다.
 
 posture:
-  torso_tilt_avoidance_deg: null   # TODO
-  sudden_movement_threshold: null  # TODO
+  landmark_visibility_min: 0.5        # [A] 미취학 MediaPipe 연구가 신뢰도 0.5 미만 프레임을 무효 처리
+  max_missing_ratio: 0.20             # [A] 같은 연구: 결측 20% 초과 세션 제외 → 해당 스템 자세 신호 사용 불가
+  baseline_min_frames: 10             # [C] 워밍업에서 기준선을 계산하는 데 필요한 최소 사용 가능 프레임 수
+  noise_floor_torso_ratio: 0.10       # [B] 몸통 길이 대비 10% 미만 변위는 잡음으로 보고 0 취급 (영아 포즈 추정 허용오차 5~10%)
+  sudden_movement_min_torso_ratio: 0.15  # [C] 프레임 간 이동량이 몸통 길이의 15% 이상
+  sudden_movement_zscore: 2.0         # [C] 워밍업 대비 z-score (상위 약 2.5%의 통상 이상치 기준)
+  torso_tilt_min_delta_deg: 10.0      # [C] 워밍업 평균보다 10도 이상 더 기울어야 함 (절대 각도는 쓰지 않음)
+  torso_tilt_zscore: 2.0              # [C]
+  min_consecutive_frames: 2           # [C] 틸트는 2프레임(2fps에서 1초) 연속일 때만 이벤트
 
 facial_au:
-  # subject_type=child일 때 facial_expression.py가 PyAFAR(Infant AFAR)로 전환 — 단,
-  # OpenFace와 AU 세트/스케일이 다를 수 있음 (문제점.md 5번, 미해결 — 어댑터 계층 필요).
+  # Py-Feat xgb AU 모델은 0~5 강도가 아니라 보정된 확률(0~1)을 출력한다.
+  presence_probability_min: 0.5       # [A] Infant AFAR와 같은 기준
+  min_consecutive_frames: 2           # [C] 같은 AU가 2프레임(1초) 이상 유지될 때만 이벤트
+  # 채점 근거로 쓸 AU — 자폐 아동 대상 평가(Hugging Rain Man)에서 Py-Feat F1 0.49~0.69, ICC 약 0.4
+  reliable_aus: ["AU06", "AU12", "AU25", "AU26"]      # [A]
+  # 참고용 AU — F1 0.40~0.45. 이벤트는 만들되 "참고용"으로 표시
+  reference_aus: ["AU01", "AU04", "AU07", "AU14"]     # [A]
+  # 그 외 AU(AU02/05/09/10/15/17/20/23/24/28/43)는 F1 0.28 이하 또는 ICC≈0이라 이벤트로 쓰지 않는다.
+  head_pose_caution_deg: 20.0         # [B] 머리 방향이 15~20도를 넘으면 AU 성능 급락 (Toser 2016) → "주의" 표시
+  head_pose_exclude_deg: 35.0         # [B] 이 이상이면 해당 프레임 표정 신호 제외
+  landmark_confidence_min: 0.5        # [A] Py-Feat 얼굴 검출 기본 임계값
+  max_low_confidence_ratio: 0.50      # [C] 저신뢰 프레임이 이 비율을 넘으면 그 스템 표정 신호는 사용 불가
   intensity_thresholds: {}
-  low_confidence_flag:
-    enabled: true
-    note: "handoff_timestamp_s 이후 구간에서 특히 주의 깊게 확인할 것 (계획 '표정 분석' 섹션)"
 
 doll_tracking:
-  proximity_seeking_distance_px: null  # TODO
-  throw_movement_threshold: null       # TODO
-  tracking_lost_min_frames: null       # TODO
+  detection_conf_min: 0.25            # [A] Ultralytics 기본값 — 라벨 데이터로 검증 후 0.4~0.5 검토
+  class_min_seen_frames: 2            # [C] 스템 안에서 이 횟수 이상 탐지된 인형만 '이 스템에 등장한 인형'으로 본다
+  tracking_lost_min_frames: 3         # [C] 연속 3프레임(2fps에서 1.5초) 탐지 실패
+  proximity_center_distance_width_ratio: 1.5   # [C] 두 인형 중심 거리가 큰 상자 너비의 1.5배 이내 (또는 상자 겹침)
+  proximity_min_consecutive_frames: 2          # [C]
+  sudden_movement_diag_ratio: 0.25    # [C] 인형 중심이 한 프레임 간격에 프레임 대각선의 25% 이상 이동
 
 voice_prosody:
   normalization: "within_session_relative_zscore"
   baseline_segment: "warm_up"
-  zscore_notable_threshold: null  # TODO
+  pitch_valid_min_hz: 150.0           # [B] 만 5세 평균 약 263Hz(범위 220~306) — 이 범위 밖은 피치 추적 오류로 제외
+  pitch_valid_max_hz: 500.0           # [B]
+  baseline_min_voiced_frames: 300     # [C] 워밍업 유성음 약 3초(10ms 프레임) 이상일 때만 기준선 사용
+  window_s: 1.0                       # [C] 프레임(10ms)당 이벤트 폭주를 막기 위한 집계 창
+  window_min_voiced_ratio: 0.3        # [C] 창 안에서 유성음 프레임이 이 비율 이상일 때만 판정
+  zscore_notable_threshold: 2.0       # [C] 창 중앙값 z-score의 절댓값
