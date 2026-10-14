@@ -1,0 +1,3897 @@
+{
+  "bundle_format_version": 1,
+  "synthesis": {
+    "session_id": "adult_demo_01",
+    "stems_included": [
+      "big_rock",
+      "candy_theft",
+      "departure",
+      "hot_gravy",
+      "lost_dog",
+      "mothers_headache",
+      "parental_quarrel",
+      "reunion",
+      "spilled_juice",
+      "three_is_too_many"
+    ],
+    "stems_missing_or_partial": [],
+    "stems_administered_count": 10,
+    "recurring_patterns": [
+      {
+        "category": "empathy_warmth",
+        "observed_in_stems": [
+          "big_rock",
+          "candy_theft",
+          "departure",
+          "hot_gravy",
+          "lost_dog",
+          "mothers_headache",
+          "parental_quarrel",
+          "reunion",
+          "spilled_juice",
+          "three_is_too_many"
+        ],
+        "stems_administered_count_for_pattern": 10,
+        "pattern_description": "유효 스템 10개 전부(10/10)에서 온정·친사회 관련 코드가 하나 이상 존재로 채점되었다. 가장 일관된 하위 양상은 '공감/도움'(10개 중 8개: big_rock, candy_theft, departure, hot_gravy, lost_dog, mothers_headache, parental_quarrel, spilled_juice, three_is_too_many — reunion 제외)과 '함께하기'(reunion·three_is_too_many 포함 다수)로, 곤경이 생기면 양육자나 가족에게 알리고 함께 대처하는 형태로 반복된다. 반면 '명시적 애정표현'은 10개 중 2개(departure, mothers_headache)에서만 존재로, 돌봄이 포옹·사랑 표현보다 '조치·행동 중심'으로 서술되는 경향이 전반에 걸쳐 반복된다(각 스템 채점자가 54개월 수준에서 흔한 양상으로 기록). '예의바름'은 candy_theft·mothers_headache·parental_quarrel·reunion·spilled_juice·three_is_too_many 등 6개에서 사과·존댓말·감사 인사 형태로 나타난다. 패턴 층위 서술이며 개인 특성 단정이 아니다.",
+        "evidence": [
+          {
+            "stem_name": "mothers_headache",
+            "timestamp_s": 0.0,
+            "note": "온정 5개 하위항목 모두 존재(공유·공감/도움·함께하기·애정표현·예의) — 세션 내 최고 밀도"
+          },
+          {
+            "stem_name": "departure",
+            "timestamp_s": 0.0,
+            "note": "울고 있는 동생에게 '괜찮아, 누나가 있잖아'라며 위로자 역할을 자임; 영상통화로 정서적 연결 유지(애정표현)"
+          },
+          {
+            "stem_name": "lost_dog",
+            "timestamp_s": 0.0,
+            "note": "곤경을 혼자 감당하지 않고 양육자에게 알리고 손잡고 함께 찾으러 나감"
+          },
+          {
+            "stem_name": "three_is_too_many",
+            "timestamp_s": 0.0,
+            "note": "달리기 못하는 동생을 위해 '깍두기' 규칙 조정 제안 — 배제 딜레마를 포함적으로 해결"
+          },
+          {
+            "stem_name": "reunion",
+            "timestamp_s": 0.0,
+            "note": "온정 코드는 존재하나 '공감/도움'은 부재; 애정표현 대신 선물·차량 등 사물 중심 서술"
+          }
+        ]
+      },
+      {
+        "category": "emotional_integration",
+        "observed_in_stems": [
+          "big_rock",
+          "candy_theft",
+          "departure",
+          "hot_gravy",
+          "lost_dog",
+          "mothers_headache",
+          "parental_quarrel",
+          "reunion",
+          "spilled_juice",
+          "three_is_too_many"
+        ],
+        "stems_administered_count_for_pattern": 10,
+        "pattern_description": "유효 스템 10개 전부(10/10)에서 정서통합 관련 코드가 3개씩 존재로 채점되었고, '서사 일관성'과 '맥락 적합 정서'는 10/10에서 확인된다. '긍정적 해결'은 10개 중 9개에서 존재이며, lost_dog 1개만 예외로 부정적/미해결 결말이 채점되었다(단, 해당 스템은 간이대본상 '사라짐' 파트만 고정되고 재회 질문이 사용되지 않은 절차적 조건이 함께 기록됨 — 아동 특성 단독 근거로 읽지 않는다). 또한 10개 전부가 프롬프트 0회의 spontaneous 완료로, 핵심 딜레마를 회피하지 않고 직면한 뒤 복구·치료·사과·협상 등 구체적 대처를 거쳐 종결하는 흐름이 반복된다.",
+        "evidence": [
+          {
+            "stem_name": "mothers_headache",
+            "timestamp_s": 0.0,
+            "note": "딜레마 양쪽(친구와 TV vs 엄마 두통)을 모두 인정하고 욕구를 조정해 해결하는 통합적 구성"
+          },
+          {
+            "stem_name": "parental_quarrel",
+            "timestamp_s": 0.0,
+            "note": "두려움→걱정→안도의 정서 명명이 사건 맥락과 일치, 두 에피소드를 자발적으로 완결"
+          },
+          {
+            "stem_name": "hot_gravy",
+            "timestamp_s": 0.0,
+            "note": "손상 사건 인정→치료·회복→가족 식사로 완결; 고통→안도→만족의 정서 이동"
+          },
+          {
+            "stem_name": "lost_dog",
+            "timestamp_s": 0.0,
+            "note": "유일하게 긍정적 해결 부재·부정적 해결 존재; 재회 질문 미사용이라는 절차 조건 병기 필요"
+          },
+          {
+            "stem_name": "reunion",
+            "timestamp_s": 0.0,
+            "note": "일관성·긍정 해결은 확인되나 정서 명명은 행위·사물 중심으로 제한적"
+          }
+        ]
+      },
+      {
+        "category": "avoidant_withdrawal",
+        "observed_in_stems": [
+          "big_rock",
+          "candy_theft",
+          "departure",
+          "hot_gravy",
+          "lost_dog",
+          "mothers_headache",
+          "parental_quarrel",
+          "reunion",
+          "spilled_juice",
+          "three_is_too_many"
+        ],
+        "stems_administered_count_for_pattern": 10,
+        "pattern_description": "유효 스템 10개 전부(10/10)에서 '반복' 항목만은 존재로 채점되었다. 다만 회피/위축 범주의 핵심 항목(자기고립, 도움의 수동적 거부, 갑작스런 수면, 가족파괴)은 10/10 전부에서 부재이며, '부인'은 10개 중 1개(parental_quarrel, 그것도 부모 인물의 대사이고 아동은 자신의 정서를 유지)에서만 존재다. '주제이탈'은 10개 중 5개(big_rock, mothers_headache, parental_quarrel, reunion, spilled_juice)에서 확인되며 주로 교구·소품(TV, 검사 교구, 차량·선물)으로의 화제 이동 형태다. 복수 스템 채점자가 이 연령(54개월)의 어구 반복·교구 호기심을 흔한 서술 특성으로 함께 기록했으므로, 이 패턴은 '회피 성향'이 아니라 '반복적 어구 사용과 소품으로의 주의 이동이 여러 이야기에 걸쳐 관찰된다'는 기술 수준으로만 읽는다.",
+        "evidence": [
+          {
+            "stem_name": "lost_dog",
+            "timestamp_s": 0.0,
+            "note": "'뽀빈아 안 와요?', '없어졌어', '기다리고 있어요'가 각각 즉시 중복되며 서사가 같은 상태에 머묾"
+          },
+          {
+            "stem_name": "parental_quarrel",
+            "timestamp_s": 0.0,
+            "note": "'무서워요'·'계속' 반복 + 부모 인물의 '싸우는 거 아니야' 부인 2회 + '이거 안 해' 틀 밖 발화"
+          },
+          {
+            "stem_name": "spilled_juice",
+            "timestamp_s": 0.0,
+            "note": "'엄마가'·'치워주고' 반복, '새로운 의미가 됐어요' 및 검사 교구 언급으로 주제이탈"
+          },
+          {
+            "stem_name": "mothers_headache",
+            "timestamp_s": 0.0,
+            "note": "결말 어구 반복 + 소품(TV)으로 화제 이동; 핵심 회피 항목은 전부 부재"
+          },
+          {
+            "stem_name": "three_is_too_many",
+            "timestamp_s": 0.0,
+            "note": "놀이 이름·'깍두기' 규칙 설명 반복 — 즐기며 되풀이하는 형태로 기록됨"
+          }
+        ]
+      },
+      {
+        "category": "performance_anxiety",
+        "observed_in_stems": [
+          "big_rock",
+          "candy_theft",
+          "departure",
+          "hot_gravy",
+          "lost_dog",
+          "parental_quarrel"
+        ],
+        "stems_administered_count_for_pattern": 10,
+        "pattern_description": "유효 스템 10개 중 6개(big_rock, candy_theft, departure, hot_gravy, lost_dog, parental_quarrel)에서 '걱정(정서)'이 존재로 채점되었다. 다만 6개 모두에서 해당 걱정은 스템이 제시한 위험·상실·분리·발각 상황에 대응하는 이야기 내용 수준의 정서 표현이며, 나머지 4개(mothers_headache, reunion, spilled_juice, three_is_too_many)는 위험 요소가 적은 스템으로 걱정 정서도 부재였다. 즉 걱정의 출현이 스템의 주제와 맞물려 분포한다. 검사 수행 자체에 대한 '불안행동'은 10개 중 2개(candy_theft, parental_quarrel)에서만 존재이고, '검사자 회피'는 10/10 전부에서 부재다. 오히려 여러 스템에서 검사자에게 먼저 말을 걸거나 더 하고 싶다고 표현하는 접근적 태도가 기록되었다.",
+        "evidence": [
+          {
+            "stem_name": "parental_quarrel",
+            "timestamp_s": 0.0,
+            "note": "'무서워요' 2회·'걱정하고 있어요' + '이거 안 해'라는 순간적 과제 중단 발화와 긴장 계열 AU"
+          },
+          {
+            "stem_name": "candy_theft",
+            "timestamp_s": 0.0,
+            "note": "도입부 끊기는 발화·자기수정과 AU23/AU24, AU04+AU20 긴장 신호; 동시에 남은 과제 수를 묻고 더 하고 싶다고 말함"
+          },
+          {
+            "stem_name": "lost_dog",
+            "timestamp_s": 0.0,
+            "note": "'큰일이에요', '어떡해', '놀랬어요' — 상실 내레이션과 겹친 AU04는 수행불안 근거로 채택되지 않음"
+          },
+          {
+            "stem_name": "departure",
+            "timestamp_s": 0.0,
+            "note": "'보고 싶다', '언제 와요?' — 분리 상황에 결부된 걱정, 연령 기대 범위로 기록됨"
+          },
+          {
+            "stem_name": "three_is_too_many",
+            "timestamp_s": 0.0,
+            "note": "걱정·회피 근거 없음; 검사자에게 먼저 말을 거는 접근적 태도"
+          }
+        ]
+      },
+      {
+        "category": "dysregulated_aggression",
+        "observed_in_stems": [
+          "candy_theft",
+          "parental_quarrel",
+          "spilled_juice"
+        ],
+        "stems_administered_count_for_pattern": 10,
+        "pattern_description": "유효 스템 10개 중 3개(candy_theft, parental_quarrel, spilled_juice)에서만 '공격성' 항목이 존재로 채점되었고, 나머지 7개(big_rock, departure, hot_gravy, lost_dog, mothers_headache, reunion, three_is_too_many)는 5개 하위항목 전부 부재였다. 더 중요한 것은 3개 모두에서 '공격 상승', '대인 상해', '비전형적 반응', '성적 내용'이 부재이고, 공격 요소가 곧바로 훈육 설명·부모 개입·사과·위로로 수습되는 동일한 형태를 보인다는 점이다(candy_theft=부모의 훈육, spilled_juice=형제 갈등 후 부모 개입과 사과, parental_quarrel=엄마의 질책 직후 아빠의 위로). 따라서 이 범주는 '반복되는 공격 패턴'이라기보다 '일부 스템에서 갈등 요소가 등장하되 상승 없이 해소되는 양상'으로 기술된다. 다만 parental_quarrel의 해당 구간은 전사 품질이 낮아 원자료 확인이 필요하다고 채점에 기록되어 있다.",
+        "evidence": [
+          {
+            "stem_name": "parental_quarrel",
+            "timestamp_s": 0.0,
+            "note": "엄마 인물이 아동의 팔을 떨쳐내며 질책하는 장면 1회; 아빠의 위로로 완화, 상승·상해 부재. 전사 품질 낮음 — 원자료 확인 권장"
+          },
+          {
+            "stem_name": "spilled_juice",
+            "timestamp_s": 0.0,
+            "note": "형제간 놀림·싸움 도입, 부모 개입과 사과로 수습; 상승·상해 없음"
+          },
+          {
+            "stem_name": "candy_theft",
+            "timestamp_s": 0.0,
+            "note": "'혼내켜요/화를 내요' — 규칙 설명과 아동의 수용으로 즉시 수습되는 훈육 맥락"
+          },
+          {
+            "stem_name": "three_is_too_many",
+            "timestamp_s": 0.0,
+            "note": "'싫어', '너 달리기도 못하잖아'는 스템이 제시한 배제 딜레마의 구성 요소로 언어적 갈등 수준에 머묾 — 공격성 부재로 채점"
+          }
+        ]
+      }
+    ],
+    "single_story_notable_signals": [
+      {
+        "stem_name": "lost_dog",
+        "category": "emotional_integration",
+        "note": "10개 스템 중 유일하게 긍정적 해결이 부재하고 '정서적 비일관성/부정적 해결' 항목이 존재로 채점된 단발 신호(1/10). 단, 해당 스템의 간이대본에는 '사라짐' 파트만 고정되어 있고 재회(2부) 질문이 본 세션에서 사용되지 않았으므로(프롬프트 0회), 미해결 결말은 절차적 조건과 함께 읽어야 하며 패턴으로 확대 해석하지 않는다."
+      },
+      {
+        "stem_name": "mothers_headache",
+        "category": "empathy_warmth",
+        "note": "온정 5개 하위항목이 모두 존재로 채점된 유일한 스템(1/10). 공유·공감/도움·함께하기·애정표현·예의가 한 이야기 안에 모두 등장했고, 딜레마 양쪽을 인정하는 구성도 함께 나타났다. 단발성 고밀도 신호로 기록한다."
+      },
+      {
+        "stem_name": "parental_quarrel",
+        "category": "avoidant_withdrawal",
+        "note": "'부인' 항목이 존재로 채점된 유일한 스템(1/10). 부모 인물이 갈등을 '싸우는 거 아니야'라고 부인하는 주제가 두 차례 나오나, 아동 자신은 '하지만 너무 무서워요'로 정서를 유지했다는 점이 함께 기록되어 있다."
+      },
+      {
+        "stem_name": "reunion",
+        "category": "empathy_warmth",
+        "note": "온정 코드가 존재하는 10개 스템 중 유일하게 '공감/도움'이 부재한 스템(1/10). 재회의 정서보다 차량·선물·음식 등 사물 쪽으로 초점이 이동하는 서술 경향이 함께 채점에 기록됨."
+      },
+      {
+        "stem_name": "parental_quarrel",
+        "category": "performance_anxiety",
+        "note": "'이거 안 해'라는 순간적 과제 중단 발화가 나온 유일한 스템(1/10). 직후에도 검사자와의 상호작용은 협조적으로 유지되었고 검사자 회피는 부재로 채점되었다."
+      }
+    ],
+    "not_included_by_design": "이 요약은 다른 자료(부모 보고·행동관찰 등)와의 통합이나 임상적 진단·위험 분류를 포함하지 않는다",
+    "interpretation_layer": "2_cross_story_pattern",
+    "based_on": "ai_draft_stem_results",
+    "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+    "model_version": "claude-opus-5",
+    "generated_at": "2026-10-02T00:46:23.109920+00:00"
+  },
+  "stem_results": [
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "big_rock",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "물건·활동을 나누는 장면 없음. 가족이 함께 이동하지만 '공유' 행위(음식/장난감/차례 나눔)는 서술되지 않음."
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'엄마 왔다가 놀라서 뛰어 왔어요. 그래서 이렇게 봐요' — 다친 아이에게 양육자가 즉시 다가와 살펴보는 돌봄 반응."
+                },
+                {
+                  "timestamp_s": 42.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠랑 동생이랑 이렇게 병원에 갔어요. 그래서 머리를 꿰맸어요' — 부상에 대한 실제적 도움(치료) 제공."
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 42.0,
+                  "source": "transcript",
+                  "note": "가족 구성원(엄마·아빠·동생)이 모두 함께 병원에 동행."
+                },
+                {
+                  "timestamp_s": 96.0,
+                  "source": "transcript",
+                  "note": "'동생과 함께 집에 돌아왔어요' — 함께 귀가하는 마무리."
+                },
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "'이제는 집에서만 놀기로 했어요' — 가족 단위의 공동 결정/함께 지내기."
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "안아주기·위로의 말·'사랑해' 등 명시적 애정표현 발화나 인형 접촉 서술 없음. 돌봄은 도구적(병원 이동, 훈육) 수준에 머무름."
+                }
+              ]
+            },
+            "politeness": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "인물 간 감사·사과·부탁 등 예의 표현 없음. 검사 종료 시 '우리 이제 가지마'는 요구 형태."
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "부상 직후 엄마가 달려와 살피고 가족이 함께 병원에 가는 도움 반응, 그리고 동생과 함께 귀가·가족 공동 결정으로 함께하기가 명확히 존재한다. 반면 신체적 애정표현, 공유, 예의 표현은 서사에 등장하지 않아 부재로 코딩했다. 54개월 수준에서 돌봄이 '조치 중심'으로 서술되는 것은 흔한 양상이다."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "자발적으로(프롬프트 0회) 이야기를 시작하고 끝까지 주도적으로 전개. 중단·머뭇거림·과제 회피 행동 없음."
+                },
+                {
+                  "timestamp_s": 114.0,
+                  "source": "facial_au",
+                  "note": "AU04(눈썹 내림) 상승 구간이 반복되나 AU12/AU06 동반 및 이야기 진행 유지 — 과제 집중/몰입으로 보이며 불안행동의 독립 지표로 보기 어려움."
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "'조심해야 돼' — 시작부터 위험에 대한 경계/염려 발화."
+                },
+                {
+                  "timestamp_s": 34.0,
+                  "source": "transcript",
+                  "note": "'큰일 났어요. 병원에 가야 돼요' — 사건의 심각성에 대한 걱정 정서."
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "facial_au",
+                  "note": "AU04 0.9 + AU15 0.9 동시 상승 — 부상·훈육 서술 구간의 염려/침울 정서와 일치."
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 10.0,
+                  "source": "transcript",
+                  "note": "'올라가야 돼요?'로 검사자에게 되물으며 상호작용 유지."
+                },
+                {
+                  "timestamp_s": 124.0,
+                  "source": "transcript",
+                  "note": "'벌써 끝나요?', '우리 이제 가지마, 인형놀이를 할 거야' — 검사자와의 접촉을 오히려 연장하려는 접근적 태도."
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "이야기 내용 수준에서 위험·부상에 대한 걱정 정서가 반복적으로 표현되었으나(‘조심해야 돼’, ‘큰일 났어요’), 이는 big_rock 스템의 위험 상황에 맞는 반응이기도 하다. 검사 수행 자체에 대한 불안행동이나 검사자 회피는 관찰되지 않았고, 오히려 종료를 아쉬워하는 접근적 태도를 보였다."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 96.0,
+                  "source": "transcript",
+                  "note": "주인공이 혼자 떨어지거나 숨는 장면 없음. 전 과정에서 가족과 동반."
+                },
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "'집에서만 놀기로 했어요'는 고립이 아니라 안전을 위한 가족 합의로 서술됨."
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "'올라가야 돼요?'를 연달아 두 번 반복."
+                },
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'머리에서 피가 나요' 및 '머리를 꿰맸어요'가 세 차례 반복 서술됨."
+                },
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'집에 또, 오, 물컬 빠졌어요' — 추락 장면이 한 번 더 재등장하며 반복 구조를 보임."
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 24.0,
+                  "source": "transcript",
+                  "note": "'빠져요. 다쳤어요' — 스템의 딜레마(부상)를 부인하지 않고 직접 다룸."
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 42.0,
+                  "source": "transcript",
+                  "note": "제공된 도움(병원 이송, 치료)을 수용하고 이후 '약속했어요'로 훈육도 받아들임."
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "인물이 잠드는 장면 없음."
+                },
+                {
+                  "timestamp_s": 92.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈 감김) 값이 전반적으로 높게 유지되나 발화가 끊김 없이 이어져 졸음/수면 행동 근거로 쓰지 않음."
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'집에 또, 오, 물컬 빠졌어요' — 마무리로 향하던 흐름에서 갑작스러운 삽화적 이탈."
+                },
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "'끝났어? 우리 이제 가지마, 인형놀이를 할 거야' — 이야기 종료 후 과제 밖 화제로 전환."
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 42.0,
+                  "source": "transcript",
+                  "note": "가족이 해체·부재·무력화되지 않고 온전히 기능하며 함께 대처."
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "핵심 사건(부상)을 회피하지 않고 정면으로 다루었으므로 부인·수동적 거부·가족파괴는 부재다. 다만 부상 장면과 '머리 꿰맴' 언급이 여러 차례 반복되고, 마무리 직전 추가 추락 삽화 및 과제 외 화제로의 전환이 있어 반복과 주제이탈은 존재로 코딩했다. 54개월 연령에서 인상적 장면의 반복 서술과 놀이 지속 요구는 흔한 범위에 있다."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 54.0,
+                  "source": "transcript",
+                  "note": "'엄마가 화를 내요. 조심하라고 화를 내요' — 안전 훈육 맥락의 화이며 공격 행위나 위협은 없음."
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 66.0,
+                  "source": "transcript",
+                  "note": "엄마의 화가 '약속하라고 해야 해요'로 곧바로 규칙 협상으로 전환되어 강도가 상승하지 않음."
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 24.0,
+                  "source": "transcript",
+                  "note": "머리 부상은 놀다가 미끄러져 생긴 사고(스템 고유 사건)이며 타인에 의한 가해가 아님."
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'물컬 빠졌어요'의 불명료한 삽화가 있으나 기괴하거나 스템 맥락을 벗어난 비전형 내용은 아님."
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "성적 내용·행동 서술이나 인형 조작 관련 언급 전무."
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "부상은 사고로 귀인되었고 양육자의 '화'는 안전 규칙 설정으로 수렴되어 공격성 지표는 어느 항목에서도 확인되지 않았다."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 24.0,
+                  "source": "transcript",
+                  "note": "올라감 → 추락 → 부상 → 병원 → 봉합 → 훈육/약속 → 귀가로 시간·인과 순서가 일관되게 이어짐."
+                },
+                {
+                  "timestamp_s": 96.0,
+                  "source": "transcript",
+                  "note": "'병원 갔다가 동생과 함께 집에 돌아왔어요' — 사건이 열린 채 남지 않고 닫힘."
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 48.0,
+                  "source": "transcript",
+                  "note": "'머리를 꿰맸어요' — 부상이 치료로 해결됨."
+                },
+                {
+                  "timestamp_s": 78.0,
+                  "source": "transcript",
+                  "note": "'다음부터는 이런 데 올라가지 않는다고 약속했어요' — 재발 방지 규칙 수립(숙달형 해결)."
+                },
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "가족과 안전하게 귀가하고 향후 계획까지 정하며 마무리."
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 34.0,
+                  "source": "transcript",
+                  "note": "부상 시 '큰일 났어요'로 놀람·긴박감, 엄마는 놀라 뛰어옴 — 사건에 부합하는 정서."
+                },
+                {
+                  "timestamp_s": 84.0,
+                  "source": "transcript",
+                  "note": "'머리를 꿰매가지고 머리가 아파요' — 처치 후 통증을 인정하는 현실적 정서 표현."
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "facial_au",
+                  "note": "부상·훈육 서술 구간에서 AU04·AU15 상승(침울/염려 방향)으로 내용과 표정이 일치."
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 78.0,
+                  "source": "transcript",
+                  "note": "이야기가 치료·약속·안전한 귀가로 닫혀 부정적 결말이 아님."
+                },
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "중간의 '또 빠졌어요' 삽화는 곧 귀가 서사로 통합되어 정서적 비일관성으로 보기 어려움."
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "사건의 인과적 흐름이 일관되고, 치료·약속·안전한 귀가라는 숙달형 긍정 해결에 도달했으며, 부상 시 긴박감과 처치 후 통증 언급 등 맥락에 맞는 정서가 표현되었다. 반대방향 항목(비일관성·부정적 해결)은 부재다."
+        }
+      },
+      "story_specific_notes_applied": "본 스템(big_rock)에서는 숙달형(스스로/규칙 수립으로 위험을 관리)과 고통-위로형(부상 후 양육자 위로·치료) 모두 정답으로 간주된다는 주의사항을 적용했다. 본 반응은 두 경로가 결합된 형태(추락·부상 인정 → 가족의 즉각적 도움과 치료 → 안전 규칙 약속)로, 어느 쪽도 오답 처리하지 않았다. 특히 '엄마가 화를 내요'는 이 스템에서 안전 훈육 맥락으로 읽어 공격성 범주가 아닌 해결 과정의 일부로 코딩했고, '집에서만 놀기로 했어요'는 자기고립이 아닌 가족 합의에 의한 안전 조치로 판단했다. 54개월 연령을 고려해, 인상적 장면(부상·봉합)의 반복 서술과 놀이 지속 요구는 발달적으로 흔한 양상으로 보되 항목 정의상 '반복'·'주제이탈'은 존재로만 표기하고 그 이상의 의미 부여는 하지 않았다. 완료 방식이 spontaneous(프롬프트 0회)라는 점은 수행불안 항목 판단 시 참고했다. 해석은 이야기 전반의 패턴 수준(층위 2)까지만 유지했다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T10:59:10.976859+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "candy_theft",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": false,
+              "evidence": []
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'엄마도 사과를 해요' — 엄마가 아이를 대신해 가게 주인에게 함께 사과하며 아이의 곤경을 돕는 조력 행동"
+                },
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'이 사탕은 아빠가 와서 결제를 하겠다고 해줘요' — 부모 인물이 문제 해결을 도와주는 장면"
+                },
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "'가게 아저씨도 다음부터 그러지 마 이러면서 갔어요' — 피해자 인물의 관용적/용서적 반응"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "엄마가 아이와 나란히 함께 사과하는 장면(아이의 사과 + 엄마의 사과)이 동반 행동으로 묘사됨"
+                },
+                {
+                  "timestamp_s": 95.0,
+                  "source": "transcript",
+                  "note": "'엄마 아빠가 혼내켜요' — 부모 두 인물이 함께 등장해 아이를 둘러싸고 상황을 마무리함"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": []
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 32.0,
+                  "source": "transcript",
+                  "note": "'죄송합니다' — 인형 인물이 존댓말로 사과함"
+                },
+                {
+                  "timestamp_s": 55.0,
+                  "source": "transcript",
+                  "note": "'가게 사장님께 죄송하다고 해. 죄송합니다.' — 어른에게 예의를 갖춘 호칭과 사과 표현"
+                },
+                {
+                  "timestamp_s": 105.0,
+                  "source": "transcript",
+                  "note": "'죄송합니다 하고 알겠습니다' — 훈육에 대한 공손한 수용 반응"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "이 스템(사탕 훔치기)에서 온화 관련 코드는 주로 '잘못 이후의 회복적 상호작용'으로 나타난다. 아동은 사과(예의바름), 부모의 대리 사과·아빠의 대금 지불·가게 주인의 관대한 반응(공감/도움), 부모가 함께 아이 곁에 있는 장면(함께하기)을 자발적으로 구성했다. 반면 물건/음식을 나누는 장면(공유)이나 안아주기·사랑 표현 같은 명시적 애정표현(애정표현)은 전사문과 비언어 신호 어디에서도 관찰되지 않아 부재로 코딩했다."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마. / 엄마가. / 엄마가 이거 받았어요.' — 이야기 시작부 머뭇거리는 반복적 자기수정, 도입의 지연"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU23=0.7, AU24=0.6 (입술 조임·압착)이 시작 구간에 높게 관찰됨 — 긴장 신호로 흔히 해석되는 패턴"
+                },
+                {
+                  "timestamp_s": 22.0,
+                  "source": "facial_au",
+                  "note": "AU04=0.9(눈썹 내림), AU20=1.0(입꼬리 당김), AU15=0.8이 동시 출현 — 이야기의 갈등 절정부 근처 긴장 표정"
+                },
+                {
+                  "timestamp_s": 230.0,
+                  "source": "facial_au",
+                  "note": "AU04=0.9, AU09=0.7 등 긴장 관련 AU가 후반 과제 지속 논의 구간에서도 재출현"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 22.0,
+                  "source": "transcript",
+                  "note": "'희진이가 울어요' — 주인공 인물의 괴로움/불안 정서를 이야기 속에 직접 부여"
+                },
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'엄마한테 혼나요' — 혼날 것에 대한 염려가 이야기 전개의 축으로 등장"
+                },
+                {
+                  "timestamp_s": 10.0,
+                  "source": "facial_au",
+                  "note": "AU01=0.5/AU04=0.7/AU15=0.9 조합 — 걱정·슬픔 계열 표정 신호가 이야기 갈등부와 겹침"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'조금 더 하고 싶은데', '인형놀이 좋아해요. 선생님은 인형놀이 좋아하세요?' — 검사자에게 먼저 질문하고 과제 지속을 희망하는 접근적 태도. 회피 근거 없음"
+                },
+                {
+                  "timestamp_s": 180.0,
+                  "source": "transcript",
+                  "note": "'몇 개 남았어요? 거의 다 했어요?' — 과제 진행을 확인하는 질문이나 거부·철수 없이 협조 유지"
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "불안행동은 이야기 도입부의 끊기는 발화·자기수정과 AU23/AU24, AU04+AU20 등 긴장 계열 표정 신호로 지지된다. 걱정(정서)은 '운다', '혼난다'처럼 잘못 발각 후의 염려가 서사의 중심 정서로 표현된 점으로 코딩했다. 다만 검사자 회피는 관찰되지 않으며, 오히려 남은 과제 수를 묻고 더 하고 싶다고 말하며 검사자에게 역질문하는 등 관계 접근적이었다. 54개월 아동이 과제 분량을 확인하는 질문은 연령상 흔한 행동으로, 회피 근거로 보지 않았다."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": []
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마. / 엄마가. / 엄마가 이거 받았어요.' — 동일 어구의 단계적 반복"
+                },
+                {
+                  "timestamp_s": 55.0,
+                  "source": "transcript",
+                  "note": "'빨리 빨리 사과라고 해요' 및 '죄송합니다'의 반복적 등장(3회 이상)"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'다시는 이진이가 사탕 안 훔칠 거래요 / 이진이가 다시는 안 훔친다고 했어요' — 결말 문장을 거의 같은 내용으로 두 번 반복"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'너 가져온 거야' 이후 주인공이 울고 곧바로 '죄송합니다'라고 인정 — 잘못의 부인이나 사실 회피 없음"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "부모의 대리 사과와 대금 지불 제안을 주인공이 수용하고 '알겠습니다'로 응답 — 도움을 물리치는 장면 없음"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": []
+            },
+            "topic_deflection": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 150.0,
+                  "source": "transcript",
+                  "note": "'끝났어? 네.' — 이야기를 끝까지 마친 뒤에 과제 진행 관련 대화로 전환된 것이며, 이야기 중 주제 이탈은 없음"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 95.0,
+                  "source": "transcript",
+                  "note": "부모가 훈육하되 가족 구성원이 사라지거나 관계가 붕괴되는 전개 없음; 오히려 아빠가 합류해 문제를 해결"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "회피/위축 계열은 대체로 부재하다. 아동은 잘못을 인정하고 도움을 수용하며 이야기를 끝까지 유지했다. 다만 도입부의 어구 반복과 '죄송합니다'·'다시는 안 훔친다'의 반복적 진술이 관찰되어 '반복'만 존재로 코딩했다. 단, 54개월 수준에서 이야기 시작 시의 더듬거림과 결말 강조 반복은 언어 발달상 흔한 형태이므로, 위축의 지표라기보다 서술 구성 과정의 특징일 수 있다는 점을 함께 기록한다."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 95.0,
+                  "source": "transcript",
+                  "note": "'엄마 아빠가 혼내켜요 ... 이렇게 화를 내요' — 부모 인물의 분노/질책 표현이 명시적으로 등장"
+                },
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'엄마한테 혼나요' — 훈육 상황의 언어적 질책"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 95.0,
+                  "source": "transcript",
+                  "note": "질책은 '먹고 싶으면 돈을 내고 먹어야 되는 거야'라는 규칙 설명으로 이어지고 곧 아이의 수용과 결말로 마무리됨 — 강도가 점증하는 전개 없음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "신체적 타격·상해 장면 없음; 가게 주인도 '다음부터 그러지 마' 하고 떠남"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "'그래도 사탕은 없었어요. 뭔가는 사탕 먹고 먹을 수 있어요' 등 일부 문장이 모호하나, 스템 주제를 벗어난 기괴하거나 비전형적인 내용은 없음"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": []
+            }
+          },
+          "present_count": 1,
+          "rationale": "이 스템에서 '공격성'은 잘못에 대한 부모의 질책·화냄을 포함해 코딩되므로, '혼내켜요/화를 내요'를 근거로 존재로 처리했다. 그러나 이는 규칙 설명과 아동의 수용으로 즉시 수습되는 훈육 맥락이며, 강도의 점증(공격상승)이나 신체적 상해, 기괴한 비전형 반응, 성적 요소는 관찰되지 않았다. 54개월 아동이 도덕 규범 위반 스템에서 부모의 훈육 장면을 넣는 것은 흔한 전개다."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 10.0,
+                  "source": "transcript",
+                  "note": "'희진이가 사탕을 들고 있고 엄마가 그걸 봤어요' — 발각 → 추궁 → 사과 → 배상 → 훈육 → 다짐으로 이어지는 인과적 순서"
+                },
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'아빠가 와서 결제를 하겠다고 해줘요' — 문제(대금 미지불)에 대응하는 논리적 해결 단계 삽입"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'다시는 안 훔친다고 했어요' — 이야기 종결이 명확히 제시되고 검사자 프롬프트 없이 자발적으로 완결"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 75.0,
+                  "source": "transcript",
+                  "note": "'이 사탕을 사고' — 대금을 지불해 위반이 실제로 복구됨"
+                },
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "가게 주인이 훈계 후 떠나며 갈등이 원만히 종료됨"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'다시는 사탕 안 훔칠 거래요' — 규칙 내면화가 담긴 긍정적 결말"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 22.0,
+                  "source": "transcript",
+                  "note": "발각 시점에 '희진이가 울어요' — 상황에 부합하는 죄책/당황 정서"
+                },
+                {
+                  "timestamp_s": 10.0,
+                  "source": "facial_au",
+                  "note": "AU15=0.9, AU04=0.7 등 슬픔·긴장 계열 표정이 갈등 구간과 시간적으로 일치"
+                },
+                {
+                  "timestamp_s": 105.0,
+                  "source": "transcript",
+                  "note": "훈육 장면에서 '죄송합니다 하고 알겠습니다' — 맥락에 맞는 수용적 정서 반응"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "'그래도 사탕은 없었어요. 뭔가는 사탕 먹고 먹을 수 있어요'는 다소 모호하나, 전체 흐름이 부정적 결말로 귀결되지 않고 회복적 종결로 마무리됨"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "결말의 정서 톤과 이야기 내용이 서로 일치(반성 + 다짐) — 정서적 비일관성 근거 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "이 스템의 핵심 딜레마(규칙 위반의 발각과 처리)를 아동이 프롬프트 없이 자발적으로 끝까지 다루었고, 발각-사과-배상-훈육-다짐의 인과적 연쇄가 유지되어 이야기 일관성과 긍정적 해결을 모두 존재로 코딩했다. 정서 표현 역시 발각 시점의 울음과 슬픔·긴장 계열 AU, 훈육 수용의 태도가 사건 맥락과 시간적으로 부합했다. 한편 '그래도 사탕은 없었어요' 같은 일부 문장은 구문이 흐려 해석이 어려우나, 54개월 수준의 문장 구성 한계로 볼 여지가 있어 정서적 비일관성 근거로는 채택하지 않았다."
+        }
+      },
+      "story_specific_notes_applied": "제공된 story_specific_notes가 '—'(없음)이므로 스템별 코드 재정의 없이 표준 정의를 적용하되, candy_theft 스템의 일반적 특성을 반영함: (1) 훈육 맥락의 부모 질책·화냄을 '공격성' 항목에 포함하되, 규칙 설명과 수용으로 수습되는 경우 '공격상승'으로는 올리지 않음. (2) 사과·배상·재발방지 다짐을 '긍정적 해결'의 핵심 지표로 봄. (3) 아동 연령 54개월을 고려해, 도입부의 더듬거림·어구 반복과 결말 문장의 중복 진술은 언어 발달상 흔한 서술 특징으로 해석하고 위축 지표로 과대 해석하지 않음. (4) 완료 방식이 spontaneous(프롬프트 0회)인 점을 이야기 일관성·자발적 완결의 근거로 반영함. 본 코딩은 항목 존재/부재와 이야기 전반 패턴(층위 2) 기술에 한정하며, 진단·위험분류·타 자료 통합 해석은 포함하지 않음.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T10:26:13.481303+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "departure",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 35.0,
+                  "source": "transcript",
+                  "note": "'그래서 맛있는 거 같이 먹어요' — 할머니·동생과 음식을 함께 나누어 먹는 장면을 구성"
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "'같이 TV도 보고' — 활동을 공유하는 서술"
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "'동생이 울어요. 엄마 아빠 보고 싶다고' 이후 '나도 동생한테 괜찮아. 누나가 언니가 있잖아' — 우는 동생의 고통을 알아차리고 직접 위로/안심시키는 반응"
+                },
+                {
+                  "timestamp_s": 18.0,
+                  "source": "transcript",
+                  "note": "할머니의 '괜찮아' 위로 발화를 아동이 재연하고, 이를 자신이 동생에게 반복 적용"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 35.0,
+                  "source": "transcript",
+                  "note": "'맛있는 거 같이 먹어요' — 남은 인물들이 함께 있는 구성"
+                },
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠를 기다리면서 같이 TV도 보고' — 대기 시간을 함께하는 활동으로 채움"
+                },
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'영상 통화해서 엄마랑 인사도 해요' — 떠난 양육자와의 연결을 유지하는 함께하기"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'엄마랑 인사도 해요' — 떠난 부모를 향한 애정적 접촉 표현"
+                },
+                {
+                  "timestamp_s": 4.0,
+                  "source": "transcript",
+                  "note": "'나도 같이 가고 싶어' — 부모와 함께 있고 싶은 애착·애정적 소망 표현"
+                }
+              ]
+            },
+            "politeness": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "인형들 간 '고마워/부탁해' 등 예의 표현 서술 없음. 다만 마지막 '끝났어? 네.'에서 검사자에게 응답하는 협조적 태도는 있으나 이야기 내 예의바름 코드에는 해당하지 않음"
+                }
+              ]
+            }
+          },
+          "present_count": 4,
+          "rationale": "departure 스템에서 남는 인물(동생·할머니)을 중심으로 위로·나눔·함께하기가 일관되게 나타남. 울고 있는 동생에게 '괜찮아, 누나(언니)가 있잖아'라고 직접 위로하며 자신을 돌보는 역할로 배치한 점이 공감/도움의 핵심 근거. 떠난 부모와 영상통화·인사로 정서적 연결을 유지한 점은 애정표현으로 코딩. 예의바름은 명시적 근거 없어 부재."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "말더듬·중단·재시작이나 인형 조작 중단 등 불안행동을 나타내는 전사·비언어 근거 없음. 프롬프트 0회로 자발적 진행"
+                },
+                {
+                  "timestamp_s": 76.0,
+                  "source": "facial_au",
+                  "note": "AU04 상승(0.7~0.9)과 AU43 높은 값이 산재하지만, 이야기 구성에 몰입한 집중·시선 하강으로도 설명 가능하여 불안행동으로 단독 코딩할 근거는 불충분"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "'동생이 울어요. 엄마 아빠 보고 싶다고' — 분리에 대한 걱정·그리움 정서를 인물에 투영하여 명시적으로 표현"
+                },
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "마지막 '엄마, 아빠는 언제 와요?' — 이야기 종료 후 남는 부모 귀환에 대한 염려성 질문"
+                },
+                {
+                  "timestamp_s": 90.0,
+                  "source": "facial_au",
+                  "note": "AU01+AU04 동시 상승 및 AU15(0.9) 지속 구간 — 걱정/침울 계열 정서와 일치하는 얼굴 패턴이 서술 후반에 반복 관찰"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 160.0,
+                  "source": "transcript",
+                  "note": "'끝났어? 네.' 및 검사자에게 직접 질문('엄마, 아빠는 언제 와요?') — 검사자와의 접촉을 유지·개시하는 태도로, 회피 근거 없음"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "쟁점 프롬프트 0회, 자발적 완료 — 과제 거부·침묵·주제 회피 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "과제 수행 자체에 대한 불안(행동·검사자 회피)은 관찰되지 않고 자발적으로 완결했음. 다만 분리 상황에 결부된 '보고 싶다', '언제 와요?' 같은 걱정 정서는 인물과 아동 자신 모두에서 명확히 표현됨. 54개월 연령에서 분리 스템에 대한 이 수준의 걱정 언급은 발달적으로 기대 범위 내이며, 정서 인식이 언어화된 것으로 볼 수 있음."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 35.0,
+                  "source": "transcript",
+                  "note": "주인공이 할머니·동생과 함께 먹고 함께 TV를 보는 등 지속적으로 타인과 연결됨. 혼자 떨어지는 서술 없음"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'엄마를 기다려요 / 엄마, 아빠 기다려요 / 엄마, 아빠 돌아올 거래요' — '기다린다'는 구절이 연속 반복"
+                },
+                {
+                  "timestamp_s": 45.0,
+                  "source": "transcript",
+                  "note": "'떡 준다고 그랬어요. 떡 준다고.' — 동일 구절 즉시 반복. 단, 이야기 진행이 정지되지 않고 새 장면으로 계속 전개되어 정체된 반복은 아님"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "부모의 떠남과 동생의 울음을 부인하지 않고 그대로 인정하며 서술을 시작함"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 18.0,
+                  "source": "transcript",
+                  "note": "할머니의 위로('괜찮아')를 받아들이고, 할머니가 주는 떡·아이스크림도 수용. 돌봄 제공을 거부하는 장면 없음"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "잠자기·낮잠 등으로 장면을 종료하는 서술 없음. 깨어서 기다리는 결말"
+                },
+                {
+                  "timestamp_s": 102.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈 감김) 값이 후반에 높게 반복되나 실제 수면 서술은 없어 이야기 내용 코드로는 부재"
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "아이스크림·TV 등 곁가지 소재가 등장하나 모두 '엄마, 아빠를 기다리면서'라는 스템 주제에 묶여 있어 주제 이탈로 보기 어려움"
+                },
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "이야기를 마치며 다시 부모 귀환 주제로 복귀"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠 돌아올 거래요' — 가족 구조가 유지·회복되는 방향. 가족 해체·사고·상실 서술 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "회피·위축 지표 중에서는 구절 반복만 확인됨. 그러나 반복이 이야기를 멈추게 하지 않고 '기다림' 주제를 강조하는 형태였다는 점을 근거에 함께 남김. 부인·도움 거부·수면·주제이탈·가족파괴는 모두 부재하며, 분리 사실을 직면한 채 이야기를 유지했다는 점이 공통된 근거."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "전체 서술에 때리기·소리치기·위협·파괴 등 공격적 내용 전무"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "공격 사건 자체가 없어 상승 양상도 없음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "인물이 다치거나 해를 입는 장면 없음. 인형 조작 관련 거친 행동 기록도 제공되지 않음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "떠남-남겨진 아이의 슬픔-대리양육자의 돌봄-귀환 대기라는 기대 가능한 전개로, 기괴하거나 스템과 무관한 비전형 요소 없음"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 165.0,
+                  "source": "transcript",
+                  "note": "성적 내용·행동에 관한 발화나 인형 조작 기록 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "조절되지 않은 공격성 범주 5개 항목 모두 부재. 전사 전체가 돌봄·위로·기다림의 친사회적 내용으로 구성되어 있어 공격 관련 근거가 어느 시점에도 관찰되지 않음."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 4.0,
+                  "source": "transcript",
+                  "note": "부모 떠남 → 동생 울음 → 할머니 등장·위로 → 음식·영상통화 → 기다림 → 귀환 예고로 시간 순서가 끊기지 않고 연결됨"
+                },
+                {
+                  "timestamp_s": 70.0,
+                  "source": "transcript",
+                  "note": "'영상 통화하라고 켰어요. 그래서 영상 통화해서' — 사건 간 인과('그래서')를 반복적으로 사용하여 연결"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "'엄마가 내일 오겠대요' — 귀환 시점이 명확히 제시되는 해결"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠 돌아올 거래요' — 분리 문제가 재결합 기대로 마무리됨. reunion 스템과 짝지어 볼 때 귀환 표상이 departure 단계에서 이미 형성"
+                },
+                {
+                  "timestamp_s": 18.0,
+                  "source": "transcript",
+                  "note": "대리양육자(할머니)가 위로·음식·연결 수단을 제공하여 중간 단계에서도 안정이 회복됨"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "분리 장면에서 '동생이 울어요, 보고 싶다고'라는 슬픔을, 음식·TV 장면에서는 즐거움을 배치하여 상황별 정서가 구분됨"
+                },
+                {
+                  "timestamp_s": 90.0,
+                  "source": "facial_au",
+                  "note": "기다림·그리움 서술 구간에 AU01+AU04·AU15 상승이 동반되어 언어 내용과 표정 정서 방향이 일치"
+                },
+                {
+                  "timestamp_s": 134.0,
+                  "source": "facial_au",
+                  "note": "AU06·AU12 동반 상승 구간이 아이스크림·함께 TV 보기 등 긍정 장면 서술과 시간적으로 대응"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "결말이 귀환 기대로 닫히며 부정적·미해결 종결이 아님"
+                },
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "슬픔 서술과 이후 위로가 자연스럽게 이어져 정서-내용 간 불일치(예: 고통 장면에서 웃음) 근거 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "일관성·긍정적 해결·상황 적합 정서가 모두 확인되고 반대방향 항목은 부재. 특히 분리의 부정적 정서를 생략하지 않고 인정한 뒤 대리양육자와 영상통화라는 구체적 대처를 거쳐 재결합 기대로 종결한 흐름이 근거. 54개월 연령 기준으로 사건 수·인과 연결 밀도가 충분하며, 마지막의 '언제 와요?'는 해결을 취소하기보다 기다림 정서가 남아 있는 표현으로 보아 부정적 해결로는 코딩하지 않음."
+        }
+      },
+      "story_specific_notes_applied": "화자 태깅: 본 스템 대사 화자는 아동 성별에 따라 엄마/아빠로 전환되는데, 제공된 세션 메타데이터에 아동 성별이 명시되지 않아(<UNKNOWN>) 특정 화자로 고정하지 않고 전사문에 아동이 실제로 산출한 표현('엄마 아빠', '누나가 언니가 있잖아')을 그대로 보존해 코딩했다. 성별 확정 시 화자 라벨만 갱신되며 항목 판단에는 영향이 없다. departure-reunion 짝 해석 원칙에 따라, 이 departure 편에서 나타난 '엄마가 내일 오겠대요 / 돌아올 거래요'의 귀환 표상과 영상통화를 통한 연결 유지를 긍정적 해결의 근거로 삼되, 실제 재결합 처리 방식은 reunion 편과 대조해 확인해야 할 사항으로 남겨 두었다(본 편 단독 해석을 확대하지 않음). 연령 54개월을 감안해, 분리 딜레마의 한쪽 측면(남겨진 뒤의 돌봄·기다림)에 집중하고 부모 측 관점을 다루지 않은 점은 정상 발달 범위로 보아 결손으로 코딩하지 않았다. 반복(떡/기다림 구절)은 존재로 표시했으나 이야기 진행이 유지된 맥락임을 근거에 병기했고, 비언어 신호(AU04·AU43 등)는 단독으로 항목을 확정하는 데 쓰지 않고 전사 내용과 시간적으로 대응할 때만 보조 근거로 사용했다. 해석은 이야기 전반의 패턴 층위(층위 2)까지로 제한했으며 진단·위험분류·다른 자료와의 통합은 포함하지 않았다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T10:38:13.883590+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "hot_gravy",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": false,
+              "evidence": []
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'괜찮아?', '어떻게 병원 가야 하는 거 아니야?' — 다친 인물의 상태를 묻고 걱정하는 조력 반응"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'빠르게 병원 가자', '병원 가서 치료 받아요' — 손상에 대한 적극적 돌봄/치료 해결"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마가 밥을 다시 해줬어요', '이거 뜨겁다고 엄마가 다시 올려놨어요' — 양육자가 문제를 돌봄으로 복구"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'아빠랑 엄마랑 같이', '동생도 데려가야 해. 어리니까' — 가족 전원이 함께 병원행"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'저녁을 다 같이 먹을 거예요' — 가족이 함께 식사하는 결말"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "안아주기·사랑 표현 등 명시적 애정 언어/행동 서술 없음. 돌봄은 도구적(병원·식사) 형태로만 나타남"
+                }
+              ]
+            },
+            "politeness": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물 간 인사·감사·사과 등 예의 표현 서술 없음. 검사자에게 '네'라고 응답하는 협조는 있으나 이야기 내 예의 코드로 보기 어려움"
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "다친 인물에 대한 확인·병원 이송·치료, 어린 동생 배려, 엄마의 재조리 등 공감/도움이 뚜렷하고, 가족이 '다 같이' 이동·식사하는 함께하기가 반복적으로 나타남. 반면 나눔·명시적 애정표현·예의 표현은 전사에서 확인되지 않음."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "자발적(spontaneous) 완성, 쟁점 프롬프트 0회로 과제 수행이 중단 없이 진행됨"
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "facial_au",
+                  "note": "AU04(눈썹 내림) 0.8~0.9 및 AU28(입술 빨기) 0.7~0.9 구간이 간헐적으로 관찰되나, 전 구간에 산발적이어서 불안행동으로 특정할 만한 집중 패턴은 아님"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가 너무 놀랬어', '어떻게 병원 가야 하는 거 아니야?' — 사고에 대한 놀람·걱정 정서를 인물에 부여"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'근데 냄비가 어렵지?' — 뜨거운 냄비를 다루는 일의 위험/부담을 언급"
+                },
+                {
+                  "timestamp_s": 2.0,
+                  "source": "facial_au",
+                  "note": "AU01+AU04 동반 상승(AU01=0.6, AU04=0.9) 및 AU15=0.8 — 걱정스러운 표정 배열과 합치"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'몇 개 있어요?', '이거는 몇 개 할 수 있어요?'라고 검사자에게 먼저 질문하고 '네'로 응답 — 접근적·협조적 태도"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "이야기 내 인물의 놀람·걱정이 언어로 표현되었고 표정 지표도 이와 상충하지 않음. 그러나 과제 수행 자체는 자발적·연속적이었고 검사자와의 상호작용도 능동적이어서 불안행동·검사자 회피는 부재로 코딩."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "주인공이 혼자 떨어지는 장면 없음. 오히려 가족 동반 이동·공동 식사로 전개"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'아, 너무 아파 / 아, 뜨거워 / 너무 아파' 통증 호소 반복"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'괜찮대요 / 많이 안 되었대요' 이후 결말부에서 '많이 안 다쳤대요'로 안심 진술 재반복"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'저녁에는 저녁을 다 같이 먹을 거예요 / 저녁에는 엄마가 해준 밥을 먹어요' — 저녁 식사 서술의 반복"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'너무 아파', '병원 가서 치료 받아요'로 손상 사건을 인정하고 다룸. 사건 자체를 없던 일로 하는 부인은 없음. '많이 안 다쳤대요'는 손상 부인이 아니라 치료 후 경과에 대한 해결 서술로 봄"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "제공되는 돌봄(병원·치료·재조리한 식사)을 모두 수용함"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "수면으로 장면을 종료하는 서술 없음"
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "화상-병원-귀가-식사로 스템 주제 안에서 일관되게 전개. 말미의 '몇 개 있어요?'는 이야기 종료 후 절차에 대한 질문으로 이야기 중 주제이탈로 보지 않음"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "가족 구성원의 이탈·해체·상실 없음. 가족이 함께 움직이고 함께 식사하는 것으로 마무리"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "통증 호소, 안심 진술, 저녁 식사 서술이 각각 되풀이되어 반복은 존재로 코딩. 그 외 회피·위축 지표(고립, 부인, 도움 거부, 수면, 주제이탈, 가족파괴)는 전사·비언어 자료에서 근거를 찾을 수 없음."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물 간 때리기·위협·파괴 등 공격 서술 전무"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "긴장은 사고 직후 정점에서 병원·회복으로 하강함. 상승 전개 없음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "화상은 스템에 내재된 사고이며, 인물이 타인을 의도적으로 해치는 장면은 없음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "기괴하거나 예측 불가한 전환 없음. 사고-치료-회복-식사라는 관습적 전개"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "관련 내용 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "전사와 비언어 요약 전 구간에서 공격성, 공격 상승, 대인상해, 비전형적 전개, 성적 내용의 근거가 관찰되지 않음."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "화상(아픔·뜨거움) → 부모 놀람 → 병원 이송 → 치료 → 귀가 → 엄마가 다시 조리 → 다 같이 저녁, 인과·시간 순서가 명확히 연결됨"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'얘 끝이 났을까?'로 아동 스스로 이야기 종결을 표시함"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'병원 가서 치료 받아요. 근데 괜찮대요', '아, 다행이다' — 손상이 돌봄을 통해 해결됨"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마가 갈비를 해줬어요. 맛있게 저녁을 먹어요' — 원래 중단됐던 식사 상황이 복구되며 마무리(문화적 번안: 국물 냄비)"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "사고 직후 '아파/뜨거워/놀랬어'의 고통·놀람, 확인 후 '아, 다행이다'의 안도, 결말의 '맛있게' — 장면 전환에 따라 정서가 적절히 변화"
+                },
+                {
+                  "timestamp_s": 14.0,
+                  "source": "facial_au",
+                  "note": "AU06=0.8, AU12=0.9의 긍정적 표정 활성 구간이 존재하며, 사고 서술 구간의 AU04·AU15 우세와 대비되어 정서 변주가 확인됨"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "미해결·파국적 결말이나 내용-정서 불일치(예: 손상 장면에서 즐거움) 없음. 정서 흐름과 사건 흐름이 일치"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "손상 사건을 회피하지 않고 인정한 뒤 치료·회복·가족 식사로 완결하는 응집된 서사이며, 고통→안도→만족으로 정서가 맥락에 맞게 이동함. 54개월이라는 연령을 고려하면 요리 재개, 어린 동생 동반 등 세부를 갖춘 비교적 조직화된 산출이고, 문장 단편화('그래서', '우리' 등 짧은 끊김)는 이 연령대의 정상 발화 범위로 보아 비일관성 코드에 반영하지 않음."
+        }
+      },
+      "story_specific_notes_applied": "'그레이비'를 국물 냄비로 번안한 점을 반영해, '냄비가 어렵지?', '엄마가 밥을 다시 해줬어요', '이거 뜨겁다고 엄마가 다시 올려놨어요', '엄마가 갈비를 해줬어요' 등의 진술을 원판의 '쏟아진 음식/화상' 장면에 대한 대응으로 간주하여 공감/도움 및 긍정적 해결 근거로 채점함. '많이 안 다쳤대요' 반복은 손상 부인(denial)이 아니라 치료 후 경과 확인·안도 표현으로 판단함(아동이 '아파', '병원 가서 치료 받아요'로 손상 자체는 인정). 연령 54개월을 고려해 짧은 문장 단편과 접속사 반복은 정서적 비일관성으로 코딩하지 않았고, 완성 방식이 자발적(프롬프트 0회)인 점을 수행불안 판단에 반영함. 해석은 이야기 전반 패턴 층위(층위 2)까지만 기술함.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T09:55:33.128342+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "lost_dog",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "물건·음식·활동을 나누는 장면은 전사문 어디에도 등장하지 않음(부재 근거: 전체 발화 검토)."
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 18.0,
+                  "source": "transcript",
+                  "note": "'엄마한테 가서 얘기를 했어요 / 엄마 뽀빈아 사라졌어요' — 문제 상황에서 양육자에게 도움을 구하는 조력 추구."
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'그래서 같이 손을 잡고 뽀비를 찾으러 나갔어요' — 엄마가 아이의 곤경에 반응해 함께 탐색하는 도움 행동이 서술됨."
+                },
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'엄마도 같이 슬퍼서 울어요' — 등장인물이 아이의 슬픔에 정서적으로 공명(공감)하는 서술."
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'같이 손을 잡고 뽀비를 찾으러 나갔어요' — 신체적 접촉을 포함한 공동 행동."
+                },
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'엄마도 같이 슬퍼서 울어요 / 이렇게 울고 있어요' — 슬픔을 함께 머무르며 공유."
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 90.0,
+                  "source": "transcript",
+                  "note": "'뽀비를 찾고 싶어서'처럼 애착 대상에 대한 그리움은 있으나, 안아주기·사랑한다는 표현 등 명시적 애정표현 언어/행동 서술은 없음."
+                },
+                {
+                  "timestamp_s": 126.0,
+                  "source": "facial_au",
+                  "note": "AU06=0.7, AU12=0.7로 일시적 상승이 있으나 애정 장면과 연결되는 발화가 동반되지 않아 애정표현 근거로 채택하지 않음."
+                }
+              ]
+            },
+            "politeness": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "검사자 질문('이야기 끝이 났니?')에 '네'로 응답하는 협조적 태도는 있으나, 감사·사과·요청 등 예의 코드에 해당하는 표지는 관찰되지 않음."
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "이야기 내용상 곤경(강아지 실종)을 혼자 감당하지 않고 양육자에게 알리고, 손을 잡고 함께 찾으러 나가며, 엄마가 함께 울어주는 정서적 동반이 반복적으로 서술되어 '공감/도움'과 '함께하기'가 존재로 채점됨. 반면 공유·애정표현·예의에 해당하는 구체 표지는 전사문과 비언어 신호에서 확인되지 않았다. 54개월 아동으로서 양육자를 도움 자원으로 자발적으로 동원한 점은 연령 기대 범위 내의 반응이다."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU04(찡그림)이 0.2~0.9 범위에서 변동하나(예: 34s, 50s, 86s, 110s에서 0.8~0.9) 이는 상실·울음 내레이션 구간과 동시 발생하여 이야기 내용에 따른 정서 표현으로 해석되며, 수행 상황에 대한 불안 행동(과제 회피, 몸 뒤틀기, 중단 요청)으로 분류할 근거는 부족."
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "말 더듬음·자기 교정·'모르겠어요' 같은 수행 불안 표지 없이 이야기를 끝까지 자발적으로 진행(쟁점 프롬프트 0회)."
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "'큰일이에요' — 사건에 대한 염려·경보 정서의 직접 언어화."
+                },
+                {
+                  "timestamp_s": 28.0,
+                  "source": "transcript",
+                  "note": "'엄마가 어떡해 / 엄마가 항상 놀랬어요' — 등장인물의 당황·걱정 정서를 명시적으로 부여."
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU01(내측 눈썹 올림) 0.3~0.7로 지속 유지되어 걱정/슬픔 계열 상안면 활동이 내레이션 전반에 동반."
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "검사자의 '이야기 끝이 났니?'에 '네'로 즉시 응답하고 이후 인형 발화를 이어감 — 검사자 질문 무시·거부·침묵 없음."
+                },
+                {
+                  "timestamp_s": 136.0,
+                  "source": "transcript",
+                  "note": "'이제 다음 이야기로 넘어가 볼까?'까지 상호작용이 유지되며 이탈 시도 관찰되지 않음."
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "'큰일이에요', '어떡해', '놀랬어요' 등 걱정 정서가 언어로 분명히 표현되어 걱정(정서)만 존재로 채점. 검사 수행 자체에 대한 불안 행동이나 검사자 회피는 관찰되지 않았고, 완료 방식이 spontaneous(프롬프트 0회)라는 점도 수행 불안 부재와 일관된다. AU04 상승은 상실 내레이션과 시간적으로 겹쳐 수행불안 근거로 사용하지 않았다."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 18.0,
+                  "source": "transcript",
+                  "note": "아이 인물이 곤경을 혼자 감추지 않고 즉시 엄마에게 알리며, 이후 계속 엄마와 함께 있음 — 고립 서술 없음."
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 104.0,
+                  "source": "transcript",
+                  "note": "'뽀빈아 안 와요? / 뽀빈아 안 와요?' 동일 문장 즉시 반복."
+                },
+                {
+                  "timestamp_s": 118.0,
+                  "source": "transcript",
+                  "note": "'뽀빈은 없어졌어 / 뽀빈아는 없어졌어' 동일 내용 반복."
+                },
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "'기다리고 있어요'가 연속 두 차례 반복되며 이야기가 앞으로 나아가지 않고 같은 상태에 머무름."
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'강아지가 없어졌어요'로 스템 딜레마를 정면으로 수용하고 끝까지 유지 — 사건 자체를 없었던 일로 돌리는 부인 없음."
+                },
+                {
+                  "timestamp_s": 118.0,
+                  "source": "transcript",
+                  "note": "'뽀빈은 없어졌어'로 상실 사실을 재확인."
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "엄마의 동반 탐색을 거부하지 않고 손을 잡고 함께 나감 — 제공된 도움을 소극적으로 물리치는 장면 없음."
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 잠드는 서술 없음."
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈 감김)이 0.4~0.9로 높게 유지되나 전 구간에 걸쳐 고르게 분포하고 발화가 지속되므로 측정 특성으로 보이며, 갑작스런 수면 삽화의 근거로 보기 어려움."
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "전 발화가 뽀삐 실종·탐색·기다림이라는 스템 주제 안에 머물러 있으며 무관한 소재로 전환한 지점 없음."
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "가족 구성원 간 결별·추방·파괴적 사건 없음. 모-자 관계는 협력적으로 유지됨."
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "이야기 말미에 '뽀빈아 안 와요?', '뽀빈은 없어졌어', '기다리고 있어요'가 각각 즉시 중복되며 서사가 진전 없이 같은 상태에 머무는 반복이 관찰되어 '반복'만 존재로 채점. 주제 이탈·부인·도움 거부·고립·수면·가족파괴는 근거가 확인되지 않았다. 본 스템의 간이대본에는 '사라짐' 파트만 고정되어 있고 재회(2부) 질문이 사용되지 않았으므로, 재회가 서술되지 않은 것을 회피 지표로 해석하지 않았다."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "때리기·부수기·위협 등 공격적 언어나 행동 서술이 전 구간에 없음."
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "공격 사건 자체가 없어 강도 상승도 관찰되지 않음."
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 다치거나 해를 입는 서술 없음. 강아지의 실종은 스템이 제시한 딜레마 자체이며 아동이 추가한 상해 사건이 아님."
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "기괴하거나 스템 맥락에서 이해 불가한 요소 없이, 실종-알림-탐색-슬픔-기다림의 통상적 전개를 따름."
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "성적 내용이나 성애화된 인형 조작 서술 없음."
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "posture",
+                  "note": "제공된 비언어 요약에 해당 소견 기재 없음."
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "5개 세부 항목 모두 부재. 이야기는 상실에 대한 슬픔과 조력 추구로 전개되며 공격·상해·비전형·성적 요소가 전혀 나타나지 않았다."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'강아지가 없어졌어요 → 엄마에게 알림 → 손잡고 동네를 찾아다님 → 찾지 못해 울음 → 돌아오길 기다림'의 시간·인과 순서가 일관되게 연결됨."
+                },
+                {
+                  "timestamp_s": 48.0,
+                  "source": "transcript",
+                  "note": "'동네를 막 돌아갔는데 뽀빈이가 없어서 너무 슬퍼서 울었어요' — 사건과 정서 반응 간 인과가 명시적으로 이어짐."
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'찾고 싶어서 꼭 기다리고 있어요 / 돌아올 수 있게 기다리고 있어요' — 희망적 지향은 있으나 재회나 문제 해결로 종결되지 않음."
+                },
+                {
+                  "timestamp_s": 118.0,
+                  "source": "transcript",
+                  "note": "이야기 종결부가 '뽀빈은 없어졌어'로 마무리되어 해결 없이 상실 상태로 끝남."
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 52.0,
+                  "source": "transcript",
+                  "note": "상실 장면에서 '너무 슬퍼서 울었어요'로 상황에 부합하는 슬픔을 표현."
+                },
+                {
+                  "timestamp_s": 24.0,
+                  "source": "facial_au",
+                  "note": "AU15(입꼬리 내림)=1.0, AU01=0.6으로 슬픔 계열 표정이 슬픔 내레이션 구간과 동시 발생."
+                },
+                {
+                  "timestamp_s": 128.0,
+                  "source": "facial_au",
+                  "note": "AU15=1.0, AU10=1.0 — 상실을 재진술하는 종결부에서도 슬픔 계열 표정이 유지되어 내용-정서 정합."
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 118.0,
+                  "source": "transcript",
+                  "note": "'뽀빈은 없어졌어 / 뽀빈아는 없어졌어'로 상실이 회복되지 않은 상태로 종결 — 부정적 해결에 해당."
+                },
+                {
+                  "timestamp_s": 104.0,
+                  "source": "transcript",
+                  "note": "'뽀빈아 안 와요?'라는 응답 없는 호명이 반복되며 결말이 미해결·부정 방향으로 닫힘."
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "정서 자체는 내용과 일치(비일관성 아님)하며, 본 항목은 '부정적 해결' 측면에서만 존재로 채점함을 명시."
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "서사 구조와 정서 표현의 정합성은 54개월 기준으로 양호하다(사건→도움 요청→탐색→슬픔→기다림의 일관된 흐름, 슬픔 내레이션과 AU01/AU15 동반). 다만 결말이 재회나 문제 해결 없이 '없어졌어'로 닫혀 긍정적 해결은 부재하고 부정적 해결 항목이 존재로 채점되었다. 단, 이 스템 간이대본에는 '사라짐' 파트만 고정되어 있고 재회 질문이 본 세션에서 사용되지 않았으므로(프롬프트 0회), 결말의 미해결성은 아동 특성만으로 단정하기보다 절차적 조건을 함께 고려해 읽어야 한다."
+        }
+      },
+      "story_specific_notes_applied": "본 스템의 간이대본에는 '사라짐' 파트만 고정 대본으로 존재하고, 재회(2부)는 검사자 재량의 선택적 즉흥 질문이라는 주의사항을 반영했다. 본 세션은 spontaneous 완료(쟁점 프롬프트 0회)이며 전사문에 재회 유도 질문('뽀삐가 다시 돌아왔어...' 류)이 없어 additional_examiner_segments_s 상 2부가 제시되지 않은 것으로 보았다. 따라서 (1) 재회·재결합 장면이 서술되지 않은 것을 회피/부인 지표로 채점하지 않았고, (2) '긍정적 해결' 부재와 '부정적 해결' 존재는 아동 발화에 근거해 그대로 채점했으나, 재회 기회가 절차상 제시되지 않았다는 조건을 각 rationale에 함께 기록했다. 54개월 연령을 고려해 딜레마의 한쪽 측면(상실과 슬픔)만 확장하고 해결을 '기다림'으로 남겨두는 것은 이 연령대에서 이례적이지 않다고 보아 부정 지표를 과대 확장하지 않았다. 또한 AU43(눈 감김)이 전 구간 고르게 높은 점은 측정 특성으로 보아 '갑작스런 수면' 근거로 사용하지 않았고, AU04 상승은 상실 내레이션과 시간적으로 겹쳐 수행불안 대신 내용 관련 정서로 처리했다. 해석은 이야기 전반의 패턴(층위 2)까지만 기술했다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T09:01:17.009246+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "mothers_headache",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'맛있는 간식 또 먹어요' — 친구 민철이와 간식을 함께 먹는 장면을 구성."
+                },
+                {
+                  "timestamp_s": 48.0,
+                  "source": "transcript",
+                  "note": "'민철이랑 같이 집에서 그냥 놀기로 했어요' — 놀잇감/활동을 함께 나눔."
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "'엄마 괜찮아? 물어봐요' — 아픈 엄마의 상태를 확인하는 돌봄적 반응."
+                },
+                {
+                  "timestamp_s": 92.0,
+                  "source": "transcript",
+                  "note": "'엄마가 이제 누워있길래 가서 엄마 옆에 같이 누워있어요' — 아픈 엄마 곁에 머무르는 위로 행동."
+                },
+                {
+                  "timestamp_s": 44.0,
+                  "source": "transcript",
+                  "note": "TV 대신 조용히 노는 쪽으로 이야기를 전환 — 엄마 두통을 배려한 해결."
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 72.0,
+                  "source": "transcript",
+                  "note": "'민철이랑 재미있게 놀아요' — 또래와의 공동 활동."
+                },
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "'이렇게 같이 엄마랑 누워있어요' — 엄마와의 신체적 함께함으로 이야기 종결."
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 104.0,
+                  "source": "transcript",
+                  "note": "엄마 옆에 나란히 눕고 안부를 묻는 장면이 반복 서술됨 — 애정 어린 근접 추구."
+                },
+                {
+                  "timestamp_s": 52.0,
+                  "source": "facial_au",
+                  "note": "AU06/AU12 동반 상승(0.6/0.8) — 따뜻한 정서 표현과 일치하는 표정."
+                }
+              ]
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'엄마, 민철이 놀러왔는데 TV에 조금 봐도 돼요?' — 요구가 아닌 허락을 구하는 존댓말 요청."
+                }
+              ]
+            }
+          },
+          "present_count": 5,
+          "rationale": "54개월 아동으로서 또래와의 공유·함께하기, 아픈 엄마에 대한 안부 확인과 곁에 눕기 등 돌봄 행동이 이야기 전반에 고르게 나타남. 엄마에게 존댓말로 허락을 구하는 예의바른 요청도 관찰됨."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "자발적으로(프롬프트 0회) 끊김 없이 이야기를 이어갔고, 중단·재시작·안절부절 서술 없음."
+                },
+                {
+                  "timestamp_s": 150.0,
+                  "source": "facial_au",
+                  "note": "후반부 AU04 상승(0.7~0.9)이 관찰되나 집중/주시와 구별되는 불안행동 지표(자기자극, 회피 자세 등)는 확인되지 않음."
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "'엄마 괜찮아?'는 걱정 정서의 표출이라기보다 돌봄적 확인이며, 곧 '어 괜찮아'로 안심되게 해소됨."
+                },
+                {
+                  "timestamp_s": 96.0,
+                  "source": "voice_prosody",
+                  "note": "제공된 운율 자료 없음 — 걱정 정서를 뒷받침할 음성 근거 부재."
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'인형을 자꾸 보여줄래?' 등 검사자와 자연스럽게 상호작용하고 질문에 응답함."
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "종료 확인('이야기가 끝이 났니?' → '네')에 협조적으로 응답하고 이후에도 '진짜 같다'며 대화를 이어감."
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "프롬프트 없이 자발적으로 이야기를 완결했고 검사자와의 상호작용도 유지되어 수행불안 관련 항목의 근거가 확인되지 않음."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 76.0,
+                  "source": "transcript",
+                  "note": "주인공이 또래·엄마와 지속적으로 함께 있으며 혼자 떨어지는 장면 없음."
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'엄마가 이제 누워있길래'가 연속 두 차례 반복됨."
+                },
+                {
+                  "timestamp_s": 106.0,
+                  "source": "transcript",
+                  "note": "'이렇게 해서 같이 누워있어요' / '이렇게 같이 엄마랑 누워있어요' — 결말 문장이 반복 서술됨."
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'엄마가, 어, 머리야' — 엄마의 두통(딜레마 전제)을 부인하지 않고 그대로 수용."
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "엄마의 상태를 묻고 곁에 머무는 등 도움 제공을 회피하거나 수동적으로 거부하는 장면 없음."
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 92.0,
+                  "source": "transcript",
+                  "note": "'눕기'는 아픈 엄마 곁에서의 휴식·위로 행위이며 갑작스러운 수면으로 이야기를 종결시키는 회피적 전환이 아님."
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 206.0,
+                  "source": "transcript",
+                  "note": "이야기 종료 후 '진짜 같다', '저렇게 TV는 작은데' 등 교구(소품) 자체로 화제가 옮겨감 — 다만 스토리 완결 이후 발생."
+                },
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "도입부에서 'TV에서 뭐 하는데?' 등 소품 관련 질문으로 잠시 벗어남."
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "가족 구성원의 이탈·붕괴 없이 엄마와 함께 있는 장면으로 마무리됨."
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "회피 성향의 핵심 항목(고립·부인·도움 거부·수면·가족파괴)은 부재. 결말 문장의 어구 반복, 그리고 이야기 완결 전후 소품(TV)에 대한 화제 이동이 확인되어 두 항목만 존재로 채점. 두 항목 모두 54개월 아동의 구어적 특성 및 교구에 대한 자연스러운 호기심 범위에서 해석 가능함."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "엄마의 거절(휴식 필요)에 항의·떼쓰기 없이 대안 놀이로 전환."
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 72.0,
+                  "source": "transcript",
+                  "note": "이야기 전개가 갈등 고조 없이 놀이→작별→위로로 평온하게 진행."
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 80.0,
+                  "source": "doll_tracking",
+                  "note": "인형 간 충돌·타격 등 상해 묘사에 대한 서술이나 추적 근거 없음."
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 48.0,
+                  "source": "transcript",
+                  "note": "'100개 가지고 100개 사운드' 등 다소 모호한 표현이 있으나 기이·비현실적 내용은 아니며 일상적 놀이 묘사 범위."
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "전사문 전체에 성적 내용이나 관련 행동 서술 없음."
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "공격성 관련 5개 항목 모두 근거 없음. 좌절 상황(TV 시청 거절)에서 공격이 아닌 협상·대안 선택으로 반응함."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "요청 → 엄마의 두통·휴식 → 조용한 대안 놀이 → 친구 귀가 → 엄마 위로로 시간 순서가 연결됨."
+                },
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "'이야기가 끝이 났니?'에 '네'로 응답하며 스스로 결말을 인지한 완결 구조."
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 44.0,
+                  "source": "transcript",
+                  "note": "TV를 포기하고 조용히 노는 방식으로 딜레마를 갈등 없이 해결."
+                },
+                {
+                  "timestamp_s": 104.0,
+                  "source": "transcript",
+                  "note": "'엄마 괜찮아?' → '어 괜찮아' — 엄마 회복과 함께 안정된 마무리."
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 42.0,
+                  "source": "facial_au",
+                  "note": "놀이 장면 서술 구간에서 AU06=0.6, AU12=0.8 — 즐거움에 부합하는 표정."
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "아픈 엄마에게 톤을 낮춰 안부를 묻는 등 상황에 맞는 정서 전환."
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 108.0,
+                  "source": "transcript",
+                  "note": "부정적·미해결 결말 없이 돌봄적 결말로 종료됨."
+                },
+                {
+                  "timestamp_s": 150.0,
+                  "source": "facial_au",
+                  "note": "후반 AU04 상승이 있으나 서술 내용과 충돌하는 명백한 정서-내용 불일치로 보기엔 근거 불충분."
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "딜레마(친구와 TV 보고 싶음 vs 엄마의 두통) 양쪽을 모두 언급하고 한쪽 욕구를 조정해 해결하는 통합적 구성이 나타남. 54개월(3.5~4.5세 구간)에서 딜레마 양쪽 인정은 발달적으로 앞선 편의 반응 양상으로 볼 수 있으며, 서사 일관성·긍정적 해결·맥락 적합 정서가 모두 확인됨."
+        }
+      },
+      "story_specific_notes_applied": "본 스템(엄마의 두통)의 발달 지표 안내에 따라 '딜레마 양쪽 인정' 여부를 중심으로 검토함. 54개월 아동은 한쪽 측면만 다루어도 정상 범위이나, 본 사례는 자기 욕구(친구와 TV 보기)와 엄마의 상태(두통·휴식 필요) 양쪽을 모두 서술하고 조용한 놀이로 조정한 뒤 엄마 곁에 눕는 돌봄으로 마무리하여 양쪽 인정이 이루어짐. 이에 emotional_integration의 일관성·긍정적 해결을 존재로 채점. '눕기/수면' 표현은 회피적 sudden_sleep이 아니라 이 스템의 맥락(엄마의 휴식)에 부합하는 내용으로 해석하여 부재 처리. 결말 어구 반복과 교구(TV) 관련 화제 이동은 존재로 기록하되, 프롬프트 0회의 자발적 완결과 함께 고려할 때 회피 패턴이라기보다 연령 특성적 표현으로 보이며, 이 판단은 '이야기 전반의 패턴'(층위 2) 수준을 넘지 않음.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T09:09:11.371199+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "parental_quarrel",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": false,
+              "evidence": []
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "아동 인물이 '엄마, 아빠, 싸우지 마세요'라고 직접 말하며 부모 갈등을 중재/진정시키려 개입함 — 부모 갈등 스템에서 갈등 완화 시도로 코딩"
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "아빠 인물이 '괜찮아. 열쇠도 준비하면 돼'라며 아동을 위로하는 지지적 돌봄 장면을 구성"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가 화해했어요' — 부모가 갈등을 봉합하고 함께하는 상태로 회복되는 결말 구성"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "위로(괜찮다는 말)는 있으나 안아주기·사랑 표현 등 명시적 애정표현 진술은 전사문에 없음"
+                }
+              ]
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'죄송합니다. 제가 잃어버렸어요' — 존댓말 사과 및 정직한 고백"
+                },
+                {
+                  "timestamp_s": 12.0,
+                  "source": "transcript",
+                  "note": "부모에게 요청할 때 '싸우지 마세요'라는 존댓말 사용"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "부모 갈등 장면에서 아동 인물이 갈등 중단을 요청하는 중재적 개입(공감/도움)을 하고, 부모의 화해로 함께하는 상태가 회복되며(함께하기), 사과·존댓말(예의바름)이 나타남. 물건·활동의 공유나 명시적 애정표현 진술은 확인되지 않음."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'이거 안 해.' — 이야기 흐름 중 과제/소품에 대한 순간적 중단·거부 발화"
+                },
+                {
+                  "timestamp_s": 98.0,
+                  "source": "facial_au",
+                  "note": "AU04(미간 찌푸림) 0.9, AU20(입 수평 당김) 1.0, AU43(눈 감김) 0.8이 동시에 높게 관찰되는 긴장 양상"
+                },
+                {
+                  "timestamp_s": 120.0,
+                  "source": "facial_au",
+                  "note": "AU04 0.8, AU07 1.0, AU15 0.7, AU43 0.8 — 긴장·위축적 표정 구성이 후반부에 반복적으로 유지됨"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 4.0,
+                  "source": "transcript",
+                  "note": "'너무 화내고 있어서 무서워요' — 부모 갈등에 대한 두려움 정서를 직접 명명"
+                },
+                {
+                  "timestamp_s": 28.0,
+                  "source": "transcript",
+                  "note": "'하지만 너무 무서워요' — 부모의 부인 이후에도 두려움 지속을 반복 진술"
+                },
+                {
+                  "timestamp_s": 76.0,
+                  "source": "transcript",
+                  "note": "'솔직하게 못 말하겠어서 걱정하고 있어요' — 걱정 정서를 명시적으로 언어화"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 160.0,
+                  "source": "transcript",
+                  "note": "'끝이 났어?' / '네.' 검사자 질문에 응답하고 다음 과제로 넘어가는 협조적 태도. 프롬프트 없이 자발적으로(spontaneous, 쟁점 프롬프트 0회) 이야기를 완성함"
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "'무서워요'(2회)와 '걱정하고 있어요' 등 걱정·두려움 정서가 명시적으로 반복 언어화됨. '이거 안 해'라는 순간적 과제 중단 발화와 AU04·AU07·AU15·AU43 중심의 긴장 표정 패턴이 불안행동 근거. 검사자와의 상호작용은 협조적이어서 회피적 태도는 부재."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "아동 인물이 부모에게 직접 말을 걸고 울음으로 감정을 드러내며 관계 안에 머무름 — 혼자 떨어져 있는 장면 없음"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가'라는 도입 어절이 연속적으로 여러 번 반복되며 진행이 지체됨"
+                },
+                {
+                  "timestamp_s": 28.0,
+                  "source": "transcript",
+                  "note": "'너무 무서워요'가 4초·28초에 반복 진술됨"
+                },
+                {
+                  "timestamp_s": 84.0,
+                  "source": "transcript",
+                  "note": "'계속 열쇠를 찾아요 / 계속 솔직하게 말해요' — '계속' 구문 반복"
+                }
+              ]
+            },
+            "denial": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 20.0,
+                  "source": "transcript",
+                  "note": "부모 인물이 '아니야, 우리 싸우는 거 아니야'라고 갈등 자체를 부인 — 부모 갈등 스템에서 갈등 부인 주제로 코딩"
+                },
+                {
+                  "timestamp_s": 56.0,
+                  "source": "transcript",
+                  "note": "'화낸 거 아니라고 그렇게 얘기를 해줬어요' — 갈등 부인이 재차 서술됨"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "아빠의 '괜찮아' 위로를 받아들이고 '괜찮다고 해줘서 기분이 좋아졌어요'라고 수용함"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": []
+            },
+            "topic_deflection": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'이거 안 해.' — 부모 갈등 장면 서술 중 이야기 틀에서 벗어난 메타 발화가 삽입되며 흐름이 끊김"
+                },
+                {
+                  "timestamp_s": 164.0,
+                  "source": "transcript",
+                  "note": "'이번에는' — 이야기 종료 직후 다른 주제로 전환하려는 발화"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "부모가 화해하고 가족이 유지됨. 가족 해체·이별·파괴 장면 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "'엄마, 아빠가' 도입구와 '무서워요', '계속' 구문의 반복이 관찰됨. 부모 인물이 갈등을 '싸우는 거 아니야'라고 부인하는 주제가 두 차례 서술되어 부인 항목이 존재(단, 아동은 '하지만 너무 무서워요'로 자신의 정서는 유지). '이거 안 해'와 '이번에는' 같은 이야기 틀 밖 발화로 주제이탈 존재. 자기고립·도움의 수동적 거부·갑작스런 수면·가족파괴는 부재."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 92.0,
+                  "source": "transcript",
+                  "note": "'엄마가 팔을 쫓겨내요. 잘 가지고 있어야지' — 고백 직후 엄마 인물의 신체적 밀침/떨쳐냄과 질책 장면(전사 불명확 구간이나 신체적 반응으로 서술됨)"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "엄마의 질책 직후 아빠가 '괜찮아'로 진정시켜 공격이 상승하지 않고 곧 가라앉음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 92.0,
+                  "source": "transcript",
+                  "note": "신체 접촉적 반응이 언급되나 인물이 다치거나 상해를 입는 결과는 서술되지 않음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "부모 갈등→아동의 두려움·중재→화해→열쇠 분실 고백→질책→위로로 이어지는 흐름은 스템 맥락에서 이해 가능한 전개"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": []
+            }
+          },
+          "present_count": 1,
+          "rationale": "엄마 인물이 아동의 팔을 떨쳐내며 질책하는 장면이 한 차례 서술되어 공격성 항목은 존재로 표시. 다만 강도가 곧바로 아빠의 위로로 완화되어 공격상승·대인상해는 부재이며, 비전형적 반응이나 성적 행동은 관찰되지 않음. 해당 발화는 전사 품질이 낮은 구간이므로 검토자의 원자료 확인이 필요함."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 20.0,
+                  "source": "transcript",
+                  "note": "부모 갈등 제시 → 아동의 두려움과 중재 요청 → 부모의 부인 → 화해로 이어지는 인과적 연결이 유지됨"
+                },
+                {
+                  "timestamp_s": 76.0,
+                  "source": "transcript",
+                  "note": "열쇠 분실이라는 소재를 자기 책임으로 연결하고 고백→질책→위로로 마무리하는 두 번째 에피소드도 시작-중간-끝 구조를 가짐"
+                },
+                {
+                  "timestamp_s": 160.0,
+                  "source": "transcript",
+                  "note": "쟁점 프롬프트 0회로 자발적으로 이야기를 완결함"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가 화해했어요' — 부모 갈등의 해소"
+                },
+                {
+                  "timestamp_s": 116.0,
+                  "source": "transcript",
+                  "note": "'괜찮다고 해줘서 기분이 좋아졌어요' — 위로를 통한 정서 회복으로 종결"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 4.0,
+                  "source": "transcript",
+                  "note": "부모가 화내는 장면에서 '무서워요'라는 두려움 표현은 상황에 부합"
+                },
+                {
+                  "timestamp_s": 76.0,
+                  "source": "transcript",
+                  "note": "자기 잘못을 말하지 못하는 상황에서 '걱정하고 있어요' — 맥락에 맞는 정서 명명"
+                },
+                {
+                  "timestamp_s": 116.0,
+                  "source": "transcript",
+                  "note": "위로 받은 뒤 '기분이 좋아졌어요' — 사건과 정서 변화가 일치"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 116.0,
+                  "source": "transcript",
+                  "note": "정서와 사건 전개가 일치하며 결말이 긍정적으로 해소됨. 정서 급변이나 부정적 종결은 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "54개월 연령대 기준으로 인과적 연결이 비교적 잘 유지된 두 개의 에피소드(부모 갈등 화해 / 열쇠 분실 고백)를 프롬프트 없이 자발적으로 완결함. 두려움→걱정→안도로 이어지는 정서 명명이 사건 맥락과 일치하고 결말이 긍정적으로 해결됨. 반대방향 항목(정서적 비일관성·부정적 해결)은 부재."
+        }
+      },
+      "story_specific_notes_applied": "정식 명칭 Parental Quarrel에 따라 '열쇠'는 소재로만 취급하고, 채점 초점을 부모 갈등에 대한 아동의 반응에 두었다. 구체적으로 (1) '싸우지 마세요'라는 갈등 중단 요청을 '공감/도움'(갈등 중재 시도)으로, (2) 부모 인물의 '우리 싸우는 거 아니야'를 '부인'(갈등 자체의 부인 주제)으로, (3) 부모 화해를 '함께하기' 및 '긍정적 해결'로 코딩했다. 열쇠 분실 고백 에피소드는 부수적 하위 줄기로 보아 그 안의 질책/위로만 공격성·정서 항목 근거로 사용했다. 아동 연령 54개월을 고려해 단문 반복, 도입구 반복('엄마, 아빠가'), 화자 전환 표시의 미숙함은 반복 항목 근거로만 최소 반영하고 일관성 결함으로는 보지 않았으며, 딜레마의 일부 측면만 다루는 것도 이 연령대에서 이례적이지 않다고 보았다. 92초 부근 '팔을 쫓겨내요' 구간은 전사 품질이 낮아 검토자의 원자료 확인이 필요하다. 표정 저신뢰 프레임은 0%(0/83)이며, 자세·인형 추적·음성 운율 채널 데이터는 제공되지 않아 표정과 전사문만을 근거로 사용했다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T10:08:48.253068+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "reunion",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'우리 맛있는 것도 먹고 선물도 받았어요' — 가족이 선물/음식을 함께 나누는 장면을 '우리'로 서술"
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "전사 전체에서 어려움에 처한 인물을 돕거나 위로하는 행동/발화가 나타나지 않음. 재회 장면이 갈등 없이 진행되어 도움 제공 기회 자체가 서술되지 않음"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'같이 갔네요. 이제 집에 갈 거래요' — 가족이 함께 이동해 집으로 돌아가는 결합 장면"
+                },
+                {
+                  "timestamp_s": 66.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠랑 맛있는 것도 먹고' — 부모와 함께하는 활동으로 마무리"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 10.0,
+                  "source": "transcript",
+                  "note": "부모 도착에 대한 언급은 반복되나 안아주기·뽀뽀·'보고 싶었어' 같은 명시적 애정표현 발화나 인형 동작 서술은 없음"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "doll_tracking",
+                  "note": "간이대본 지시대로 차량이 아동과 일정 거리를 유지했고, 인형 간 신체적 접근·접촉으로 코딩할 만한 소품 궤적 기술이 제공되지 않음"
+                }
+              ]
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 22.0,
+                  "source": "transcript",
+                  "note": "'할머니, 할아버지, 할머니한테 감사합니다하고 인사라고 하고' — 돌봐준 조부모에게 감사 인사를 하는 예의 행동을 명시"
+                },
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'그래서 네, 하고' — 어른 말에 공손히 응답하는 관습적 예절 표현"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "재회 장면에서 가족의 함께하기(같이 귀가), 나눔(선물·음식을 '우리'가 함께), 예의(조부모에게 감사 인사)가 명확히 서술됨. 반면 직접적인 애정표현(포옹 등)이나 타인을 돕는 공감 행동은 언어·소품 근거 모두에서 확인되지 않음. 54개월 연령에서 관습적 인사와 가족 결합 서술이 나타나는 것은 발달적으로 무리 없는 수준."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "말더듬·중단·소품 만지작거림 등 불안행동으로 읽을 만한 전사 표지가 없고, 프롬프트 없이(0회) 자발적으로 이야기를 끝까지 진행"
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "facial_au",
+                  "note": "AU04(눈썹 내림) 0.5~0.9대가 구간 후반에 지속되나, 이야기 서술 중 집중·숙고와 구분되지 않아 불안행동의 독립 근거로는 불충분"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 10.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠 어디 있어요?'라는 탐색 발화가 있으나 곧바로 '엄마, 아빠가 왔어요'로 해소되며, 걱정·두려움을 나타내는 정서 어휘는 등장하지 않음"
+                },
+                {
+                  "timestamp_s": 92.0,
+                  "source": "facial_au",
+                  "note": "종료 시점 AU01/AU02 상승(0.7/0.6)이 관찰되나 과제 종료 상호작용 맥락이며 걱정 정서로 단정할 근거 부족"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'다 했어요. 끝났어? 네.' — 검사자에게 완료를 먼저 알리고 질문에 응답함. 회피·무응답 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "쟁점 프롬프트 0회로 자발적 완성되었고, 검사자 질문에 응답하며 마무리함. AU04 등 일부 상승 소견이 있으나 이야기 산출 중 집중과 구분되지 않아 불안 항목의 근거로 채택하지 않음."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "인물이 혼자 떨어져 있는 장면 없이 가족이 함께 귀가하고 함께 식사하는 결합 서술로 일관"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가 왔어요.'가 연속 2회 반복됨"
+                },
+                {
+                  "timestamp_s": 10.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠가 와가지고 우리를 데려간대요'로 부모 도착 언급이 3회째 재진술됨"
+                },
+                {
+                  "timestamp_s": 55.0,
+                  "source": "transcript",
+                  "note": "'맛있는 거 사왔대요. 선물 사왔대요. 우리 맛있는 거랑...' — 선물/음식 구절의 중복 재진술"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "스템의 전제(부모의 부재·귀가)를 부정하거나 사건 발생을 취소하는 발화 없음"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "부모의 접근·제안에 '네, 하고' 수용 반응을 보이며, 제공된 돌봄을 무시하거나 소극적으로 물리치는 장면 없음"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 잠드는 서술 없음"
+                },
+                {
+                  "timestamp_s": 60.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈감음) 값이 0.7~0.9로 높게 유지되나 이는 아동 본인의 표정 신호이며 이야기 속 '갑작스런 수면' 주제와는 별개"
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 14.0,
+                  "source": "transcript",
+                  "note": "'자동차 타고 싶은데?' — 재회 주제에서 벗어난 차량 소품으로 잠시 초점 이동"
+                },
+                {
+                  "timestamp_s": 55.0,
+                  "source": "transcript",
+                  "note": "이야기 후반이 재회 상호작용보다 선물·음식이라는 사물 주제로 옮겨가 마무리됨"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "가족이 해체되거나 구성원이 사라지는 전개 없음. '할머니는 이제 갔어요'는 돌봄 교대의 자연스러운 종결로 서술됨"
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "부모 도착 문구와 선물/음식 구절에서 동일 내용의 재진술이 반복되고, 재회의 정서적 핵심 대신 차량·선물 등 사물 쪽으로 초점이 이동하는 대목이 있어 반복과 주제이탈을 존재로 표시. 다만 고립·부인·돌봄 거부·가족파괴 등 위축 방향의 다른 항목은 근거가 없고, 전반적으로 관계 지향적 전개를 유지함. 54개월 연령에서 구절 반복은 서술 유지 전략으로도 흔히 나타남."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "때리기·부수기·위협 등 공격적 내용이나 소품 조작 서술이 전혀 없음"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "기저 공격 사건이 없어 강도 상승도 관찰되지 않음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 다치거나 상해를 입는 장면 없음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "기괴하거나 맥락에서 크게 벗어난 전개 없이 귀가–감사인사–선물–식사의 관습적 흐름을 유지"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "doll_tracking",
+                  "note": "차량이 아동과 일정 거리를 유지하는 기대 궤적과 일치, 비전형적 소품 사용 보고 없음"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "성적 내용이나 관련 인형 조작에 대한 서술 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "전사와 제공된 소품 궤적 정보 어디에서도 공격·상해·비전형·성적 내용의 근거가 확인되지 않음."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "부모 도착 인지 → 조부모에게 인사 → 함께 귀가 → 선물·식사로 시간 순서가 끊기지 않고 이어짐"
+                },
+                {
+                  "timestamp_s": 88.0,
+                  "source": "transcript",
+                  "note": "'다 했어요'로 이야기의 종결 지점을 스스로 표시함(프롬프트 0회, 자발적 완성)"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'같이 갔네요. 이제 집에 갈 거래요' — 재회 후 가족이 함께 귀가하는 해결"
+                },
+                {
+                  "timestamp_s": 66.0,
+                  "source": "transcript",
+                  "note": "'엄마, 아빠랑 맛있는 것도 먹고 선물도 받았어요' — 만족스러운 결말로 마무리"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 22.0,
+                  "source": "transcript",
+                  "note": "조부모에게 감사, 부모 재회에 긍정적 기대라는 상황에 부합하는 정서 톤"
+                },
+                {
+                  "timestamp_s": 30.0,
+                  "source": "facial_au",
+                  "note": "AU06(0.5)·AU12(0.8) 동반 상승 — 즐거운 귀가 장면 서술 구간에서 긍정 정서 표정과 내용이 정합"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 66.0,
+                  "source": "transcript",
+                  "note": "부정적 결말이나 해결되지 않은 채 중단되는 전개 없음"
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "facial_au",
+                  "note": "긍정적 내용 구간에 AU04·AU15 상승이 함께 나타나는 대목이 있으나 저신뢰 프레임 0%인 상태에서도 단일 지표만으로 정서 불일치를 단정하기 어려워 부재로 판단"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "프롬프트 없이 시작–전개–종결을 갖춘 이야기를 산출했고, 재회가 가족의 귀가와 함께하는 활동으로 긍정적으로 해결됨. 내용과 정서 톤도 대체로 부합. 다만 재회의 정서(그리움·반가움)를 직접 언어화하기보다 행위와 사물 중심으로 표현하는 경향이 있어, 정서 명명의 풍부함 측면은 제한적임(54개월에서는 흔한 수준)."
+        }
+      },
+      "story_specific_notes_applied": "본 스템이 애착 관련 정보가 많은 재회 장면임을 감안해, '부모 접근·재결합'의 처리 방식에 초점을 두고 코딩함. 간이대본 지시(차를 탁자 밑에서 꺼내되 절대 아동 곁으로 가져가지 않음)에 따라 차량이 아동과 일정 거리를 유지한 것은 기대된 소품 궤적과 일치하므로, 차량의 비접근을 아동의 회피 신호로 해석하지 않았음. 또한 아동의 '자동차 타고 싶은데?' 발화는 이 절차적 소품 배치와 맞물린 것일 수 있어 주제이탈로는 표시하되 회피 방향의 강한 지표로 가중하지 않음. 54개월 연령 기준으로 구절 반복, 정서 어휘보다 행위·사물 중심 서술, 딜레마의 한 측면만 다루는 것은 정상 발달 범위로 간주함. 표정 저신뢰 프레임 0%로 AU 자료의 질은 양호하나, 단일 AU 상승(AU04, AU15, AU43 등)은 이야기 산출 중 집중·응시 변화와 구분이 어려워 전사 근거와 함께 수렴할 때만 채택함. 해석은 이 한 편의 이야기 내 패턴 기술에 한정하며, 애착 분류·위험 판단 등 상위 층위 추론은 하지 않음.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T10:46:41.067566+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "spilled_juice",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'바나나 주스도 같이 먹을 거예요' — 주스를 함께 나눠 먹는 결말로, 자원을 공유하는 장면이 서술됨"
+                },
+                {
+                  "timestamp_s": 196.0,
+                  "source": "transcript",
+                  "note": "'자꾸 사람에 바나나 주스 안 준다'는 불만 언급 후 '같이 먹을 거예요'로 전환, 분배/공유 주제를 아동이 직접 다룸"
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "'엄마가 ... 옷을 갈아입혀줘야 일단은' — 양육자가 젖은 옷을 갈아입혀 주는 돌봄 행동"
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'엄마는 와가지고 이걸 치워줬어요' — 쏟아진 것을 치워주는 조력 행동 반복 서술"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 206.0,
+                  "source": "transcript",
+                  "note": "'이렇게 다 앉았어요' — 가족 인형들이 함께 모여 앉는 장면으로 마무리"
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'같이 먹을 거예요' — 함께 먹는 활동으로 결말 구성"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "안아주기·뽀뽀·'사랑해' 등 명시적 애정표현 발화나 인형 접촉 서술이 전사문 전체에 나타나지 않음"
+                }
+              ]
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 160.0,
+                  "source": "transcript",
+                  "note": "'죄송하다고 하고' — 갈등 후 사과 표현이 등장(2회 반복 언급)"
+                },
+                {
+                  "timestamp_s": 232.0,
+                  "source": "transcript",
+                  "note": "검사자의 '얘 끝을 낳니?'(끝났니?) 질문에 '네'로 응답하며 협조적 태도 유지"
+                }
+              ]
+            }
+          },
+          "present_count": 4,
+          "rationale": "젖은 옷 갈아입히기·치워주기 등 양육자의 조력(공감/도움), 사과 표현(예의바름), 주스를 '같이 먹기'(공유)와 '다 앉았어요'(함께하기)가 자발적으로 서술됨. 다만 신체적·언어적 애정표현은 확인되지 않아 부재로 코딩."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈 감김)이 전 구간 높게 기록되나 이는 단일 신호로, 불안행동으로 해석할 수 있는 안절부절·자기접촉 등 자세/움직임 자료가 제공되지 않음"
+                },
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "발화가 끊기지 않고 계속 이어지며 과제 이탈이나 중단 요청이 없음"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'걱정된다', '무섭다', '어떡해' 등 걱정 정서를 나타내는 발화가 없음"
+                },
+                {
+                  "timestamp_s": 152.0,
+                  "source": "transcript",
+                  "note": "혼나는 장면에서도 정서 명명 없이 사건 진술로만 전개됨"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 232.0,
+                  "source": "transcript",
+                  "note": "검사자 질문에 '네'로 즉시 응답, 거부·무응답·회피 없음"
+                },
+                {
+                  "timestamp_s": 264.0,
+                  "source": "transcript",
+                  "note": "'이런 걸로 하는 거예요', '비슷한 걸로 할 거야' 등 검사 진행에 자발적으로 참여하는 상호작용 유지"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "쟁점 프롬프트 0회로 자발적 완성되었고, 검사자 질문에 응답하며 과제를 끝까지 이어감. 걱정 정서 명명이나 검사자 회피 발화가 없고, 제공된 비언어 자료는 표정 AU뿐이어서 불안행동의 근거로 삼기 부족함."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 206.0,
+                  "source": "transcript",
+                  "note": "주인공이 혼자 떨어지거나 방에 들어가는 장면 없이 '다 앉았어요'로 가족이 함께 있는 구성"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 4.0,
+                  "source": "transcript",
+                  "note": "'그래서 엄마가 / 엄마가 / 엄마 어떻게 이렇게 가지고 와가지고' — 동일 어구 반복적 되풀이"
+                },
+                {
+                  "timestamp_s": 36.0,
+                  "source": "transcript",
+                  "note": "'엄마는 / 엄마는 와가지고' 반복"
+                },
+                {
+                  "timestamp_s": 44.0,
+                  "source": "transcript",
+                  "note": "'이걸 치워줬어요 / 이걸 치워주고' 동일 행위 반복 서술"
+                },
+                {
+                  "timestamp_s": 156.0,
+                  "source": "transcript",
+                  "note": "'죄송하다고 하고 ... 죄송하다고 하고' 동일 구절 재반복"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'희진이가 옷이 다 젖었어요'로 스템의 사건(쏟은 일)을 그대로 인정하며 시작, 사건 부인이 없음"
+                },
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "'동생이 쏟았다고' 놀림 장면에서도 사건 자체를 없었던 일로 만들지 않음"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 8.0,
+                  "source": "transcript",
+                  "note": "엄마의 옷 갈아입히기와 치워주기를 주인공이 받아들이고 '깨끗해졌어요'로 이어짐 — 도움 수용"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "잠자기/누움으로 이야기를 종료하는 장면이 없음"
+                },
+                {
+                  "timestamp_s": 0.0,
+                  "source": "facial_au",
+                  "note": "AU43(눈 감김)이 지속적으로 높게 기록되지만 이야기 내용상 인형의 수면 전환은 서술되지 않음"
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 56.0,
+                  "source": "transcript",
+                  "note": "'저한테 또 새로운 의미가 됐어요' — 이야기 줄기와 무관한 발화로 흐름이 이탈됨"
+                },
+                {
+                  "timestamp_s": 264.0,
+                  "source": "transcript",
+                  "note": "'이런 걸로 하는 거예요 / 비슷한 걸로 할 거야' — 이야기 내용에서 검사 절차·교구 쪽으로 화제 이동"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 206.0,
+                  "source": "transcript",
+                  "note": "가족 구성원이 흩어지거나 관계가 파괴되는 전개 없이 모두 함께 앉아 주스를 먹는 결말"
+                }
+              ]
+            }
+          },
+          "present_count": 2,
+          "rationale": "사건 부인·고립·수면 전환·가족파괴는 없으나, 동일 어구('엄마가', '치워주고', '죄송하다고')의 반복과 이야기 흐름을 벗어나는 발화('새로운 의미가 됐어요', 검사 교구 언급)가 관찰되어 반복·주제이탈을 존재로 코딩. 54개월 연령대의 언어 산출 특성상 어구 반복 자체는 흔할 수 있다는 점을 함께 고려함."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 116.0,
+                  "source": "transcript",
+                  "note": "'근데 자꾸 희진이를 놀려요' — 형제간 놀림(언어적 공격)"
+                },
+                {
+                  "timestamp_s": 132.0,
+                  "source": "transcript",
+                  "note": "'희진이랑 동생이랑 싸워요' — 다툼 장면 등장"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 148.0,
+                  "source": "transcript",
+                  "note": "싸움 직후 '엄마 아빠가 또 싸우지 말라고 혼냈어요'로 부모가 개입해 갈등이 진정되며, 공격 강도가 점점 커지는 전개가 아님"
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "이후 '같이 먹을 거예요'로 화해적 방향으로 전환"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 132.0,
+                  "source": "transcript",
+                  "note": "'싸워요'라는 일반적 표현에 머물고 때림·다침·피 등 신체적 상해 서술은 없음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "쏟은 사건→옷 갈아입기→형제 갈등→사과→함께 먹기 순으로 스템 맥락에 부합하는 전개이며, 기괴하거나 맥락과 무관한 사건 삽입은 없음"
+                },
+                {
+                  "timestamp_s": 56.0,
+                  "source": "transcript",
+                  "note": "'새로운 의미가 됐어요' 같은 불명확한 발화는 있으나 비전형적 사건 전개라기보다 발화 혼선 수준으로 판단"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "성적 내용·행동 서술이 전사문 전체에 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "형제간 놀림과 싸움이라는 갈등 요소가 도입되어 공격성은 존재로 코딩. 그러나 부모 개입과 사과로 이어져 상승 양상은 없고, 신체적 상해·비전형 반응·성적 행동은 관찰되지 않음."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'옷이 다 젖었어요'로 스템 사건을 받고 → 갈아입기 → 치우기 → 갈등 → 혼남/사과 → 함께 먹기로 시간 순서가 유지됨"
+                },
+                {
+                  "timestamp_s": 152.0,
+                  "source": "transcript",
+                  "note": "'싸우지 말라고 혼냈어요 → 죄송하다고 하고'처럼 원인-결과 연결이 성립"
+                },
+                {
+                  "timestamp_s": 56.0,
+                  "source": "transcript",
+                  "note": "'저한테 또 새로운 의미가 됐어요' 등 국소적 흐린 구간이 있으나 전체 줄기는 추적 가능"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 24.0,
+                  "source": "transcript",
+                  "note": "'다 새로운 옷을 입었어요 ... 희진이는 깨끗해졌어요' — 문제 상황의 복구"
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'바나나 주스도 같이 먹을 거예요 / 이렇게 다 앉았어요' — 갈등 후 함께 모이는 긍정적 마무리"
+                },
+                {
+                  "timestamp_s": 160.0,
+                  "source": "transcript",
+                  "note": "'죄송하다고 하고' — 사과를 통한 관계 회복"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 152.0,
+                  "source": "transcript",
+                  "note": "혼남 상황에 사과('죄송하다고')로 반응해 상황에 맞는 정서·행동 표현"
+                },
+                {
+                  "timestamp_s": 236.0,
+                  "source": "facial_au",
+                  "note": "결말부(주스를 같이 먹는 장면 서술 구간)에서 AU06=0.4, AU12=0.8, AU10=1.0 등 긍정적 표정 활성이 함께 관찰됨"
+                },
+                {
+                  "timestamp_s": 64.0,
+                  "source": "facial_au",
+                  "note": "AU12=0.7, AU06=0.5로 이야기 진행 중 긍정 정서 신호가 나타나 내용과 표정이 상반되지 않음"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "이야기가 파국·미해결로 끝나지 않고 함께 먹기·모이기로 종결됨"
+                },
+                {
+                  "timestamp_s": 152.0,
+                  "source": "transcript",
+                  "note": "부정 사건(놀림·싸움) 뒤에 사과와 부모 개입이 따라와 정서 흐름이 일관됨"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "쏟은 사건을 인정하고 복구(옷 갈아입기·치우기), 형제 갈등, 사과, 함께 먹기까지 시간·인과 순서가 유지된 자발적 이야기. 결말이 긍정적이며 표정 자료에서도 결말부 긍정 정서 활성이 동반되어 정서-내용 간 불일치 근거는 없음."
+        }
+      },
+      "story_specific_notes_applied": "제공된 story_specific_notes가 '—'(없음)이므로 spilled_juice 스템의 표준 의미를 적용: 쏟은 사건의 인정 여부, 정리·회복(치우기/옷 갈아입기), 책임·사과, 양육자 반응을 중심으로 코딩함. 완료 방식은 spontaneous(쟁점 프롬프트 0회)로, 아동이 스스로 사건을 다루고 해결까지 이끌었다는 점을 정서적 통합 판단에 반영. 54개월 연령대를 고려해 (1) 어구 반복·문장 미완결은 발달상 흔한 언어 산출 특성으로 보아 '반복'은 표시하되 강한 해석은 하지 않았고, (2) 딜레마의 한쪽 측면(정리·회복)에 비중이 쏠린 것은 정상 범위로 보았음. 비언어 자료는 표정 AU만 제공되어(자세·인형추적·음성 없음) AU43(눈 감김) 등 단일 신호를 불안·수면으로 확대 해석하지 않았음. 이야기 전반 패턴(층위 2): 사건 인정 → 양육자 도움 수용 → 형제 갈등 → 사과·부모 개입 → 함께 나눠 먹는 재결합의 흐름으로, 공감/온화와 정서적 통합 지표가 다수 확인되고 공격 요소는 도입되나 관계 회복으로 수습되는 패턴. 이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-28T16:38:13.854199+00:00"
+    },
+    {
+      "session_id": "adult_demo_01",
+      "child_age_months": 54,
+      "stem_name": "three_is_too_many",
+      "completion_status": "complete",
+      "response_mode": "spontaneous",
+      "issue_prompt_count": 0,
+      "codes": {
+        "empathy_warmth": {
+          "items": {
+            "sharing": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'나도 같이 끼워줘' — 놀이(공놀이/무궁화꽃) 참여 기회를 셋이 함께 나누는 방향으로 이야기를 전개함"
+                },
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'우리 무궁화 꽃이 피었습니다. 하자 같이' — 놀이를 세 인물이 공유하는 대안 제시"
+                }
+              ]
+            },
+            "empathy_help": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "'얘는 잘 못 뛰니까 깍두기 시켜주자' — 능력이 부족한 동생의 입장을 고려한 규칙 조정(배려적 중재)"
+                },
+                {
+                  "timestamp_s": 120.0,
+                  "source": "transcript",
+                  "note": "'그래도 동생이 술래하고 싶다고 하면 술래도 시켜줄 거예요' — 동생의 바람을 예상하고 수용하는 도움 반응"
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "'공놀이 말고 다른 거 하자고 해요' — 배제 갈등을 해소하기 위해 주인공이 능동적으로 중재"
+                }
+              ]
+            },
+            "togetherness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 90.0,
+                  "source": "transcript",
+                  "note": "'같이 무궁화 꽃이 피었습니다 라고 해요. 이렇게 놀고 있어요' — 세 인물이 함께 노는 장면으로 수렴"
+                },
+                {
+                  "timestamp_s": 110.0,
+                  "source": "transcript",
+                  "note": "'동생도 같이 할 거예요' — 배제된 인물을 포함시키는 함께하기"
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'우리 다른 거 하자 … 공놀이 한 명씩 찾아오는 놀이를 할 거예요' — 셋이 지속적으로 함께하는 놀이로 이어감"
+                }
+              ]
+            },
+            "affection_expression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "안아주기·좋아한다는 말 등 명시적 애정표현 발화나 인형 간 애정 접촉 묘사가 전사문 전체에 나타나지 않음. 배려는 규칙 조정 형태로만 표현됨"
+                }
+              ]
+            },
+            "politeness": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 80.0,
+                  "source": "transcript",
+                  "note": "'그래 그러면 누가 먼저 할래' — 순서를 묻고 의논하는 상호 존중적 대사"
+                },
+                {
+                  "timestamp_s": 340.0,
+                  "source": "transcript",
+                  "note": "검사자의 '또 다음 인형 놀이를 해볼까?'에 '네'라고 협조적으로 응답"
+                }
+              ]
+            }
+          },
+          "present_count": 4,
+          "rationale": "배제 갈등을 인물 간 협상으로 풀고(공유·함께하기), 달리기를 못하는 동생을 위해 '깍두기'라는 규칙 조정을 제안하며(공감/도움), 순서를 묻는 예의바른 대사가 나타남. 명시적 애정표현(신체적 다정함·애정 언어)은 관찰되지 않음."
+        },
+        "performance_anxiety": {
+          "items": {
+            "anxious_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "말더듬·중단·재확인 요청 없이 자발적으로(프롬프트 0회) 이야기를 끝까지 전개함"
+                },
+                {
+                  "timestamp_s": 160.0,
+                  "source": "facial_au",
+                  "note": "AU 궤적이 전 구간 중간 강도로 변동하며 특정 시점의 급격한 긴장 집중(AU04+AU07+AU20 동시 고강도 지속)이 반복적 패턴으로 확인되지 않음. 표정 저신뢰 프레임 1%로 자료 질은 양호"
+                }
+              ]
+            },
+            "worry_affect": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'동생이 속상해서 울어와요'는 이야기 속 인물의 정서 묘사이며, 아동 자신의 걱정·불안 표현(예: '잘 못하겠어요', '무서워')은 나타나지 않음"
+                }
+              ]
+            },
+            "examiner_avoidance": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 180.0,
+                  "source": "transcript",
+                  "note": "검사자의 '왜 끝이 났니?' 질문에 '아니요. 얘가 잘 안 서요'라고 즉시 응답하며 상호작용을 유지"
+                },
+                {
+                  "timestamp_s": 210.0,
+                  "source": "transcript",
+                  "note": "'재밌겠죠?'라며 검사자에게 먼저 말을 걸고 확인을 구하는 접근적 태도"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "프롬프트 없이 자발적으로 완결했고, 검사자 질문에 즉각 응답하며 오히려 먼저 말을 거는 등 접근적이었다. 걱정 정서나 회피적 태도의 언어적 근거가 없고 비언어 신호에서도 일관된 긴장 패턴이 관찰되지 않음."
+        },
+        "avoidant_withdrawal": {
+          "items": {
+            "self_isolation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 110.0,
+                  "source": "transcript",
+                  "note": "인물이 혼자 떨어져 나가는 장면 없이 '동생도 같이 할 거예요'처럼 집단 참여로 일관되게 귀결됨"
+                }
+              ]
+            },
+            "repetition": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 100.0,
+                  "source": "transcript",
+                  "note": "'무궁화 꽃이 피었습니다' 구절과 '얘는 달리기를 못하니까 깍두기' 설명이 여러 차례 되풀이됨"
+                },
+                {
+                  "timestamp_s": 190.0,
+                  "source": "transcript",
+                  "note": "'이렇게 놀 거예요. 이렇게 놀 건데.' — 동일 표현의 연속 반복"
+                }
+              ]
+            },
+            "denial": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "'동생이 속상해서 울어와요', '이 친구가 더 화를 내요'처럼 갈등과 부정 정서를 부인하지 않고 그대로 다룸"
+                }
+              ]
+            },
+            "passive_refusal_of_help": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 60.0,
+                  "source": "transcript",
+                  "note": "도움 제안이 거부되지 않고 '그래 그러면 누가 먼저 할래'로 수용되어 협력으로 이어짐"
+                }
+              ]
+            },
+            "sudden_sleep": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 잠드는 전개나 아동의 수면 관련 발화가 전혀 없음"
+                }
+              ]
+            },
+            "topic_deflection": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 180.0,
+                  "source": "transcript",
+                  "note": "'얘가 잘 안 서요'는 인형 조작상의 실무적 언급으로 즉시 이야기로 복귀했고, 스템의 배제 딜레마에서 벗어난 다른 주제로 전환한 구간은 없음"
+                }
+              ]
+            },
+            "family_disruption": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "가족 구성원의 이탈·해체·사고 등 가족파괴적 전개가 나타나지 않고, 형제 관계가 유지·강화됨"
+                }
+              ]
+            }
+          },
+          "present_count": 1,
+          "rationale": "회피·위축 지표는 대부분 부재하며, 갈등을 직면해 해결로 이끈다. 다만 놀이 이름과 '깍두기' 규칙 설명이 여러 번 되풀이되어 반복은 존재로 표시했다. 54개월 아동이 좋아하는 놀이 장면을 즐기며 되풀이하는 것은 이 연령의 흔한 서술 방식일 수 있으므로 정체·방어적 반복으로 과대 해석하지 않는다."
+        },
+        "dysregulated_aggression": {
+          "items": {
+            "aggression": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 20.0,
+                  "source": "transcript",
+                  "note": "'싫어', '나는 어린이는 안 놀 거야', '너 달리기도 못하잖아'는 스템에 내재된 배제·거절 대사로, 신체적 공격이나 파괴 행동으로 확장되지 않음"
+                },
+                {
+                  "timestamp_s": 40.0,
+                  "source": "transcript",
+                  "note": "거절 직후 바로 '다른 거 하자'는 중재로 전환되어 공격적 전개가 이어지지 않음"
+                }
+              ]
+            },
+            "aggression_escalation": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 30.0,
+                  "source": "transcript",
+                  "note": "'이 친구가 더 화를 내요'로 긴장이 한 차례 올라가나 곧바로 협상·수용으로 하강하며, 공격 강도가 누적적으로 상승하는 구간이 없음"
+                }
+              ]
+            },
+            "interpersonal_harm": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "인물이 다치거나 때리는 장면, 인형 간 타격을 묘사한 발화가 없음"
+                }
+              ]
+            },
+            "atypical_response": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "또래 놀이 상황에 부합하는 현실적 전개로 일관되며, 기괴하거나 맥락과 동떨어진 사건이 삽입되지 않음"
+                }
+              ]
+            },
+            "sexualized_behavior": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "성적 내용이나 관련 인형 조작 묘사가 전혀 없음"
+                }
+              ]
+            }
+          },
+          "present_count": 0,
+          "rationale": "거절 대사('싫어', '너 달리기도 못하잖아')는 스템이 제시하는 배제 딜레마의 구성 요소로 언어적 갈등 수준에 머물렀고, 신체적 공격·상해·상승 패턴이나 비전형·성적 요소는 확인되지 않음."
+        },
+        "emotional_integration": {
+          "items": {
+            "narrative_coherence": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "동생의 속상함 → 친구의 거절 → 주인공의 중재 제안 → 규칙 조정 → 함께 놀이 → 새로운 놀이로 전환의 인과적 흐름이 이어짐"
+                },
+                {
+                  "timestamp_s": 130.0,
+                  "source": "transcript",
+                  "note": "'달리기를 못하니까 깍두기/술래'처럼 앞서 제시한 인물 특성을 뒤 장면에서 일관되게 유지함"
+                }
+              ]
+            },
+            "positive_resolution": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 90.0,
+                  "source": "transcript",
+                  "note": "'같이 무궁화 꽃이 피었습니다 라고 해요' — 배제 갈등이 세 인물의 공동 놀이로 해결됨"
+                },
+                {
+                  "timestamp_s": 200.0,
+                  "source": "transcript",
+                  "note": "'그래 그럼 이제 … 한 명씩 찾아오는 놀이를 할 거예요' — 합의된 놀이 전환으로 마무리"
+                }
+              ]
+            },
+            "context_appropriate_affect": {
+              "present": true,
+              "evidence": [
+                {
+                  "timestamp_s": 0.0,
+                  "source": "transcript",
+                  "note": "배제 장면에서 '속상해서 울어와요', '더 화를 내요'로 인물 정서를 상황에 맞게 부여"
+                },
+                {
+                  "timestamp_s": 210.0,
+                  "source": "transcript",
+                  "note": "'재밌겠죠?' — 협력적 놀이 장면에서 즐거운 정서를 맥락에 맞게 표현"
+                },
+                {
+                  "timestamp_s": 36.0,
+                  "source": "facial_au",
+                  "note": "협력·놀이 전개 구간에서 AU06/AU12(뺨올림·입꼬리올림) 동반 상승이 관찰되어 이야기 내용과 표정 정서의 방향이 어긋나지 않음"
+                }
+              ]
+            },
+            "emotional_incoherence_negative_resolution": {
+              "present": false,
+              "evidence": [
+                {
+                  "timestamp_s": 90.0,
+                  "source": "transcript",
+                  "note": "부정적 결말이나 해결 없는 중단이 없고, 정서 표현과 사건 내용이 서로 모순되는 구간이 확인되지 않음"
+                },
+                {
+                  "timestamp_s": 180.0,
+                  "source": "transcript",
+                  "note": "'왜 끝이 났니?'에 '아니요'라며 이야기를 계속 이어간 뒤 합의된 놀이로 마무리함"
+                }
+              ]
+            }
+          },
+          "present_count": 3,
+          "rationale": "갈등 제시–중재–해결의 인과 구조가 유지되고, 배제된 동생을 포함시키는 긍정적 해결로 마무리되며, 인물 정서 부여와 아동의 표정 정서 방향이 내용과 상충하지 않음. 반대방향 항목(비일관성·부정적 해결)은 부재."
+        }
+      },
+      "story_specific_notes_applied": "제공된 story_specific_notes가 '—'(없음)이므로 스템별 코드 의미 재정의 없이 표준 정의를 적용했다. 다만 이 스템(three_is_too_many, 또래 배제 딜레마)의 구조상 '싫어/너 달리기도 못하잖아' 같은 거절 대사는 스템이 요구하는 갈등 재현으로 보아 공격성으로 코딩하지 않았다. 연령 54개월을 고려해, 놀이 이름·규칙 설명의 되풀이와 결말의 다소 느슨한 종결은 이 연령의 정상적 서술 특징 범위로 감안했으며, 반복만 존재로 표시했다. 해석은 이야기 전반의 패턴(층위 2)까지만 기술했고 진단·위험분류·타 자료 통합은 하지 않았다.",
+      "interpretation_layer": "1_single_story_observation",
+      "disclaimer": "이 결과는 진단이 아니라 이해를 돕기 위한 선별·탐색 목적이며, 정확한 평가는 전문가 상담을 통해 받으실 수 있습니다.",
+      "model_version": "claude-opus-5",
+      "generated_at": "2026-09-30T09:21:58.771364+00:00"
+    }
+  ]
+}
