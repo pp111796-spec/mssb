@@ -200,6 +200,17 @@ def save_stem_coding(session_id: str, stem_name: str, result: StemCodingResult, 
     return _write_model(session_dir(session_id) / "coding" / f"{stem_name}_{suffix}.json", result)
 
 
+def revert_stem_review(session_id: str, stem_name: str) -> Path | None:
+    """스템 검토본을 지우지 않고 시각 붙은 .bak 파일로 옮겨, 화면이 다시 AI 원본을 보게 한다."""
+    reviewed = session_dir(session_id) / "coding" / f"{stem_name}_reviewed.json"
+    if not reviewed.exists():
+        return None
+    stamp = utc_now_iso().replace(":", "").replace("+", "_")
+    backup = reviewed.with_name(f"{stem_name}_reviewed.{stamp}.bak.json")
+    reviewed.replace(backup)
+    return backup
+
+
 def load_stem_coding(session_id: str, stem_name: str, reviewed: bool = False) -> StemCodingResult:
     suffix = "reviewed" if reviewed else "ai_codes"
     return _read_model(session_dir(session_id) / "coding" / f"{stem_name}_{suffix}.json", StemCodingResult)

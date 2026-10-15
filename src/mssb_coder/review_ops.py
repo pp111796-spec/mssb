@@ -9,7 +9,15 @@ from dataclasses import dataclass
 from pydantic import ValidationError
 
 from mssb_coder import storage
-from mssb_coder.schema import ExaminerSegment, StemTimestamp
+from mssb_coder.schema import (
+    CategoryCode,
+    CompletionStatus,
+    ExaminerSegment,
+    ItemCode,
+    ResponseMode,
+    StemCodingResult,
+    StemTimestamp,
+)
 from mssb_coder.segmentation import StoryStemsConfig
 from mssb_coder.transcribe import TranscriptSegment
 
@@ -194,4 +202,51 @@ def session_progress(session_id: str) -> SessionProgress:
         scored_count=len(scored),
         has_synthesis=has_synthesis,
         synthesis_reviewed=synthesis_reviewed,
+    )
+
+
+@dataclass
+class StemEdits:
+    """스템 상세 화면에서 검사자가 고친 값. 항목 키는 (범주 id, 항목 id), 근거 키는 (범주 id, 항목 id, 근거 순번)."""
+
+    completion_status: CompletionStatus
+    response_mode: ResponseMode
+    issue_prompt_count: int
+    present: dict[tuple[str, str], bool]
+    rationale: dict[str, str]
+    excluded_evidence: set[tuple[str, str, int]]
+
+
+def apply_stem_edits(result: StemCodingResult, edits: StemEdits) -> StemCodingResult:
+    """AI 채점 결과에 검사자 수정을 반영한 검토본을 만든다. 존재 항목 개수(present_count)는 다시 센다."""
+    codes = {}
+    for category_id, category in result.codes.items():
+        items = {}
+        for item_id, item in category.items.items():
+            evidence = [
+                ev for index, ev in enumerate(item.evidence)
+                if (category_id, item_id, index) not in edits.excluded_evidence
+            ]
+            items[item_id] = ItemCode(present=edits.present.get((category_id, item_id), item.present), evidence=evidence)
+        codes[category_id] = CategoryCode(
+            items=items,
+            present_count=sum(1 for item in items.values() if item.present),
+            rationale=edits.rationale.get(category_id, category.rationale).strip(),
+        )
+    return result.model_copy(
+        update={
+            "completion_status": edits.completion_status,
+            "response_mode": edits.response_mode,
+            "issue_prompt_count": edits.issue_prompt_count,
+            "codes": codes,
+        }
+    )
+
+
+def can_play_evidence(result: StemCodingResult, stem: StemTimestamp | None, timestamp_s: float) -> bool:
+    """근거 시각이 세션 절대 시각으로 기록됐고 현재 구간 안에 있을 때만 영상 재생 버튼을 켠다."""
+    return (
+        stem is not None
+        and result.timestamp_basis == "session_absolute"
+        and stem.start_s <= timestamp_s <= stem.end_s
     )

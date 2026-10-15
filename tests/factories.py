@@ -75,6 +75,7 @@ def synthesis(session_id="s1") -> SessionSynthesis:
                 evidence=[
                     SynthesisEvidence(stem_name="spilled_juice", timestamp_s=35.0, note="도움"),
                     SynthesisEvidence(stem_name="spilled_juice", timestamp_s=35.0, note="같은 근거 반복"),
+                    SynthesisEvidence(stem_name="lost_dog", timestamp_s=75.0, note="강아지를 찾았다"),
                 ],
             )
         ],

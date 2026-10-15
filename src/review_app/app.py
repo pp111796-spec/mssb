@@ -60,9 +60,6 @@ def main() -> None:
         return
 
     selected = st.sidebar.selectbox("세션 선택", sessions)
-    if selected != st.session_state.get("selected_session"):
-        st.session_state["selected_session"] = selected
-        st.session_state.pop("drilldown_stem", None)
 
     has_synthesis = False
     try:

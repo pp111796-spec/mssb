@@ -120,8 +120,8 @@ def render(session_id: str) -> None:
                     f"{stem_label(stems, ev.stem_name)} · {ev.timestamp_s:.1f}s",
                     key=widget_key(session_id, "evidence", i, j),
                     help=plain(ev.note) or None,
-                ):
-                    st.session_state["drilldown_stem"] = ev.stem_name
+                ) and ev.stem_name in {r.stem_name for r in stem_results}:
+                    st.session_state[widget_key(session_id, "stem_select")] = ev.stem_name
 
     if synthesis.single_story_notable_signals:
         st.header("단발성 신호 (패턴 아님)")
@@ -161,8 +161,16 @@ def render(session_id: str) -> None:
         st.success("저장했습니다.")
 
     st.divider()
-    drilldown_stem = st.session_state.get("drilldown_stem")
-    if drilldown_stem:
-        render_stem_detail(session_id, drilldown_stem)
-    else:
-        st.caption("위 근거 버튼을 클릭하면 해당 스템의 상세(AI 채점 근거)가 여기 표시됩니다.")
+    st.header("이야기별 상세 검토")
+    names = [r.stem_name for r in stem_results]
+    if not names:
+        st.caption("스템 채점 결과가 없습니다.")
+        return
+    st.caption("위 근거 버튼을 누르거나 아래에서 이야기를 고르면 채점 근거를 확인하고 고칠 수 있습니다.")
+    selected = st.selectbox(
+        "이야기",
+        names,
+        format_func=lambda n: stem_label(stems, n) + (" (검토본)" if storage.stem_reviewed_exists(session_id, n) else ""),
+        key=widget_key(session_id, "stem_select"),
+    )
+    render_stem_detail(session_id, selected)

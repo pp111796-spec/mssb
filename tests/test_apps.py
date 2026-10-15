@@ -9,6 +9,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 
 from factories import make_session  # noqa: E402
 from mssb_coder import storage  # noqa: E402
+from mssb_coder.schema import CompletionStatus  # noqa: E402
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 REVIEW_APP = str(SRC / "review_app" / "app.py")
@@ -46,10 +47,12 @@ def test_review_app_drilldown_opens_stem_detail(data_dir):
     at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
 
     evidence_buttons = [b for b in at.button if ":evidence:" in (b.key or "")]
-    assert len(evidence_buttons) == 2  # 같은 근거가 두 번 나와도 key 충돌 없음
-    evidence_buttons[0].click().run()
+    assert len(evidence_buttons) == 3  # 같은 근거가 두 번 나와도 key 충돌 없음
+    evidence_buttons[2].click().run()  # 「뽀삐가 없어졌어요」 근거
 
     assert not at.exception
+    stem_select = next(s for s in at.selectbox if (s.key or "").endswith(":stem_select"))
+    assert stem_select.value == "lost_dog"
     assert any("스템 상세" in str(s.value) for s in at.subheader)
 
 
@@ -133,3 +136,29 @@ def test_segmentation_page_blocks_invalid_examiner_segment_text(data_dir):
     assert any("끝이 시작보다 뒤" in str(e.value) for e in at.error)
     confirm = next(b for b in at.button if (b.key or "").endswith(":confirm_segments"))
     assert confirm.disabled
+
+
+def test_stem_edit_saves_reviewed_copy_used_by_report_then_reverts(data_dir):
+    make_session()
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+
+    first_item = next(c for c in at.checkbox if ":present:empathy_warmth:" in (c.key or "") and c.value)
+    first_item.uncheck().run()
+    rationale = next(t for t in at.text_area if (t.key or "").endswith(":rationale:empathy_warmth"))
+    rationale.input("아이는 인물을 돕지 않았다.").run()
+    next(s for s in at.selectbox if (s.key or "").endswith(":completion")).set_value(CompletionStatus.PARTIAL).run()
+    next(b for b in at.button if (b.key or "").endswith(":save")).click().run()
+
+    assert not at.exception
+    saved = storage.load_stem_coding("s1", "spilled_juice", reviewed=True)
+    assert saved.completion_status == CompletionStatus.PARTIAL
+    assert saved.codes["empathy_warmth"].present_count == 0
+    assert saved.codes["empathy_warmth"].rationale == "아이는 인물을 돕지 않았다."
+    assert storage.load_effective_stem_codings("s1")[0].codes["empathy_warmth"].present_count == 0
+    assert any("검토본을 저장했습니다" in str(s.value) for s in at.success)
+
+    next(b for b in at.button if (b.key or "").endswith(":revert")).click().run()
+
+    assert not at.exception
+    assert not storage.stem_reviewed_exists("s1", "spilled_juice")
+    assert list((storage.session_dir("s1") / "coding").glob("spilled_juice_reviewed.*.bak.json"))
