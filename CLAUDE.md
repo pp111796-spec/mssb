@@ -50,6 +50,11 @@ streamlit run src\public_app\app.py     # 공개 결과 뷰어(비밀번호 게�
 - `report.build_session_report_markdown()`은 **학부모가 받는 실제 문서**라, 범주/항목 체크리스트나 타임스탬프 근거 인용을 의도적으로 배제하고 서술형 섹션으로만 구성한다. 순서: 인적 사항 → 검사 개요 → 의뢰 사유 및 배경 → 검사 중 행동관찰 → 이야기별 해석(스템당 한 단락, 5범주 rationale을 이어붙임) → 종합 해석(패턴 서술만) → 강점과 지원이 필요한 영역 → 제언 → 해석상 유의점. 의뢰 사유·배경, 검사일, 검사자는 다른 검사가 포함되는 전체 보고서에서 가져올 예정이라 `report.PLACEHOLDER` 문구로 비워 둔다. 점수는 쓰지 않는다. 신규 섹션은 값이 비어 있으면(예전 세션) 생략된다. 같은 체크리스트·근거 상세는 `review_app`의 스템 상세 드릴다운(`render_stem_detail`)에만 남아 있다 — 두 화면이 서로 다른 독자(학부모 vs 검사자)를 겨냥한 서로 다른 뷰라는 게 설계 의도다.
 - `bundle.py`(순수 직렬화, 디스크 비의존) ↔ `storage.build_session_export_bundle`/`publish_session_bundle_to_repo`(디스크 I/O) — 로컬 검토 앱과 공개 앱이 같은 번들 포맷을 공유.
 
+**알려진 한계 (코드·산출물을 직접 확인한 것)**:
+- 학부모 보고서의 "이야기별 해석"은 5범주 rationale을 그대로 이어붙인 것이라 "부재로 코딩했다", "존재로 채점됨", "AU04" 같은 채점자용 표현이 섞여 나온다. 학부모용 문체로 쓰려면 규칙 기반 걸러내기나 Claude 재작성이 필요하다.
+- `report.py`의 종합 해석 소제목 템플릿("…영역은 전체 N개 이야기 중 M개에서 일관되게 관찰되었다")은 M이 작은 범주(회피/위축의 '반복' 하나, 공격성 3/10)도 "일관되게"로 읽히게 한다. 해석상 유의점의 "검사자가 검토해 확정한 것"도 실제 검토 여부와 무관하게 고정 문구다.
+- Py-Feat 머리 방향(pitch/yaw) 단위는 도(degree)로 가정했고 실제 영상으로 검증하지 못했다(`facial_expression.py`). `--stage cv`는 프레임·오디오가 없고 `--video`도 없는 스템은 경고만 남기고 건너뛴다(예: 채점 제외 스템이라 프레임을 뽑지 않았던 옛 세션의 warm_up).
+
 **알려진 비효율 (호스팅·비용 논의 때 근거로 쓰임, `결정사항.md` 참고)**:
 - `run_coding_stage`가 `transcribe_session`을 다시 호출한다(`run_segmentation_stage`에서 이미 한 번 함). 전사 결과를 저장하지 않아서 whisper large-v3가 세션당 두 번 돈다.
 - Claude 호출 3곳(`segmentation`/`claude_client`/`session_synthesis`)은 `response.usage`를 저장하지 않는다. 그래서 세션당 API 비용은 Anthropic 콘솔에서만 확인할 수 있다.
