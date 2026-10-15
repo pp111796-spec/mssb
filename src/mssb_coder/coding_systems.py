@@ -108,7 +108,10 @@ def build_claude_tool_schema(coding_system: CodingSystem) -> dict:
                     "required": [item.id for item in category.items],
                 },
                 "present_count": {"type": "integer", "minimum": 0},
-                "rationale": {"type": "string"},
+                "rationale": {
+                    "type": "string",
+                    "description": "이 범주의 판단 근거를 하다체 서술문 1~3문장으로. 메모체·코드명·항목 개수 표현 금지",
+                },
             },
             "required": ["items", "present_count", "rationale"],
         }

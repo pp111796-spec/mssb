@@ -113,7 +113,7 @@ def test_report_handles_no_recurring_patterns():
         model_version="claude-opus-5",
     )
     report = build_session_report_markdown(synthesis)
-    assert "반복적으로 관찰된 패턴은 없었다" in report
+    assert "반복해서 나타난 패턴은 없었다" in report
 
 
 def test_report_includes_new_sections_when_present():

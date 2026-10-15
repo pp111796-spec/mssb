@@ -25,6 +25,22 @@ NON_DIAGNOSTIC_CONSTRAINT = (
 )
 
 
+# 보고서에 그대로 실리는 자유 텍스트(rationale 등)의 문체 지시 — .claude/skills/report-tone 원칙과 맞춘다.
+REPORT_TONE_GUIDE = (
+    "보고서에 그대로 실리는 문장(rationale·pattern_description 등)은 다음 문체 원칙을 지키세요.\n"
+    "1) 하다체 서술문으로 끝맺으세요('~했다', '~이다', '~보인다'). '~됨', '~않음', '~부재'처럼 명사형으로 "
+    "끝내는 메모체는 쓰지 마세요.\n"
+    "2) 코드·변인명을 쓰지 마세요. 영문 id, 표정 코드(AU 번호), '부재로 코딩했다'·'존재로 채점했다' 같은 "
+    "채점자용 표현 대신 관찰된 말과 행동을 직접 서술하세요.\n"
+    "3) 수동태·물주구문 같은 번역체를 쓰지 말고 아이나 행동을 주어로 한 능동형으로 쓰세요"
+    "('~가 관찰되었다' 대신 '~했다').\n"
+    "4) 전문가끼리 읽는 보고서입니다. 같은 뜻을 되풀이해 분량을 늘리지 마세요.\n"
+    "5) 문장을 매끄럽게 만들려고 용어를 바꿔 쓰지 말고, 같은 대상은 같은 용어로 반복하세요.\n"
+    "6) 항목을 '두 항목', '5개 항목'처럼 개수로 부르지 마세요. 독자는 어떤 항목이 있는지 모르므로 해당 "
+    "행동을 직접 서술하세요(예: '공격성과 관련된 행동은 관찰되지 않았다').\n"
+)
+
+
 def build_stem_coding_system_prompt(coding_system: CodingSystem) -> str:
     """스템당 1회 호출(10단계)의 시스템 프롬프트. cache_control로 캐싱 대상."""
     category_lines = []
@@ -40,6 +56,7 @@ def build_stem_coding_system_prompt(coding_system: CodingSystem) -> str:
         "중요: 코드의 의미는 이야기마다 다를 수 있습니다 — 제공되는 story_specific_notes를 반드시 "
         "반영하세요. 제공되는 child_age_months를 참고해 그 연령대의 정상 발달 범위를 감안하세요 "
         "(예: 어린 연령이 딜레마의 한쪽 측면만 다루는 것은 정상일 수 있음).\n\n"
+        f"{REPORT_TONE_GUIDE}\n"
         f"{NON_DIAGNOSTIC_CONSTRAINT}"
     )
 

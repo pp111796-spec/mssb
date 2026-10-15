@@ -113,13 +113,13 @@ def build_session_report_markdown(
     lines.append("## 종합 해석")
     lines.append("")
     if not synthesis.recurring_patterns:
-        lines.append("이야기 전반에 걸쳐 반복적으로 관찰된 패턴은 없었다.")
+        lines.append("이야기 전반에 걸쳐 반복해서 나타난 패턴은 없었다.")
         lines.append("")
     for pattern in synthesis.recurring_patterns:
         label = category_label(coding_system, pattern.category)
         lines.append(
             f"**{label}** 영역은 전체 {pattern.stems_administered_count_for_pattern}개 이야기 중 "
-            f"{len(pattern.observed_in_stems)}개에서 일관되게 관찰되었다."
+            f"{len(pattern.observed_in_stems)}개에서 나타났다."
         )
         lines.append("")
         lines.append(scrub_english_ids(pattern.pattern_description, coding_system, story_stems))
@@ -127,16 +127,15 @@ def build_session_report_markdown(
 
     if synthesis.single_story_notable_signals:
         lines.append(
-            "이 외에, 특정 이야기에서만 두드러지게 나타나 반복 패턴으로는 분류되지 않지만 "
-            "참고할 만한 신호가 다음과 같이 관찰되었다."
+            "이 외에, 특정 이야기에서만 두드러져 반복 패턴으로 분류하지 않았지만 "
+            "참고할 만한 신호는 다음과 같다."
         )
         lines.append("")
         for signal in synthesis.single_story_notable_signals:
             label = category_label(coding_system, signal.category)
             note = scrub_english_ids(signal.note, coding_system, story_stems)
             lines.append(
-                f"- {stem_label(story_stems, signal.stem_name)} 이야기에서는 {label} 영역과 관련하여 "
-                f'"{note}"가 관찰되었다.'
+                f"- {stem_label(story_stems, signal.stem_name)} 이야기({label} 영역): {note}"
             )
         lines.append("")
 
