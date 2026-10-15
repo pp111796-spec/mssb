@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -18,8 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 from dotenv import load_dotenv
+from pydantic import ValidationError
 
-from mssb_coder import storage
+from mssb_coder import git_publish, storage
 from mssb_coder.coding_systems import CodingSystem, load_coding_system
 from mssb_coder.labels import (
     category_label,
@@ -43,28 +43,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def publish_to_shared_site(session_id: str) -> tuple[bool, str]:
-    """results/<session_id>.json을 만들고 git add/commit/push — 사업단 공유 사이트가 읽는 곳.
+    """results/<session_id>.json을 만들고 그 파일만 커밋·푸시 — 사업단 공유 사이트가 읽는 곳.
 
-    영상은 이 함수가 다루는 대상이 아니다 — storage.publish_session_bundle_to_repo가 만드는
-    이미 처리된 JSON 결과만 커밋한다. 저장소가 private이라도 이 파일은 git 히스토리에
-    영구히 남는다는 점을 화면에 함께 안내한다(호출하는 쪽에서 표시).
+    영상은 다루지 않는다 — storage.publish_session_bundle_to_repo가 만드는 처리된 JSON만 올린다.
     """
-    path = storage.publish_session_bundle_to_repo(session_id)
-    rel_path = path.relative_to(REPO_ROOT)
     try:
-        subprocess.run(
-            ["git", "add", str(rel_path)], cwd=REPO_ROOT, check=True, capture_output=True, text=True
-        )
-        commit = subprocess.run(
-            ["git", "commit", "-m", f"세션 결과 게시: {session_id}"],
-            cwd=REPO_ROOT, capture_output=True, text=True,
-        )
-        if commit.returncode != 0 and "nothing to commit" not in (commit.stdout + commit.stderr):
-            return False, f"커밋 실패:\n{commit.stderr or commit.stdout}"
-        subprocess.run(["git", "push"], cwd=REPO_ROOT, check=True, capture_output=True, text=True)
-        return True, "게시 완료 — 1~2분 뒤 공유 사이트에 반영됩니다."
-    except subprocess.CalledProcessError as exc:
-        return False, f"게시 실패:\n{exc.stderr or exc.stdout}"
+        path = storage.publish_session_bundle_to_repo(session_id)
+    except (OSError, ValidationError) as exc:
+        return False, f"게시할 결과 파일을 만들지 못했습니다.\n{exc}"
+    outcome = git_publish.publish_file(REPO_ROOT, path, f"세션 결과 게시: {session_id}")
+    return outcome.ok, outcome.message
 
 
 def list_sessions() -> list[str]:
