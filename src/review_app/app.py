@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 
 from mssb_coder import storage
 from mssb_coder.review_ops import session_progress
-from review_app import synthesis_page
+from review_app import segmentation_page, synthesis_page
 from review_app.common import FILE_FORMAT_ERRORS, coding_system, story_stems
 
 load_dotenv()
@@ -64,14 +64,18 @@ def main() -> None:
         st.session_state["selected_session"] = selected
         st.session_state.pop("drilldown_stem", None)
 
+    has_synthesis = False
     try:
-        st.sidebar.caption(f"상태: {session_progress(selected).label}")
+        progress = session_progress(selected)
+        has_synthesis = progress.has_synthesis
+        st.sidebar.caption(f"상태: {progress.label}")
     except FILE_FORMAT_ERRORS:
         st.sidebar.caption("상태: 구간 파일을 읽지 못함")
 
-    page = st.sidebar.radio("화면", PAGES, index=1)
+    # 종합까지 끝난 세션은 결과 검토부터, 아니면 구간 확인부터 연다 (세션별로 사용자가 고른 화면은 유지)
+    page = st.sidebar.radio("화면", PAGES, index=1 if has_synthesis else 0, key=f"page:{selected}")
     if page == PAGES[0]:
-        st.info("구간 확인 화면은 준비 중입니다.")
+        segmentation_page.render(selected)
     else:
         synthesis_page.render(selected)
 

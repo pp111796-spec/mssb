@@ -76,6 +76,38 @@ def extract_stem_frames(
     return stem_out_dir
 
 
+PREVIEW_MARGIN_S = 10.0
+
+
+def preview_clip_command(ffmpeg: str, video_path: Path, start_s: float, end_s: float, out_path: Path) -> list[str]:
+    """검토 앱용 저화질(360p) 미리보기 클립 — 원본 전체를 브라우저에 올리지 않으려고 구간만 자른다."""
+    return [
+        ffmpeg, "-y",
+        "-ss", f"{start_s:.2f}", "-i", str(video_path), "-t", f"{end_s - start_s:.2f}",
+        "-vf", "scale=-2:360", "-c:v", "libx264", "-preset", "veryfast", "-crf", "30",
+        "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart",
+        str(out_path),
+    ]
+
+
+def preview_clip_path(start_s: float, end_s: float, out_dir: Path) -> tuple[Path, float, float]:
+    """구간 앞뒤 PREVIEW_MARGIN_S초를 붙인 미리보기 클립의 (경로, 클립 시작 세션 시각, 클립 끝 세션 시각)."""
+    clip_start = max(0.0, start_s - PREVIEW_MARGIN_S)
+    clip_end = end_s + PREVIEW_MARGIN_S
+    return out_dir / f"clip_{clip_start:.1f}_{clip_end:.1f}.mp4", clip_start, clip_end
+
+
+def extract_preview_clip(video_path: Path, start_s: float, end_s: float, out_dir: Path) -> tuple[Path, float]:
+    """미리보기 클립을 만들고 (클립 경로, 클립이 시작하는 세션 시각)을 돌려준다. 이미 있으면 다시 만들지 않는다."""
+    out_path, clip_start, clip_end = preview_clip_path(start_s, end_s, out_dir)
+    if not out_path.exists():
+        out_dir.mkdir(parents=True, exist_ok=True)
+        tmp_path = out_path.with_name(out_path.stem + ".tmp.mp4")
+        _run_ffmpeg(preview_clip_command(_ffmpeg_bin(), video_path, clip_start, clip_end, tmp_path), "미리보기 클립 생성")
+        tmp_path.replace(out_path)
+    return out_path, clip_start
+
+
 def extract_stem_audio(video_path: Path, stem: StemTimestamp, out_dir: Path) -> Path:
     """스템 구간의 아동 발화 구간(handoff_timestamp_s 이후)만 별도 wav로 추출 (voice_prosody.py 입력).
 

@@ -95,3 +95,41 @@ def test_public_app_rejects_wrong_password():
 
     assert not at.exception
     assert any("틀렸습니다" in str(e.value) for e in at.error)
+
+
+def test_segmentation_page_confirms_segments(data_dir):
+    make_session(confirm=False, coded=False, synthesized=False)
+
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+    assert not at.exception
+    assert any("구간 확인" in str(t.value) for t in at.title)  # 종합 전 세션은 구간 확인 화면부터
+    assert storage.segmentation_review_status("s1") == "unconfirmed"
+
+    confirm = next(b for b in at.button if (b.key or "").endswith(":confirm_segments"))
+    confirm.click().run()
+
+    assert not at.exception
+    assert storage.segmentation_review_status("s1") == "confirmed"
+    assert any("확정했습니다" in str(s.value) for s in at.success)
+
+
+def test_segmentation_page_asks_for_video_path_when_missing(data_dir):
+    make_session(confirm=False, coded=False, synthesized=False)
+
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+
+    assert not at.exception
+    assert any("원본 영상 경로" in str(t.label) for t in at.text_input)
+
+
+def test_segmentation_page_blocks_invalid_examiner_segment_text(data_dir):
+    make_session(confirm=False, coded=False, synthesized=False)
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+
+    examiner_input = next(t for t in at.text_input if ":examiner_text:" in (t.key or ""))
+    examiner_input.input("10-5").run()
+
+    assert not at.exception
+    assert any("끝이 시작보다 뒤" in str(e.value) for e in at.error)
+    confirm = next(b for b in at.button if (b.key or "").endswith(":confirm_segments"))
+    assert confirm.disabled
