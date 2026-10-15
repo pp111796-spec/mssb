@@ -11,6 +11,7 @@ handoff_timestamp_s 이후(아동 구간)에만 적용한다 — 검사자 목�
 
 from __future__ import annotations
 
+import math
 import shutil
 import statistics
 from dataclasses import dataclass
@@ -40,17 +41,24 @@ class ProsodyBaseline:
     loudness_stdev: float
 
 
+# [C] 문헌 근거 없는 공학적 하한 — 워밍업 목소리가 거의 일정하면 표준편차가 0에 가까워져
+# 작은 차이도 z-score가 수십~수백으로 튄다. posture_metrics의 _*_STDEV_FLOOR와 같은 목적.
+_PITCH_STDEV_FLOOR_HZ = 5.0
+_LOUDNESS_STDEV_FLOOR = 0.05
+
+
 def compute_baseline(warm_up_frames: list[ProsodyFrame]) -> ProsodyBaseline:
     """워밍업 구간 프레임으로 아동 개인의 기준선을 계산 (config의 baseline_segment: warm_up)."""
-    if len(warm_up_frames) < 2:
+    usable = [f for f in warm_up_frames if math.isfinite(f.pitch_hz) and math.isfinite(f.loudness)]
+    if len(usable) < 2:
         raise ValueError("기준선 계산에는 최소 2프레임 이상의 워밍업 구간 데이터가 필요함")
-    pitches = [f.pitch_hz for f in warm_up_frames]
-    loudness = [f.loudness for f in warm_up_frames]
+    pitches = [f.pitch_hz for f in usable]
+    loudness = [f.loudness for f in usable]
     return ProsodyBaseline(
         pitch_mean=statistics.mean(pitches),
-        pitch_stdev=statistics.pstdev(pitches) or 1e-6,
+        pitch_stdev=max(statistics.pstdev(pitches), _PITCH_STDEV_FLOOR_HZ),
         loudness_mean=statistics.mean(loudness),
-        loudness_stdev=statistics.pstdev(loudness) or 1e-6,
+        loudness_stdev=max(statistics.pstdev(loudness), _LOUDNESS_STDEV_FLOOR),
     )
 
 
@@ -83,6 +91,7 @@ def filter_valid_pitch(frames: list[ProsodyFrame], thresholds: ProsodyThresholds
     return [
         f for f in frames
         if thresholds.pitch_valid_min_hz <= f.pitch_hz <= thresholds.pitch_valid_max_hz
+        and math.isfinite(f.loudness)
     ]
 
 
@@ -156,7 +165,11 @@ def _ascii_safe_egemaps_config_path() -> str:
     dest_root = get_data_dir() / "opensmile_config"
 
     if not dest_root.exists():
-        shutil.copytree(source_root, dest_root)
+        # 임시 폴더에 다 복사한 뒤 이름을 바꾼다 — 복사 도중 끊기면 반쪽 설정이 영구히 재사용되기 때문
+        tmp_root = dest_root.with_name(dest_root.name + ".tmp")
+        shutil.rmtree(tmp_root, ignore_errors=True)
+        shutil.copytree(source_root, tmp_root)
+        tmp_root.replace(dest_root)
 
     return str(dest_root / (opensmile.FeatureSet.eGeMAPSv02.value + ".conf"))
 
@@ -179,8 +192,8 @@ def run_voice_prosody(child_segment_wav_path) -> list[ProsodyFrame]:
     frames: list[ProsodyFrame] = []
     for (_file, start, _end), row in df.iterrows():
         semitone = row["F0semitoneFrom27.5Hz_sma3nz"]
-        if semitone <= 0:
-            continue  # 무성음/침묵 구간
+        if not semitone > 0 or not math.isfinite(row["Loudness_sma3"]):
+            continue  # 무성음/침묵 구간 (NaN도 여기서 걸러진다)
         pitch_hz = 27.5 * (2 ** (semitone / 12))
         frames.append(
             ProsodyFrame(

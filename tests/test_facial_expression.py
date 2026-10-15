@@ -122,3 +122,24 @@ def test_thresholds_from_config_none_when_presence_probability_null():
         max_low_confidence_ratio=0.5,
     )
     assert FacialThresholds.from_config(cfg) is None
+
+
+def test_pick_one_face_per_frame_keeps_largest_face_and_frame_numbers():
+    from mssb_coder.facial_expression import pick_one_face_per_frame
+
+    rows = [
+        ("frames/s/frame_000001.png", 900.0),
+        ("frames/s/frame_000002.png", 400.0),   # 검사자 얼굴(작음)
+        ("frames/s/frame_000002.png", 2500.0),  # 아동 얼굴(큼)
+        ("frames/s/frame_000003.png", float("nan")),  # 얼굴 없음
+        ("frames/s/frame_000004.png", 1000.0),
+    ]
+
+    assert pick_one_face_per_frame(rows) == [(0, 0), (1, 2), (2, 3), (3, 4)]
+
+
+def test_frame_index_from_path():
+    from mssb_coder.facial_expression import frame_index_from_path
+
+    assert frame_index_from_path("C:/x/frame_000010.png") == 9
+    assert frame_index_from_path("C:/x/other.png") is None

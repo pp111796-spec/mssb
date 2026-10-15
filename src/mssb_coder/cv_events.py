@@ -7,7 +7,7 @@ quality_notes로 함께 돌려준다 — 이 메모가 feature_summary.py 머리
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from mssb_coder.cv_timeline import StemCvFrames
 from mssb_coder.facial_expression import (
@@ -32,6 +32,7 @@ from mssb_coder.voice_prosody import (
     compute_prosody_baseline,
     compute_prosody_events,
 )
+from mssb_coder.schema import StemTimestamp
 
 
 @dataclass(frozen=True)
@@ -66,6 +67,25 @@ class StemEvents:
     doll: list[DollEvent] = field(default_factory=list)
     prosody: list[ProsodyEvent] = field(default_factory=list)
     quality_notes: list[str] = field(default_factory=list)
+
+
+def to_session_time(events: StemEvents, stem: StemTimestamp) -> StemEvents:
+    """이벤트 시각을 세션 절대 시각으로 바꾼다 — 비언어 요약·축어록·채점 근거가 전사문과 같은 시간축을 쓰게.
+
+    저장된 CV 수치와 이벤트 계산은 상대 시각 그대로다: 프레임(표정·자세·인형)은 스템 시작 기준,
+    음성은 아동 구간 오디오만 뽑으므로 검사자→아동 전환 시각 기준이다.
+    """
+
+    def shift(items, offset):
+        return [replace(item, timestamp_s=item.timestamp_s + offset) for item in items]
+
+    return StemEvents(
+        facial=shift(events.facial, stem.start_s),
+        posture=shift(events.posture, stem.start_s),
+        doll=shift(events.doll, stem.start_s),
+        prosody=shift(events.prosody, stem.handoff_timestamp_s),
+        quality_notes=list(events.quality_notes),
+    )
 
 
 def compute_baselines(warm_up: StemCvFrames | None, thresholds: CvThresholdSet) -> CvBaselines:

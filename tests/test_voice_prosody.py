@@ -126,3 +126,27 @@ def test_thresholds_from_config_none_when_any_value_null():
         window_s=1.0, window_min_voiced_ratio=0.3, zscore_notable_threshold=None,
     )
     assert ProsodyThresholds.from_config(cfg) is None
+
+
+def test_flat_warm_up_voice_does_not_blow_up_zscores():
+    from mssb_coder.voice_prosody import ProsodyFrame, compute_baseline
+
+    flat = [ProsodyFrame(timestamp_s=i * 0.01, pitch_hz=250.0, loudness=1.0) for i in range(10)]
+    baseline = compute_baseline(flat)
+
+    assert baseline.pitch_stdev >= 5.0
+    assert baseline.loudness_stdev >= 0.05
+
+
+def test_baseline_ignores_nan_frames():
+    from mssb_coder.voice_prosody import ProsodyFrame, compute_baseline
+
+    frames = [
+        ProsodyFrame(timestamp_s=0.0, pitch_hz=200.0, loudness=1.0),
+        ProsodyFrame(timestamp_s=0.01, pitch_hz=float("nan"), loudness=1.0),
+        ProsodyFrame(timestamp_s=0.02, pitch_hz=220.0, loudness=float("nan")),
+        ProsodyFrame(timestamp_s=0.03, pitch_hz=240.0, loudness=1.2),
+    ]
+    baseline = compute_baseline(frames)
+
+    assert baseline.pitch_mean == 220.0

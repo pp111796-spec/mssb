@@ -137,6 +137,8 @@ def build_stem_coding_system_prompt(coding_system: CodingSystem) -> str:
         "중요: 코드의 의미는 이야기마다 다를 수 있습니다 — 제공되는 story_specific_notes를 반드시 "
         "반영하세요. 제공되는 child_age_months를 참고해 그 연령대의 정상 발달 범위를 감안하세요 "
         "(예: 어린 연령이 딜레마의 한쪽 측면만 다루는 것은 정상일 수 있음).\n\n"
+        "근거(evidence)의 timestamp_s에는 전사문과 비언어 요약의 각 줄 앞에 [123.4s]처럼 적힌 시각을 "
+        "그대로 쓰세요. 시각을 추정하거나 0으로 채우지 마세요.\n\n"
         f"{REPORT_TONE_GUIDE}\n"
         f"{NON_DIAGNOSTIC_CONSTRAINT}"
     )
@@ -157,8 +159,8 @@ def build_stem_coding_user_message(
         f"완료 방식: {response_mode_label(ResponseMode(response_mode))} "
         f"(쟁점 프롬프트 사용 횟수: {issue_prompt_count})\n"
         f"이 스템의 코드 의미 주의사항:\n{story_specific_notes}\n\n"
-        f"--- 전사문 (아동 발화 구간) ---\n{transcript_text}\n\n"
-        f"--- 비언어 신호 요약 ---\n{nonverbal_summary}\n"
+        f"--- 전사문 (아동 발화 구간, [초]는 세션 시작부터의 시각) ---\n{transcript_text}\n\n"
+        f"--- 비언어 신호 요약 ([초]는 세션 시작부터의 시각) ---\n{nonverbal_summary}\n"
     )
 
 

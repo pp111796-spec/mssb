@@ -83,3 +83,38 @@ def test_stem_timestamp_additional_examiner_segment_inside_range():
         matched_cue="뽀삐가 다시 돌아왔어",
     )
     assert ts.additional_examiner_segments_s[0].start_s == 50.0
+
+
+def _ts(**overrides):
+    defaults = dict(
+        stem_name="spilled_juice", start_s=10.0, end_s=40.0, handoff_timestamp_s=20.0,
+        confidence=0.9, matched_cue="완성요청 문구",
+    )
+    defaults.update(overrides)
+    return StemTimestamp(**defaults)
+
+
+def test_stem_timestamp_requires_end_after_start():
+    with pytest.raises(ValueError):
+        _ts(start_s=40.0, end_s=40.0, handoff_timestamp_s=40.0)
+
+
+def test_scored_stem_needs_a_child_turn():
+    with pytest.raises(ValueError, match="아동 차례"):
+        _ts(handoff_timestamp_s=40.0)
+
+
+def test_unscored_margin_may_have_no_child_turn():
+    margin = _ts(stem_name="pre_session", start_s=0.0, end_s=10.0, handoff_timestamp_s=10.0, scored=False)
+    assert margin.handoff_timestamp_s == margin.end_s
+
+
+def test_old_published_bundle_still_loads():
+    from pathlib import Path
+    from mssb_coder.bundle import parse_bundle_dict
+    import json
+
+    path = Path(__file__).resolve().parents[1] / "results" / "adult_demo_01.json"
+    synthesis, stem_results = parse_bundle_dict(json.loads(path.read_text(encoding="utf-8")))
+    assert stem_results
+    assert all(r.source_window is None and r.timestamp_basis is None for r in stem_results)

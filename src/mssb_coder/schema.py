@@ -81,16 +81,31 @@ class StemTimestamp(BaseModel):
 
     @model_validator(mode="after")
     def _check_ordering(self) -> "StemTimestamp":
+        if not self.start_s < self.end_s:
+            raise ValueError(f"{self.stem_name}: 끝 시각이 시작 시각보다 뒤여야 함")
         if not (self.start_s <= self.handoff_timestamp_s <= self.end_s):
-            raise ValueError(
-                f"{self.stem_name}: handoff_timestamp_s는 start_s와 end_s 사이여야 함"
-            )
+            raise ValueError(f"{self.stem_name}: 검사자→아동 전환 시각은 시작과 끝 사이여야 함")
+        # 채점 대상인데 아동 차례 길이가 0이면 분석할 게 없다 (녹화 앞뒤 여백 같은 비채점 구간은 허용)
+        if self.scored and self.handoff_timestamp_s == self.end_s:
+            raise ValueError(f"{self.stem_name}: 채점 대상 이야기인데 아동 차례가 없음 (전환 시각 = 끝 시각)")
         for seg in self.additional_examiner_segments_s:
             if not (self.start_s <= seg.start_s < seg.end_s <= self.end_s):
                 raise ValueError(
                     f"{self.stem_name}: additional_examiner_segments_s가 스템 구간을 벗어남"
                 )
         return self
+
+
+class StemWindow(BaseModel):
+    """CV 수치·채점 결과가 어떤 구간으로 만들어졌는지 — 구간이 바뀌면 다시 계산해야 하는지 판단하는 기준."""
+
+    start_s: float
+    end_s: float
+    handoff_timestamp_s: float
+
+    @classmethod
+    def of(cls, stem: StemTimestamp) -> "StemWindow":
+        return cls(start_s=stem.start_s, end_s=stem.end_s, handoff_timestamp_s=stem.handoff_timestamp_s)
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +163,9 @@ class StemCodingResult(BaseModel):
     interpretation_layer: Literal["1_single_story_observation"] = "1_single_story_observation"
     disclaimer: str = STANDARD_DISCLAIMER
     model_version: str
+    # 아래 두 필드는 예전 결과 파일엔 없다 — None이면 "확인 불가"로 다룬다.
+    source_window: StemWindow | None = None  # 채점에 쓴 구간 (구간이 같으면 재채점 생략)
+    timestamp_basis: Literal["session_absolute"] | None = None  # 근거 시각이 세션 절대 시각인지
     generated_at: str = Field(default_factory=utc_now_iso)
 
 
@@ -283,6 +301,8 @@ class StemCvTimeline(BaseModel):
     pose: list[CvPoseSample] = Field(default_factory=list)
     prosody: list[CvProsodySample] = Field(default_factory=list)
     doll: list[CvDollSample] = Field(default_factory=list)
+    # 이 수치를 계산할 때의 구간 — 구간을 고친 뒤 예전 수치를 재사용하지 않기 위한 표시 (예전 파일엔 없음)
+    source_window: StemWindow | None = None
     generated_at: str = Field(default_factory=utc_now_iso)
 
 
@@ -294,4 +314,7 @@ class SessionMetadata(BaseModel):
     )
     subject_type: SubjectType = Field(
         description="adult=성인 대역(마일스톤 A, 배선 검증용), child=실제 아동(마일스톤 B)"
+    )
+    video_path: str | None = Field(
+        default=None, description="원본 영상 경로 (MSSB_DATA_DIR 쪽, 검토 앱 미리보기·재분석용)"
     )

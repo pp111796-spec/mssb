@@ -68,7 +68,11 @@ def _ascii_safe_model_path() -> Path:
     model_path = get_data_dir() / "models" / "mediapipe" / "pose_landmarker_lite.task"
     if not model_path.exists():
         model_path.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(_MODEL_URL, model_path)
+        # 임시 파일로 받은 뒤 이름을 바꾼다 — 다운로드가 끊기면 깨진 모델이 영구히 재사용되기 때문
+        tmp_path = model_path.with_suffix(".task.tmp")
+        with urllib.request.urlopen(_MODEL_URL, timeout=120) as response:
+            tmp_path.write_bytes(response.read())
+        tmp_path.replace(model_path)
     return model_path
 
 

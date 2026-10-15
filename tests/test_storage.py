@@ -197,3 +197,49 @@ def test_save_failed_response_keeps_raw_payload():
 
     assert path.parent.name == "failed"
     assert json.loads(path.read_text(encoding="utf-8")) == {"recurring_patterns": "잘못된 형식"}
+
+
+def _timestamps():
+    return [
+        StemTimestamp(
+            stem_name="spilled_juice", start_s=0.0, end_s=30.0, handoff_timestamp_s=10.0,
+            confidence=0.9, matched_cue="문구",
+        )
+    ]
+
+
+def test_segmentation_review_status_tracks_confirmation_and_later_edits():
+    storage.save_stem_timestamps("s1", _timestamps())
+    assert storage.segmentation_review_status("s1") == "unconfirmed"
+
+    storage.confirm_segmentation("s1")
+    assert storage.segmentation_review_status("s1") == "confirmed"
+
+    edited = [_timestamps()[0].model_copy(update={"end_s": 31.0})]
+    storage.save_stem_timestamps("s1", edited)
+    assert storage.segmentation_review_status("s1") == "changed"
+
+
+def test_ai_draft_timestamps_are_kept_separately():
+    storage.save_stem_timestamps("s1", _timestamps(), ai_draft=True)
+    storage.save_stem_timestamps("s1", [_timestamps()[0].model_copy(update={"end_s": 31.0})])
+
+    assert storage.load_stem_timestamps("s1", ai_draft=True)[0].end_s == 30.0
+    assert storage.load_stem_timestamps("s1")[0].end_s == 31.0
+
+
+def test_session_metadata_and_transcript_round_trip():
+    from mssb_coder.schema import SessionMetadata, SubjectType
+    from mssb_coder.transcribe import TranscriptSegment
+
+    meta = SessionMetadata(
+        session_id="s1", child_age_months=60, child_gender="male", subject_type=SubjectType.CHILD,
+        video_path="C:/mssb_data/raw_videos/a.mp4",
+    )
+    storage.save_session_metadata(meta)
+    assert storage.load_session_metadata("s1") == meta
+
+    assert storage.load_transcript("s1") is None
+    segments = [TranscriptSegment(start_s=1.0, end_s=2.0, text="안녕")]
+    storage.save_transcript("s1", segments)
+    assert storage.load_transcript("s1") == segments

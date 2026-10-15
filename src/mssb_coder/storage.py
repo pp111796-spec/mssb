@@ -7,7 +7,13 @@
 
 디렉토리 레이아웃:
   <MSSB_DATA_DIR>/sessions/<session_id>/
-    stem_timestamps.json
+    session.json                            (아동 연령·성별·subject_type·원본 영상 경로)
+    transcript.json                         (전체 전사 — 코딩 단계가 다시 전사하지 않도록)
+    stem_timestamps_ai_draft.json           (Claude 구간분리 원안)
+    stem_timestamps.json                    (사람이 확인·수정한 구간)
+    segmentation_review.json                (구간 확정 기록 — 확정 이후 구간이 바뀌면 무효)
+    frames/<stem_name>/source_window.json   (추출한 프레임·오디오의 구간)
+    api_usage.jsonl / failed/               (Claude 호출 사용량 / 검증 실패 원본)
     coding/<stem_name>_ai_codes.json
     coding/<stem_name>_reviewed.json        (선택, 사람이 스템 상세를 고친 경우만)
     coding/<stem_name>_verbatim.json        (축어록 — 언어+행동분석 통합)
@@ -18,22 +24,26 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
-from typing import TypeVar
+from typing import Literal, TypeVar
 
 from pydantic import BaseModel
 
 from mssb_coder.bundle import build_bundle_dict
 from mssb_coder.schema import (
+    SessionMetadata,
     SessionSynthesis,
     StemCodingResult,
     StemCvTimeline,
     StemTimestamp,
     StemVerbatimRecord,
+    StemWindow,
     utc_now_iso,
 )
+from mssb_coder.transcribe import TranscriptSegment
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -75,19 +85,111 @@ def _read_model(path: Path, model_cls: type[ModelT]) -> ModelT:
 # --- stem_timestamps.json (파이프라인 3~4단계) ---------------------------------
 
 
-def save_stem_timestamps(session_id: str, timestamps: list[StemTimestamp]) -> Path:
-    path = session_dir(session_id) / "stem_timestamps.json"
-    path.write_text(
-        "[\n" + ",\n".join(t.model_dump_json(indent=2, ensure_ascii=False) for t in timestamps) + "\n]",
-        encoding="utf-8",
-    )
+def _write_text_atomic(path: Path, text: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(text, encoding="utf-8")
+    tmp_path.replace(path)
     return path
 
 
-def load_stem_timestamps(session_id: str) -> list[StemTimestamp]:
-    path = session_dir(session_id) / "stem_timestamps.json"
-    raw = json.loads(path.read_text(encoding="utf-8"))
+def _timestamps_path(session_id: str, ai_draft: bool) -> Path:
+    name = "stem_timestamps_ai_draft.json" if ai_draft else "stem_timestamps.json"
+    return session_dir(session_id) / name
+
+
+def save_stem_timestamps(session_id: str, timestamps: list[StemTimestamp], ai_draft: bool = False) -> Path:
+    """ai_draft=True는 Claude가 처음 나눈 원안 — 사람이 고친 stem_timestamps.json과 비교·감사용으로 따로 둔다."""
+    text = "[\n" + ",\n".join(t.model_dump_json(indent=2, ensure_ascii=False) for t in timestamps) + "\n]"
+    return _write_text_atomic(_timestamps_path(session_id, ai_draft), text)
+
+
+def backup_stem_timestamps(session_id: str) -> Path:
+    """구간분리를 다시 돌리기 전에 현재 구간(사람이 고친 내용일 수 있음)을 시각 붙은 파일로 남긴다."""
+    src = _timestamps_path(session_id, ai_draft=False)
+    stamp = utc_now_iso().replace(":", "").replace("+", "_")
+    dst = src.with_name(f"stem_timestamps.{stamp}.bak.json")
+    dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    return dst
+
+
+def load_stem_timestamps(session_id: str, ai_draft: bool = False) -> list[StemTimestamp]:
+    raw = json.loads(_timestamps_path(session_id, ai_draft).read_text(encoding="utf-8"))
     return [StemTimestamp.model_validate(item) for item in raw]
+
+
+# --- segmentation_review.json (4단계 사람 확인 — 확정 여부) -------------------------
+
+
+def _timestamps_fingerprint(timestamps: list[StemTimestamp]) -> str:
+    canonical = json.dumps([t.model_dump(mode="json") for t in timestamps], sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def confirm_segmentation(session_id: str) -> Path:
+    """현재 stem_timestamps.json을 사람이 확정했다고 기록한다 — 이후 구간이 바뀌면 확정이 풀린 것으로 본다."""
+    record = {
+        "confirmed_at": utc_now_iso(),
+        "timestamps_sha256": _timestamps_fingerprint(load_stem_timestamps(session_id)),
+    }
+    return _write_text_atomic(
+        session_dir(session_id) / "segmentation_review.json", json.dumps(record, ensure_ascii=False, indent=2)
+    )
+
+
+def segmentation_review_status(session_id: str) -> Literal["unconfirmed", "changed", "confirmed"]:
+    path = session_dir(session_id) / "segmentation_review.json"
+    if not path.exists():
+        return "unconfirmed"
+    record = json.loads(path.read_text(encoding="utf-8"))
+    current = _timestamps_fingerprint(load_stem_timestamps(session_id))
+    return "confirmed" if record.get("timestamps_sha256") == current else "changed"
+
+
+# --- session.json / transcript.json (구간분리 단계에서 저장, 이후 단계가 재사용) ----------
+
+
+def save_session_metadata(metadata: SessionMetadata) -> Path:
+    return _write_model(session_dir(metadata.session_id) / "session.json", metadata)
+
+
+def load_session_metadata(session_id: str) -> SessionMetadata:
+    return _read_model(session_dir(session_id) / "session.json", SessionMetadata)
+
+
+def session_metadata_exists(session_id: str) -> bool:
+    return (session_dir(session_id) / "session.json").exists()
+
+
+def save_transcript(session_id: str, segments: list[TranscriptSegment]) -> Path:
+    payload = [{"start_s": s.start_s, "end_s": s.end_s, "text": s.text} for s in segments]
+    return _write_text_atomic(
+        session_dir(session_id) / "transcript.json", json.dumps(payload, ensure_ascii=False, indent=2)
+    )
+
+
+def load_transcript(session_id: str) -> list[TranscriptSegment] | None:
+    """저장된 전체 전사. 없으면 None (예전 세션 — 호출 쪽이 다시 전사한다)."""
+    path = session_dir(session_id) / "transcript.json"
+    if not path.exists():
+        return None
+    return [TranscriptSegment(**item) for item in json.loads(path.read_text(encoding="utf-8"))]
+
+
+# --- frames/<stem>/source_window.json (추출한 프레임·오디오가 어떤 구간 것인지) -----------
+
+
+def _media_window_path(session_id: str, stem_name: str) -> Path:
+    return session_dir(session_id) / "frames" / stem_name / "source_window.json"
+
+
+def save_media_window(session_id: str, stem_name: str, window: StemWindow) -> Path:
+    return _write_model(_media_window_path(session_id, stem_name), window)
+
+
+def load_media_window(session_id: str, stem_name: str) -> StemWindow | None:
+    path = _media_window_path(session_id, stem_name)
+    return _read_model(path, StemWindow) if path.exists() else None
 
 
 # --- <stem>_ai_codes.json / <stem>_reviewed.json (파이프라인 10·13단계) --------

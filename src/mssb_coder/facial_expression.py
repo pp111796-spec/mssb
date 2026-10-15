@@ -14,6 +14,7 @@ Py-Feat의 정확한 AU 컬럼 이름을 하드코딩하지 않고 `Fex.aus`/`Fe
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -166,6 +167,29 @@ def _find_column(columns, *keywords: str) -> str | None:
     return None
 
 
+def frame_index_from_path(path: str) -> int | None:
+    """video_prep이 만드는 frame_000001.png → 0 (ffmpeg 번호는 1부터 시작)."""
+    match = re.search(r"frame_(\d+)", Path(path).stem)
+    return int(match.group(1)) - 1 if match else None
+
+
+def pick_one_face_per_frame(rows: list[tuple[str, float]]) -> list[tuple[int, int]]:
+    """Py-Feat 결과 행 [(입력 이미지 경로, 얼굴 넓이)] → 프레임마다 가장 큰 얼굴 한 행의 (프레임 번호, 행 위치).
+
+    Py-Feat은 얼굴 하나당 한 행을 낸다 — 한 프레임에 검사자 얼굴도 잡히면 행 수가 프레임 수보다 많아져,
+    행 순서로 시각을 매기면 그 뒤 시각이 전부 밀린다. 얼굴이 없는 프레임은 넓이 NaN인 한 행이 온다.
+    """
+    best: dict[int, tuple[float, int]] = {}
+    for position, (path, area) in enumerate(rows):
+        index = frame_index_from_path(path)
+        if index is None:
+            continue
+        area = 0.0 if area != area else area  # NaN → 0
+        if index not in best or area > best[index][0]:
+            best[index] = (area, position)
+    return [(index, best[index][1]) for index in sorted(best)]
+
+
 def run_facial_expression(frames_dir: Path, subject_type: SubjectType, fps: float = 2.0) -> list[FacialFrame]:
     """Py-Feat Detectorv1로 frames_dir의 frame_%06d.png들을 처리한다.
 
@@ -187,8 +211,20 @@ def run_facial_expression(frames_dir: Path, subject_type: SubjectType, fps: floa
     yaw_col = _find_column(pose_columns, "yaw")
     face_score_col = _find_column(result.columns, "facescore") or _find_column(result.columns, "face", "score")
 
+    input_col = _find_column(result.columns, "input")
+    width_col = _find_column(result.columns, "facerectwidth")
+    height_col = _find_column(result.columns, "facerectheight")
+    if input_col:
+        areas = (
+            (result[width_col] * result[height_col]).tolist() if width_col and height_col else [0.0] * len(result)
+        )
+        selected = pick_one_face_per_frame(list(zip(result[input_col].astype(str).tolist(), areas)))
+    else:  # 입력 경로 컬럼이 없는 버전 — 행 하나가 프레임 하나라고 가정할 수밖에 없다
+        selected = list(enumerate(range(len(result))))
+
     frames: list[FacialFrame] = []
-    for i, (_, row) in enumerate(result.iterrows()):
+    for i, position in selected:
+        row = result.iloc[position]
         au_intensities = {col: float(row[col]) for col in au_columns if not (row[col] != row[col])}  # NaN 제외
         head_pitch = abs(float(row[pitch_col])) if pitch_col else 0.0
         head_yaw = abs(float(row[yaw_col])) if yaw_col else 0.0

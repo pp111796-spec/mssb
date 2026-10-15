@@ -26,6 +26,17 @@ def _ffmpeg_bin() -> str:
     return bin_path
 
 
+class FfmpegError(RuntimeError):
+    pass
+
+
+def _run_ffmpeg(cmd: list[str], what: str) -> None:
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if result.returncode != 0:
+        tail = "\n".join((result.stderr or "").strip().splitlines()[-5:])
+        raise FfmpegError(f"ffmpeg {what} 실패 (종료코드 {result.returncode}):\n{tail}")
+
+
 def extract_audio(video_path: Path, out_path: Path, sample_rate: int = 16000) -> Path:
     """전체 세션 오디오를 하나의 wav로 추출 (2단계 — faster-whisper 입력용, 16kHz mono가 표준)."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +45,7 @@ def extract_audio(video_path: Path, out_path: Path, sample_rate: int = 16000) ->
         "-vn", "-ac", "1", "-ar", str(sample_rate),
         str(out_path),
     ]
-    subprocess.run(cmd, check=True, capture_output=True)
+    _run_ffmpeg(cmd, "전체 오디오 추출")
     return out_path
 
 
@@ -51,6 +62,9 @@ def extract_stem_frames(
     """
     stem_out_dir = out_dir / stem.stem_name
     stem_out_dir.mkdir(parents=True, exist_ok=True)
+    # 이전 구간에서 뽑은 프레임이 남아 있으면 구간이 짧아졌을 때 섞여 분석된다
+    for old_frame in stem_out_dir.glob("frame_*.png"):
+        old_frame.unlink()
     duration = stem.end_s - stem.start_s
     cmd = [
         _ffmpeg_bin(), "-y",
@@ -58,7 +72,7 @@ def extract_stem_frames(
         "-vf", f"fps={fps}",
         str(stem_out_dir / "frame_%06d.png"),
     ]
-    subprocess.run(cmd, check=True, capture_output=True)
+    _run_ffmpeg(cmd, f"{stem.stem_name} 프레임 추출")
     return stem_out_dir
 
 
@@ -78,5 +92,5 @@ def extract_stem_audio(video_path: Path, stem: StemTimestamp, out_dir: Path) -> 
         "-vn", "-ac", "1", "-ar", "16000",
         str(out_path),
     ]
-    subprocess.run(cmd, check=True, capture_output=True)
+    _run_ffmpeg(cmd, f"{stem.stem_name} 아동 구간 오디오 추출")
     return out_path

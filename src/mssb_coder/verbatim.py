@@ -1,16 +1,7 @@
 """발화 전사 + 4개 행동 신호(표정/자세/인형추적/음성운율)를 하나의 축어록으로 결합.
 
-시간축이 모달리티마다 다르다는 게 이 모듈의 핵심 문제다:
-  - 화자태깅된 발화 세그먼트(transcribe.tag_speakers 출력): 이미 세션-절대 시각
-  - 표정·자세·인형추적 프레임/이벤트: 스템-상대 시각 (video_prep.extract_stem_frames가
-    stem.start_s부터 프레임을 뽑기 때문 — stem.start_s + timestamp_s로 변환)
-  - 음성운율 이벤트: handoff-상대 시각 (video_prep.extract_stem_audio가 아동 구간만,
-    즉 stem.handoff_timestamp_s부터 오디오를 뽑기 때문 — stem.handoff_timestamp_s +
-    timestamp_s로 변환)
-
-Claude 호출 없는 순수 결합 로직이라 영상 없이도 지금 테스트 가능하다 (feature_summary.py와
-같은 성격). feature_summary.py의 "[Ns]" 문자열 파싱식 정렬은 여기서는 쓰지 않고, 실제
-float 필드로 정렬한다.
+모든 입력은 세션 절대 시각이어야 한다 — 발화는 원래 절대 시각이고, 행동 이벤트는
+cv_events.to_session_time으로 미리 변환해서 넘긴다. Claude 호출 없는 순수 결합 로직이다.
 """
 
 from __future__ import annotations
@@ -19,13 +10,12 @@ from mssb_coder.facial_expression import FacialEvent
 from mssb_coder.labels import au_gloss, doll_event_kind_label, doll_id_label, load_doll_labels, posture_event_kind_label, prosody_event_kind_label
 from mssb_coder.object_tracking import DollEvent
 from mssb_coder.posture_metrics import PostureEvent
-from mssb_coder.schema import EvidenceSource, StemTimestamp, StemVerbatimRecord, VerbatimLine, VerbatimSpeaker
+from mssb_coder.schema import EvidenceSource, StemVerbatimRecord, VerbatimLine, VerbatimSpeaker
 from mssb_coder.transcribe import TranscriptSegment
 from mssb_coder.voice_prosody import ProsodyEvent
 
 
 def build_stem_verbatim(
-    stem: StemTimestamp,
     speaker_tagged: dict[str, list[TranscriptSegment]],
     facial_events: list[FacialEvent],
     posture_events: list[PostureEvent],
@@ -50,7 +40,7 @@ def build_stem_verbatim(
             tags += " [머리 회전 주의]"
         lines.append(
             VerbatimLine(
-                timestamp_s=stem.start_s + event.timestamp_s,
+                timestamp_s=event.timestamp_s,
                 kind="behavior",
                 source=EvidenceSource.FACIAL_AU,
                 label_ko=f"표정 변화{tags}: {au_gloss(event.au)} (확률 {event.peak_probability:.2f}, {event.frames}프레임 지속)",
@@ -61,7 +51,7 @@ def build_stem_verbatim(
     for event in posture_events:
         lines.append(
             VerbatimLine(
-                timestamp_s=stem.start_s + event.timestamp_s,
+                timestamp_s=event.timestamp_s,
                 kind="behavior",
                 source=EvidenceSource.POSTURE,
                 label_ko=posture_event_kind_label(event.kind) + (f" — {event.note}" if event.note else ""),
@@ -76,7 +66,7 @@ def build_stem_verbatim(
             label += f" — {event.note}"
         lines.append(
             VerbatimLine(
-                timestamp_s=stem.start_s + event.timestamp_s,
+                timestamp_s=event.timestamp_s,
                 kind="behavior",
                 source=EvidenceSource.DOLL_TRACKING,
                 label_ko=label,
@@ -87,7 +77,7 @@ def build_stem_verbatim(
     for event in prosody_events:
         lines.append(
             VerbatimLine(
-                timestamp_s=stem.handoff_timestamp_s + event.timestamp_s,
+                timestamp_s=event.timestamp_s,
                 kind="behavior",
                 source=EvidenceSource.VOICE_PROSODY,
                 label_ko=f"{prosody_event_kind_label(event.kind)} (z={event.zscore:+.2f})",
