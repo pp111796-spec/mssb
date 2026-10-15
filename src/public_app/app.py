@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import hmac
 import json
 import sys
 from pathlib import Path
@@ -29,13 +30,28 @@ import streamlit as st
 
 from mssb_coder.bundle import BundleParseError, parse_bundle_dict
 from mssb_coder.coding_systems import load_coding_system
-from mssb_coder.labels import category_label, completion_status_label, item_label, stem_label
+from mssb_coder.labels import category_label, completion_status_label, item_label, scrub_english_ids, stem_label
 from mssb_coder.report import build_session_report_markdown
 from mssb_coder.segmentation import load_story_stems
 
 REPO_RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 
 st.set_page_config(page_title="MSSB 분석 결과", layout="wide", page_icon="📋")
+
+
+@st.cache_resource
+def _coding_system():
+    return load_coding_system()
+
+
+@st.cache_resource
+def _story_stems():
+    return load_story_stems()
+
+
+def _plain(text: str | None) -> str:
+    """Claude 자유 텍스트에 섞인 영문 id·표정 코드를 한글로 바꾼다 (보고서와 같은 규칙)."""
+    return scrub_english_ids(text or "", _coding_system(), _story_stems())
 
 
 def _configured_password() -> str | None:
@@ -59,7 +75,7 @@ def check_password() -> bool:
 
     entered = st.text_input("비밀번호", type="password")
     if entered:
-        if entered == configured:
+        if hmac.compare_digest(entered.encode("utf-8"), str(configured).encode("utf-8")):
             st.session_state["password_correct"] = True
             st.rerun()
         else:
@@ -68,7 +84,7 @@ def check_password() -> bool:
 
 
 def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
-    story_stems = load_story_stems()
+    story_stems = _story_stems()
 
     st.title(f"세션 종합 분석 — {synthesis.session_id}")
     st.info(synthesis.disclaimer)
@@ -94,7 +110,7 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
 
     if synthesis.behavioral_observation:
         st.header("검사 중 행동관찰")
-        st.write(synthesis.behavioral_observation)
+        st.write(_plain(synthesis.behavioral_observation))
 
     st.header("반복되는 패턴")
     if not synthesis.recurring_patterns:
@@ -105,27 +121,27 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
             f"{label} — {len(pattern.observed_in_stems)}/"
             f"{pattern.stems_administered_count_for_pattern}개 이야기"
         )
-        st.write(pattern.pattern_description)
+        st.write(_plain(pattern.pattern_description))
         for ev in pattern.evidence:
-            st.caption(f"근거: {stem_label(story_stems, ev.stem_name)} ({ev.timestamp_s:.1f}초) — {ev.note}")
+            st.caption(f"근거: {stem_label(story_stems, ev.stem_name)} ({ev.timestamp_s:.1f}초) — {_plain(ev.note)}")
 
     if synthesis.single_story_notable_signals:
         st.header("단발성 신호 (패턴 아님)")
         for signal in synthesis.single_story_notable_signals:
             label = category_label(coding_system, signal.category)
-            st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
+            st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {_plain(signal.note)}")
 
     if synthesis.strengths or synthesis.support_areas:
         st.header("강점과 지원이 필요한 영역")
         if synthesis.strengths:
-            st.write(f"**강점** {synthesis.strengths}")
+            st.write(f"**강점** {_plain(synthesis.strengths)}")
         if synthesis.support_areas:
-            st.write(f"**지원이 필요한 영역** {synthesis.support_areas}")
+            st.write(f"**지원이 필요한 영역** {_plain(synthesis.support_areas)}")
 
     if synthesis.recommendations:
         st.header("제언")
         for recommendation in synthesis.recommendations:
-            st.write(f"- {recommendation}")
+            st.write(f"- {_plain(recommendation)}")
 
     if stem_results:
         st.header("이야기별 상세 (부록)")
@@ -141,7 +157,7 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
                     ]
                     st.write(f"**{label}** (존재 {category_code.present_count}개): {', '.join(present_items) or '없음'}")
                     if category_code.rationale:
-                        st.caption(category_code.rationale)
+                        st.caption(_plain(category_code.rationale))
 
 
 def _list_published_sessions() -> list[Path]:
@@ -165,7 +181,7 @@ def main() -> None:
         return
 
     st.title("📋 MSSB 분석 결과 뷰어")
-    coding_system = load_coding_system()
+    coding_system = _coding_system()
 
     tab_published, tab_upload = st.tabs(["게시된 세션 보기", "파일 직접 업로드 (임시)"])
 

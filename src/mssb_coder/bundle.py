@@ -31,8 +31,15 @@ class BundleParseError(ValueError):
 
 
 def parse_bundle_dict(raw: dict) -> tuple[SessionSynthesis, list[StemCodingResult]]:
+    if not isinstance(raw, dict):
+        raise BundleParseError("세션 내보내기 파일 형식이 아닙니다 (최상위가 JSON 객체가 아님).")
     if "synthesis" not in raw:
         raise BundleParseError("번들에 'synthesis' 필드가 없음 — 세션 내보내기 파일이 맞는지 확인하세요.")
+    version = raw.get("bundle_format_version", BUNDLE_FORMAT_VERSION)
+    if not isinstance(version, int) or version > BUNDLE_FORMAT_VERSION:
+        raise BundleParseError(
+            f"이 파일은 더 새로운 형식(버전 {version})이라 지금 앱으로 읽을 수 없습니다. 앱을 최신으로 업데이트하세요."
+        )
     try:
         synthesis = SessionSynthesis.model_validate(raw["synthesis"])
         stem_results = [

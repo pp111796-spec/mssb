@@ -62,3 +62,16 @@ def test_parse_bundle_no_stem_results_key_defaults_to_empty():
     bundle = {"synthesis": _synthesis().model_dump(mode="json")}
     synthesis, stem_results = parse_bundle_dict(bundle)
     assert stem_results == []
+
+
+@pytest.mark.parametrize("raw", [[1, 2], 3, "text", None])
+def test_parse_bundle_rejects_non_object_json(raw):
+    with pytest.raises(BundleParseError, match="객체"):
+        parse_bundle_dict(raw)
+
+
+def test_parse_bundle_rejects_newer_format_version():
+    bundle = build_bundle_dict(_synthesis(), [_stem_result()])
+    bundle["bundle_format_version"] = 99
+    with pytest.raises(BundleParseError, match="새로운 형식"):
+        parse_bundle_dict(bundle)

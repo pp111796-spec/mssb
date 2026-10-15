@@ -215,6 +215,30 @@ def load_all_stem_codings(session_id: str, reviewed: bool = False) -> list[StemC
     return results
 
 
+def stem_reviewed_exists(session_id: str, stem_name: str) -> bool:
+    return (session_dir(session_id) / "coding" / f"{stem_name}_reviewed.json").exists()
+
+
+def load_effective_stem_codings(session_id: str) -> list[StemCodingResult]:
+    """보고서·번들·게시용 스템 결과 — 스템마다 사람 검토본이 있으면 그것을, 없으면 AI 원본을 쓴다.
+
+    stem_timestamps.json이 있으면 그 안의 채점 대상 스템만 모은다(예전 실행에서 남은 다른 스템 파일 제외).
+    세션 종합의 입력은 이 함수가 아니라 AI 원본이다(pipeline.load_codings_for_synthesis).
+    """
+    coding_dir = session_dir(session_id) / "coding"
+    if (session_dir(session_id) / "stem_timestamps.json").exists():
+        names = [t.stem_name for t in load_stem_timestamps(session_id) if t.scored]
+    else:
+        names = sorted(p.name.removesuffix("_ai_codes.json") for p in coding_dir.glob("*_ai_codes.json"))
+    results = []
+    for name in names:
+        try:
+            results.append(load_stem_coding(session_id, name, reviewed=stem_reviewed_exists(session_id, name)))
+        except FileNotFoundError:
+            continue
+    return results
+
+
 # --- <stem>_verbatim.json (축어록 — 언어+행동분석 통합, 파이프라인 5~10단계 중 생성) ----------
 
 
@@ -290,8 +314,7 @@ def build_session_export_bundle(session_id: str) -> dict:
     """
     reviewed_exists = (session_dir(session_id) / "session_summary_reviewed.json").exists()
     synthesis = load_session_synthesis(session_id, reviewed=reviewed_exists)
-    stem_results = load_all_stem_codings(session_id)
-    return build_bundle_dict(synthesis, stem_results)
+    return build_bundle_dict(synthesis, load_effective_stem_codings(session_id))
 
 
 # --- 사업단 공유 사이트 게시 (results/ — git 저장소 안, MSSB_DATA_DIR과 다름) ----

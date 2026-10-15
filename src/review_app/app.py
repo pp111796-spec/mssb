@@ -1,15 +1,14 @@
-"""Streamlit 검토 UI — 세션 종합 초안이 1차 화면, 스템별 화면은 드릴다운.
+"""Streamlit 검토 앱 (로컬 전용) — 세션 선택과 화면 전환만 담당한다.
 
-계획 "사람 검토(Human-in-the-loop) 설계" 섹션을 그대로 구현. 영상 재생 위젯은
-아직 없다 — 파이프라인이 세션별 원본 영상 경로를 저장하는 부분이 마일스톤 A에서
-채워져야 붙일 수 있어서, 지금은 텍스트·CV 지표·근거 타임스탬프까지만 보여준다.
+화면:
+  「1. 구간 확인」 segmentation_page — AI가 나눈 이야기 구간을 확인·수정하고 확정 (파이프라인 4단계)
+  「2. 결과 검토」 synthesis_page — 세션 종합 초안 검토, 스템 상세 드릴다운, 보고서·게시
 
 실행: streamlit run src/review_app/app.py
 """
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -17,224 +16,47 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 from dotenv import load_dotenv
-from pydantic import ValidationError
 
-from mssb_coder import git_publish, storage
-from mssb_coder.coding_systems import CodingSystem, load_coding_system
-from mssb_coder.labels import (
-    category_label,
-    completion_status_label,
-    evidence_source_label,
-    item_label,
-    response_mode_label,
-    stem_label,
-)
-from mssb_coder.report import build_session_report_markdown
-from mssb_coder.schema import SessionSynthesis, VerbatimSpeaker
-from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
-from mssb_coder.verbatim import render_verbatim_markdown
+from mssb_coder import storage
+from mssb_coder.review_ops import session_progress
+from review_app import synthesis_page
+from review_app.common import FILE_FORMAT_ERRORS, coding_system, story_stems
 
 load_dotenv()
 
 st.set_page_config(page_title="MSSB AI 코딩 검토", layout="wide")
 
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-
-def publish_to_shared_site(session_id: str) -> tuple[bool, str]:
-    """results/<session_id>.json을 만들고 그 파일만 커밋·푸시 — 사업단 공유 사이트가 읽는 곳.
-
-    영상은 다루지 않는다 — storage.publish_session_bundle_to_repo가 만드는 처리된 JSON만 올린다.
-    """
-    try:
-        path = storage.publish_session_bundle_to_repo(session_id)
-    except (OSError, ValidationError) as exc:
-        return False, f"게시할 결과 파일을 만들지 못했습니다.\n{exc}"
-    outcome = git_publish.publish_file(REPO_ROOT, path, f"세션 결과 게시: {session_id}")
-    return outcome.ok, outcome.message
+PAGES = ("1. 구간 확인", "2. 결과 검토")
 
 
-def list_sessions() -> list[str]:
+def list_sessions() -> list[str] | None:
+    """세션 폴더 이름 목록. MSSB_DATA_DIR이 설정되지 않았으면 None."""
     try:
         sessions_root = storage.get_data_dir() / "sessions"
     except storage.DataDirNotConfiguredError:
-        return []
+        return None
     if not sessions_root.exists():
         return []
     return sorted(p.name for p in sessions_root.iterdir() if p.is_dir())
 
 
-def render_stem_detail(
-    session_id: str, stem_name: str, coding_system: CodingSystem, story_stems: StoryStemsConfig
-) -> None:
-    st.subheader(f"스템 상세 — {stem_label(story_stems, stem_name)}")
-    try:
-        reviewed_exists = (storage.session_dir(session_id) / "coding" / f"{stem_name}_reviewed.json").exists()
-        result = storage.load_stem_coding(session_id, stem_name, reviewed=reviewed_exists)
-    except FileNotFoundError:
-        st.warning("이 스템의 AI 채점 결과를 찾을 수 없습니다.")
-        return
-
-    st.caption(
-        f"완료상태: {completion_status_label(result.completion_status)} · "
-        f"자발/프롬프트후: {response_mode_label(result.response_mode)} "
-        f"· 쟁점프롬프트 횟수: {result.issue_prompt_count}"
-    )
-    st.info(result.disclaimer)
-
-    with st.expander("축어록 (언어+행동분석)", expanded=False):
-        try:
-            verbatim = storage.load_stem_verbatim(session_id, stem_name)
-        except FileNotFoundError:
-            st.caption("축어록 데이터 없음 — 이 세션은 재분석이 필요합니다.")
-        else:
-            for line in verbatim.lines:
-                if line.kind == "speech":
-                    speaker_ko = "검사자" if line.speaker == VerbatimSpeaker.EXAMINER else "아동"
-                    st.write(f"[{line.timestamp_s:.1f}s] **{speaker_ko}**: {line.text}")
-                else:
-                    st.caption(f"[{line.timestamp_s:.1f}s] 🔹 {line.label_ko}")
-            st.download_button(
-                "📄 축어록 다운로드 (.md)",
-                data=render_verbatim_markdown(verbatim),
-                file_name=f"{session_id}_{stem_name}_verbatim.md",
-                mime="text/markdown",
-                key=f"verbatim_dl_{session_id}_{stem_name}",
-            )
-
-    for category_id, category_code in result.codes.items():
-        label = category_label(coding_system, category_id)
-        with st.expander(f"{label} — 존재 항목 {category_code.present_count}개", expanded=False):
-            st.write(category_code.rationale)
-            for item_id, item in category_code.items.items():
-                mark = "✅" if item.present else "—"
-                st.write(f"{mark} **{item_label(coding_system, category_id, item_id)}**")
-                for ev in item.evidence:
-                    st.caption(f"  [{ev.timestamp_s:.1f}s] ({evidence_source_label(ev.source)}) {ev.note}")
-
-
-def render_session_synthesis(session_id: str) -> None:
-    coding_system = load_coding_system()
-    story_stems = load_story_stems()
-
-    reviewed_path = storage.session_dir(session_id) / "session_summary_reviewed.json"
-    synthesis = storage.load_session_synthesis(session_id, reviewed=reviewed_path.exists())
-
-    st.title(f"세션 종합 패턴 초안 — {session_id}")
-    st.info(synthesis.disclaimer)
-    st.caption(
-        f"정상 실시된 스템: {synthesis.stems_administered_count}개 "
-        f"(포함: {', '.join(stem_label(story_stems, s) for s in synthesis.stems_included)})"
-    )
-    if synthesis.stems_missing_or_partial:
-        st.warning(
-            "미실시/부분실시: "
-            f"{', '.join(stem_label(story_stems, s) for s in synthesis.stems_missing_or_partial)}"
-        )
-
-    try:
-        stem_results = storage.load_all_stem_codings(session_id)
-    except FileNotFoundError:
-        stem_results = []
-    report_markdown = build_session_report_markdown(
-        synthesis, stem_results=stem_results, coding_system=coding_system, story_stems=story_stems
-    )
-    dl_col1, dl_col2, dl_col3 = st.columns(3)
-    with dl_col1:
-        st.download_button(
-            "📄 분석 결과 보고서 다운로드 (.md)",
-            data=report_markdown,
-            file_name=f"{session_id}_mssb_report.md",
-            mime="text/markdown",
-        )
-    with dl_col2:
-        bundle = storage.build_session_export_bundle(session_id)
-        st.download_button(
-            "💾 결과 파일만 내보내기 (.json)",
-            data=json.dumps(bundle, ensure_ascii=False, indent=2),
-            file_name=f"{session_id}_mssb_bundle.json",
-            mime="application/json",
-            help="영상은 포함되지 않습니다 — 이미 처리된 결과(JSON)만 담습니다.",
-        )
-    with dl_col3:
-        if st.button("🚀 사업단 공유 사이트에 게시", help="results/ 폴더에 저장 후 git push — 공유 사이트에 자동 반영됩니다."):
-            with st.spinner("게시 중..."):
-                ok, message = publish_to_shared_site(session_id)
-            (st.success if ok else st.error)(message)
-
-    st.header("검사 중 행동관찰")
-    edited_observation = st.text_area(
-        "행동관찰 (수정 가능)", value=synthesis.behavioral_observation, key="behavioral_observation"
-    )
-
-    edited_patterns = []
-    st.header("반복되는 패턴")
-    for i, pattern in enumerate(synthesis.recurring_patterns):
-        label = category_label(coding_system, pattern.category)
-        st.subheader(f"{label} — {len(pattern.observed_in_stems)}/{pattern.stems_administered_count_for_pattern}개 이야기")
-        edited_desc = st.text_area(
-            "패턴 서술 (수정 가능)", value=pattern.pattern_description, key=f"pattern_{i}"
-        )
-        edited_patterns.append(pattern.model_copy(update={"pattern_description": edited_desc}))
-
-        cols = st.columns(len(pattern.evidence) or 1)
-        for col, ev in zip(cols, pattern.evidence):
-            with col:
-                stem_display = stem_label(story_stems, ev.stem_name)
-                if st.button(f"{stem_display} · {ev.timestamp_s:.1f}s", key=f"ev_{i}_{ev.stem_name}_{ev.timestamp_s}"):
-                    st.session_state["drilldown_stem"] = ev.stem_name
-
-    if synthesis.single_story_notable_signals:
-        st.header("단발성 신호 (패턴 아님)")
-        for signal in synthesis.single_story_notable_signals:
-            label = category_label(coding_system, signal.category)
-            st.write(f"**{stem_label(story_stems, signal.stem_name)}** ({label}): {signal.note}")
-
-    st.header("강점과 지원이 필요한 영역")
-    edited_strengths = st.text_area("강점 (수정 가능)", value=synthesis.strengths, key="strengths")
-    edited_support_areas = st.text_area(
-        "지원이 필요한 영역 (수정 가능)", value=synthesis.support_areas, key="support_areas"
-    )
-
-    st.header("제언")
-    st.warning("제언은 AI가 작성한 초안입니다. 진단·위험 판단이 섞이지 않았는지 반드시 확인하고 수정하세요.")
-    edited_recommendations_text = st.text_area(
-        "제언 (한 줄에 하나씩, 수정 가능)",
-        value="\n".join(synthesis.recommendations),
-        key="recommendations",
-    )
-
-    if st.button("종합 초안 저장 (session_summary_reviewed.json)"):
-        updated = synthesis.model_copy(
-            update={
-                "recurring_patterns": edited_patterns,
-                "behavioral_observation": edited_observation,
-                "strengths": edited_strengths,
-                "support_areas": edited_support_areas,
-                "recommendations": [
-                    line.strip() for line in edited_recommendations_text.splitlines() if line.strip()
-                ],
-            }
-        )
-        storage.save_session_synthesis(session_id, updated, reviewed=True)
-        st.success("저장했습니다.")
-
-    st.divider()
-    drilldown_stem = st.session_state.get("drilldown_stem")
-    if drilldown_stem:
-        render_stem_detail(session_id, drilldown_stem, coding_system, story_stems)
-    else:
-        st.caption("위 근거 버튼을 클릭하면 해당 스템의 상세(AI 채점 근거)가 여기 표시됩니다.")
-
-
 def main() -> None:
+    try:
+        coding_system()
+        story_stems()
+    except FileNotFoundError as exc:
+        st.error(f"설정 파일을 찾을 수 없습니다. 저장소의 config 폴더를 확인하세요.\n\n{exc}")
+        st.stop()
+
     st.sidebar.title("세션 목록")
     sessions = list_sessions()
-    if not sessions:
-        st.sidebar.warning("MSSB_DATA_DIR에 세션이 없습니다. .env의 MSSB_DATA_DIR을 확인하세요.")
+    if sessions is None:
         st.title("MSSB AI 코딩 검토")
-        st.write("아직 처리된 세션이 없습니다 — `scripts/run_pipeline.py`로 세션을 먼저 만드세요.")
+        st.error(".env에 MSSB_DATA_DIR(세션 데이터 폴더)이 설정되지 않았습니다. 예: MSSB_DATA_DIR=C:\\mssb_data")
+        return
+    if not sessions:
+        st.title("MSSB AI 코딩 검토")
+        st.write("아직 처리된 세션이 없습니다 — `scripts/run_pipeline.py --stage segmentation`으로 세션을 먼저 만드세요.")
         return
 
     selected = st.sidebar.selectbox("세션 선택", sessions)
@@ -243,13 +65,15 @@ def main() -> None:
         st.session_state.pop("drilldown_stem", None)
 
     try:
-        render_session_synthesis(selected)
-    except FileNotFoundError:
-        st.title(f"{selected}")
-        st.warning(
-            "session_summary_ai_draft.json이 아직 없습니다 — "
-            "run_pipeline.py의 synthesis 단계까지 먼저 실행하세요."
-        )
+        st.sidebar.caption(f"상태: {session_progress(selected).label}")
+    except FILE_FORMAT_ERRORS:
+        st.sidebar.caption("상태: 구간 파일을 읽지 못함")
+
+    page = st.sidebar.radio("화면", PAGES, index=1)
+    if page == PAGES[0]:
+        st.info("구간 확인 화면은 준비 중입니다.")
+    else:
+        synthesis_page.render(selected)
 
 
 if __name__ == "__main__":
