@@ -20,11 +20,13 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Callable, TypeVar
 
 import yaml
+from pydantic import ValidationError
 
 from mssb_coder import storage, video_prep
-from mssb_coder.claude_client import call_stem_coding
+from mssb_coder.claude_client import StructuredResult, call_stem_coding
 from mssb_coder.coding_systems import load_coding_system
 from mssb_coder.cv_events import CvThresholdSet, compute_baselines, derive_events
 from mssb_coder.cv_timeline import StemCvFrames, from_timeline, to_timeline
@@ -47,9 +49,25 @@ from mssb_coder.voice_prosody import run_voice_prosody
 
 logger = logging.getLogger("mssb_coder.pipeline")
 
+T = TypeVar("T")
+
 CV_THRESHOLDS_DIR = Path(__file__).resolve().parents[2] / "config"
 DOLL_WEIGHTS_DIR = Path(__file__).resolve().parents[2] / "models" / "doll_yolo"
 FRAME_FPS = 2.0  # video_prep.extract_stem_frames / pose / facial / object_tracking이 모두 같은 값을 써야 함
+
+
+def _record_usage(session_id: str, call_name: str, response: StructuredResult) -> None:
+    storage.append_api_usage(session_id, {"call": call_name, "model": response.model, **response.usage})
+
+
+def _validate_or_keep(session_id: str, call_name: str, payload: dict, validate: Callable[[dict], T]) -> T:
+    """Claude 응답을 스키마로 검증하고, 실패하면 원본을 failed/에 남긴 뒤 다시 던진다."""
+    try:
+        return validate(payload)
+    except (ValidationError, KeyError, TypeError):
+        path = storage.save_failed_response(session_id, call_name, payload)
+        logger.error("%s 응답이 스키마 검증에 실패함 — 원본 보존: %s", call_name, path)
+        raise
 
 
 def _load_cv_thresholds(subject_type) -> dict:
@@ -66,8 +84,14 @@ def run_segmentation_stage(video_path: Path, metadata: SessionMetadata) -> list[
 
     logger.info("3단계: Claude 구간분리")
     story_stems = load_story_stems()
-    raw_segments = call_segmentation(story_stems, full_text)
-    timestamps = [StemTimestamp.model_validate(seg) for seg in raw_segments]
+    response = call_segmentation(story_stems, full_text)
+    _record_usage(metadata.session_id, "segmentation", response)
+    timestamps = _validate_or_keep(
+        metadata.session_id,
+        "segmentation",
+        response.data,
+        lambda data: [StemTimestamp.model_validate(seg) for seg in data["segments"]],
+    )
 
     storage.save_stem_timestamps(metadata.session_id, timestamps)
     logger.info("stem_timestamps.json 저장 완료 — 4단계(사람 확인)는 Streamlit에서 진행할 것")
@@ -210,7 +234,7 @@ def run_coding_stage(video_path: Path | None, metadata: SessionMetadata) -> list
         )
 
         stem_def = story_stems[stem.stem_name]
-        raw_result = call_stem_coding(
+        response = call_stem_coding(
             coding_system,
             transcript_text=transcript_text,
             nonverbal_summary=nonverbal_summary,
@@ -219,17 +243,21 @@ def run_coding_stage(video_path: Path | None, metadata: SessionMetadata) -> list
             response_mode="spontaneous",  # TODO: 실제로는 사람이 기록해야 함 (§6.6)
             issue_prompt_count=0,  # TODO: 위와 동일
         )
-        result = StemCodingResult.model_validate(
-            raw_result
+        _record_usage(metadata.session_id, f"stem_coding:{stem.stem_name}", response)
+        result = _validate_or_keep(
+            metadata.session_id,
+            f"stem_coding_{stem.stem_name}",
+            response.data
             | {
                 "session_id": metadata.session_id,
                 "child_age_months": metadata.child_age_months,
                 "stem_name": stem.stem_name,
-                "completion_status": "complete",  # TODO: 실제로는 사람이 기록해야 함
+                "completion_status": "complete",  # 검토 앱에서 사람이 바로잡는 값
                 "response_mode": "spontaneous",
                 "issue_prompt_count": 0,
-                "model_version": "claude-opus-5",
-            }
+                "model_version": response.model,
+            },
+            StemCodingResult.model_validate,
         )
         storage.save_stem_coding(metadata.session_id, stem.stem_name, result)
         results.append(result)
@@ -240,9 +268,13 @@ def run_coding_stage(video_path: Path | None, metadata: SessionMetadata) -> list
 def run_synthesis_stage(metadata: SessionMetadata) -> SessionSynthesis:
     """12단계: 스템별 AI 채점 원본 전체 → 세션 종합 패턴 초안."""
     stem_results = storage.load_all_stem_codings(metadata.session_id)  # 원본(ai_codes) 사용
-    raw_synthesis = call_session_synthesis(stem_results)
-    synthesis = SessionSynthesis.model_validate(
-        raw_synthesis | {"session_id": metadata.session_id, "model_version": "claude-opus-5"}
+    response = call_session_synthesis(stem_results)
+    _record_usage(metadata.session_id, "synthesis", response)
+    synthesis = _validate_or_keep(
+        metadata.session_id,
+        "synthesis",
+        response.data | {"session_id": metadata.session_id, "model_version": response.model},
+        SessionSynthesis.model_validate,
     )
     storage.save_session_synthesis(metadata.session_id, synthesis)
     return synthesis

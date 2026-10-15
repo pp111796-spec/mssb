@@ -1,4 +1,4 @@
-"""Claude API 호출 공통 로직 — 텍스트만 전송, tool_use 파싱.
+"""Claude API 호출 공통 로직 — 텍스트만 전송, structured outputs(JSON) 파싱.
 
 원본 이미지/영상은 절대 보내지 않는다 (계획 전체의 핵심 전제). 시스템 프롬프트에
 비진단·해석 층위2 제약을 항상 포함해, 매뉴얼 §10.1·§2.2의 오용금지 목록을 코드 수준에서 강제한다.
@@ -9,13 +9,94 @@
 
 from __future__ import annotations
 
+import json
 import os
+from dataclasses import dataclass, field
 
-from mssb_coder.coding_systems import CodingSystem, build_claude_tool_schema
+from mssb_coder.coding_systems import CodingSystem, build_claude_tool_schema, to_structured_output_schema
 from mssb_coder.labels import response_mode_label
 from mssb_coder.schema import STANDARD_DISCLAIMER, ResponseMode
 
-MODEL_VERSION = "claude-opus-5"
+MODEL_VERSION = "claude-opus-5-5"
+# Opus 5.5의 기본 effort는 medium — 채점 품질을 위해 명시적으로 high를 쓴다.
+EFFORT = "high"
+# thinking이 항상 켜져 있고 max_tokens에 포함되므로 넉넉히 둔다 (스트리밍이라 타임아웃 걱정 없음).
+MAX_TOKENS = 64000
+MAX_RETRIES = 4
+# 안전 분류기가 오탐으로 거절하면 Anthropic이 권장하는 모델로 같은 요청을 다시 돌린다.
+FALLBACK_BETA = "server-side-fallback-2026-07-01"
+
+
+class ClaudeCallError(RuntimeError):
+    pass
+
+
+@dataclass(frozen=True)
+class StructuredResult:
+    data: dict
+    model: str  # 실제로 응답한 모델 (fallback이 돌았으면 원래 모델과 다를 수 있음)
+    usage: dict = field(default_factory=dict)
+
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        import anthropic  # noqa: PLC0415 — SDK 없이도 이 모듈을 import할 수 있게
+
+        _client = anthropic.Anthropic(api_key=_require_api_key(), max_retries=MAX_RETRIES)
+    return _client
+
+
+def _usage_dict(usage) -> dict:
+    return {
+        name: getattr(usage, name, None) or 0
+        for name in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+    }
+
+
+def call_structured(
+    *, system_prompt: str, user_message: str, schema: dict, call_name: str, client=None
+) -> StructuredResult:
+    """Claude를 한 번 호출해 schema에 맞는 JSON(dict)을 받는다. 세 호출(구간분리·스템채점·종합) 공통.
+
+    pydantic 검증은 호출 쪽 책임 — 여기서는 응답이 잘리거나 거절되거나 JSON이 아닌 경우만 걸러낸다.
+    """
+    client = client or _get_client()
+    with client.beta.messages.stream(
+        model=MODEL_VERSION,
+        max_tokens=MAX_TOKENS,
+        system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
+        messages=[{"role": "user", "content": user_message}],
+        output_config={
+            "effort": EFFORT,
+            "format": {"type": "json_schema", "schema": to_structured_output_schema(schema)},
+        },
+        betas=[FALLBACK_BETA],
+        fallbacks="default",
+    ) as stream:
+        response = stream.get_final_message()
+
+    if response.stop_reason == "refusal":
+        details = getattr(response, "stop_details", None)
+        category = getattr(details, "category", None) if details else None
+        raise ClaudeCallError(f"{call_name}: Claude가 응답을 거절했습니다 (분류: {category or '알 수 없음'}).")
+    if response.stop_reason == "max_tokens":
+        raise ClaudeCallError(f"{call_name}: 응답이 최대 길이({MAX_TOKENS} 토큰)에서 잘렸습니다.")
+
+    text = next((block.text for block in response.content if block.type == "text"), None)
+    if not text:
+        raise ClaudeCallError(f"{call_name}: 응답에 JSON 본문이 없습니다 (stop_reason={response.stop_reason!r}).")
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ClaudeCallError(f"{call_name}: 응답이 올바른 JSON이 아닙니다 ({exc}).") from exc
+    if not isinstance(data, dict):
+        raise ClaudeCallError(f"{call_name}: 응답 JSON의 최상위가 객체가 아닙니다.")
+
+    return StructuredResult(data=data, model=response.model, usage=_usage_dict(response.usage))
 
 NON_DIAGNOSTIC_CONSTRAINT = (
     "이 결과는 진단·위험분류·임상적 판단이 아니다. 해석은 '이야기 전반의 패턴' 층위를 넘지 않는다 "
@@ -99,46 +180,20 @@ def call_stem_coding(
     child_age_months: int,
     response_mode: str,
     issue_prompt_count: int,
-) -> dict:
-    """Claude를 호출해 tool_use 결과(dict)를 반환한다. 호출 쪽이 schema.StemCodingResult로 검증할 것.
-
-    lazy import: anthropic SDK가 설치돼 있지 않아도 이 모듈을 import할 수 있다.
-    """
-    import anthropic  # noqa: PLC0415
-
-    client = anthropic.Anthropic(api_key=_require_api_key())
-    tool = build_claude_tool_schema(coding_system)
-    system_prompt = build_stem_coding_system_prompt(coding_system)
-    user_message = build_stem_coding_user_message(
-        transcript_text=transcript_text,
-        nonverbal_summary=nonverbal_summary,
-        story_specific_notes=story_specific_notes,
-        child_age_months=child_age_months,
-        response_mode=response_mode,
-        issue_prompt_count=issue_prompt_count,
+    client=None,
+) -> StructuredResult:
+    """스템 1편을 채점한다. 호출 쪽이 결과의 data를 schema.StemCodingResult로 검증할 것."""
+    return call_structured(
+        system_prompt=build_stem_coding_system_prompt(coding_system),
+        user_message=build_stem_coding_user_message(
+            transcript_text=transcript_text,
+            nonverbal_summary=nonverbal_summary,
+            story_specific_notes=story_specific_notes,
+            child_age_months=child_age_months,
+            response_mode=response_mode,
+            issue_prompt_count=issue_prompt_count,
+        ),
+        schema=build_claude_tool_schema(coding_system)["input_schema"],
+        call_name="스템 채점",
+        client=client,
     )
-
-    response = client.messages.create(
-        model=MODEL_VERSION,
-        max_tokens=16000,  # 5범주 x 5~7항목 x (present+evidence) 전부 채우기엔 4096으로 부족함 (실측으로 확인 — 빈 tool_use 응답 원인)
-        system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
-        tools=[tool],
-        tool_choice={"type": "tool", "name": tool["name"]},
-        messages=[{"role": "user", "content": user_message}],
-    )
-
-    if response.stop_reason == "max_tokens":
-        raise RuntimeError(
-            "Claude 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음. "
-            "max_tokens를 늘리거나 스키마를 단순화할 것."
-        )
-
-    for block in response.content:
-        if block.type == "tool_use":
-            if not block.input:
-                raise RuntimeError(
-                    f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})"
-                )
-            return block.input
-
-    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")

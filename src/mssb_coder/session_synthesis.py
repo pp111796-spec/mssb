@@ -7,7 +7,12 @@
 
 from __future__ import annotations
 
-from mssb_coder.claude_client import NON_DIAGNOSTIC_CONSTRAINT, REPORT_TONE_GUIDE
+from mssb_coder.claude_client import (
+    NON_DIAGNOSTIC_CONSTRAINT,
+    REPORT_TONE_GUIDE,
+    StructuredResult,
+    call_structured,
+)
 from mssb_coder.schema import CategoryId, StemCodingResult
 import typing
 
@@ -131,35 +136,16 @@ SYNTHESIS_TOOL = {
 }
 
 
-def call_session_synthesis(stem_results: list[StemCodingResult]) -> dict:
-    """Claude를 호출해 세션 종합 결과(dict)를 반환한다. 호출 쪽이 schema.SessionSynthesis로 검증할 것.
+def call_session_synthesis(stem_results: list[StemCodingResult], client=None) -> StructuredResult:
+    """세션 종합을 만든다. 호출 쪽이 결과의 data를 schema.SessionSynthesis로 검증할 것.
 
     interpretation_layer/based_on/disclaimer 같은 고정 상수 필드는 Claude에게 묻지 않는다 —
-    pipeline.py의 run_synthesis_stage가 이 함수의 반환값에 그 상수들을 덧씌워 검증한다.
+    pipeline.py의 run_synthesis_stage가 반환값에 그 상수들을 덧씌워 검증한다.
     """
-    import anthropic  # noqa: PLC0415
-
-    from mssb_coder.claude_client import MODEL_VERSION, _require_api_key  # noqa: PLC0415
-
-    client = anthropic.Anthropic(api_key=_require_api_key())
-    user_message = build_synthesis_user_message(stem_results)
-
-    response = client.messages.create(
-        model=MODEL_VERSION,
-        max_tokens=16000,  # claude_client.call_stem_coding에서 겪은 것과 같은 문제(4096 부족) 예방
-        system=[{"type": "text", "text": SYNTHESIS_SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
-        tools=[SYNTHESIS_TOOL],
-        tool_choice={"type": "tool", "name": SYNTHESIS_TOOL["name"]},
-        messages=[{"role": "user", "content": user_message}],
+    return call_structured(
+        system_prompt=SYNTHESIS_SYSTEM_PROMPT,
+        user_message=build_synthesis_user_message(stem_results),
+        schema=SYNTHESIS_TOOL["input_schema"],
+        call_name="세션 종합",
+        client=client,
     )
-
-    if response.stop_reason == "max_tokens":
-        raise RuntimeError("Claude 종합 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음.")
-
-    for block in response.content:
-        if block.type == "tool_use":
-            if not block.input:
-                raise RuntimeError(f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})")
-            return block.input
-
-    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")

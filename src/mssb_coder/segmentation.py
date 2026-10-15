@@ -153,36 +153,18 @@ SEGMENTATION_TOOL = {
 }
 
 
-def call_segmentation(story_stems: StoryStemsConfig, full_transcript_text: str) -> list[dict]:
-    """Claude를 호출해 구간별 dict 목록을 반환한다. 호출 쪽이 schema.StemTimestamp로 검증할 것."""
-    import anthropic  # noqa: PLC0415
+def call_segmentation(story_stems: StoryStemsConfig, full_transcript_text: str, client=None):
+    """Claude로 구간을 나눈다. 반환값(StructuredResult)의 data["segments"]를 호출 쪽이 StemTimestamp로 검증할 것."""
+    from mssb_coder.claude_client import call_structured  # noqa: PLC0415
 
-    from mssb_coder.claude_client import MODEL_VERSION, _require_api_key  # noqa: PLC0415
-
-    client = anthropic.Anthropic(api_key=_require_api_key())
-    system_prompt = build_segmentation_system_prompt(story_stems)
-    fixed_order = load_fixed_order()
-    few_shot_examples = load_segmentation_examples()
-    user_message = build_segmentation_user_message(
-        full_transcript_text, fixed_order=fixed_order, few_shot_examples=few_shot_examples
+    return call_structured(
+        system_prompt=build_segmentation_system_prompt(story_stems),
+        user_message=build_segmentation_user_message(
+            full_transcript_text,
+            fixed_order=load_fixed_order(),
+            few_shot_examples=load_segmentation_examples(),
+        ),
+        schema=SEGMENTATION_TOOL["input_schema"],
+        call_name="구간분리",
+        client=client,
     )
-
-    response = client.messages.create(
-        model=MODEL_VERSION,
-        max_tokens=8000,  # 세그먼트 14개 기준 실측 ~1600 토큰이었으나 여유를 둠
-        system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
-        tools=[SEGMENTATION_TOOL],
-        tool_choice={"type": "tool", "name": SEGMENTATION_TOOL["name"]},
-        messages=[{"role": "user", "content": user_message}],
-    )
-
-    if response.stop_reason == "max_tokens":
-        raise RuntimeError("Claude 구간분리 응답이 max_tokens에서 잘림 — tool_use 입력이 불완전할 수 있음.")
-
-    for block in response.content:
-        if block.type == "tool_use":
-            if not block.input:
-                raise RuntimeError(f"Claude tool_use 입력이 비어 있음 (stop_reason={response.stop_reason!r})")
-            return block.input["segments"]
-
-    raise RuntimeError(f"Claude 응답에 tool_use 블록이 없음 (stop_reason={response.stop_reason!r})")

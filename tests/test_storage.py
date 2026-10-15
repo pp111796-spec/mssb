@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from mssb_coder.coding_systems import load_coding_system
@@ -179,3 +180,20 @@ def test_publish_session_bundle_to_repo_writes_json_file(tmp_path, monkeypatch):
     parsed_synthesis, parsed_stems = parse_bundle_dict(raw)
     assert parsed_synthesis.session_id == "s1"
     assert len(parsed_stems) == 1
+
+
+def test_append_api_usage_adds_one_json_line_per_call():
+    storage.append_api_usage("s1", {"call": "synthesis", "model": "claude-opus-5-5", "input_tokens": 10})
+    storage.append_api_usage("s1", {"call": "stem_coding:spilled_juice", "input_tokens": 20})
+
+    lines = (storage.session_dir("s1") / "api_usage.jsonl").read_text(encoding="utf-8").splitlines()
+    records = [json.loads(line) for line in lines]
+    assert [r["call"] for r in records] == ["synthesis", "stem_coding:spilled_juice"]
+    assert all("at" in r for r in records)
+
+
+def test_save_failed_response_keeps_raw_payload():
+    path = storage.save_failed_response("s1", "synthesis", {"recurring_patterns": "잘못된 형식"})
+
+    assert path.parent.name == "failed"
+    assert json.loads(path.read_text(encoding="utf-8")) == {"recurring_patterns": "잘못된 형식"}

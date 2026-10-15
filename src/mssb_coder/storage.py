@@ -32,6 +32,7 @@ from mssb_coder.schema import (
     StemCvTimeline,
     StemTimestamp,
     StemVerbatimRecord,
+    utc_now_iso,
 )
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
@@ -121,6 +122,26 @@ def save_stem_verbatim(session_id: str, stem_name: str, record: StemVerbatimReco
 
 def load_stem_verbatim(session_id: str, stem_name: str) -> StemVerbatimRecord:
     return _read_model(session_dir(session_id) / "coding" / f"{stem_name}_verbatim.json", StemVerbatimRecord)
+
+
+# --- api_usage.jsonl / failed/ (Claude 호출 기록) ----------------------------------------------
+
+
+def append_api_usage(session_id: str, record: dict) -> Path:
+    """Claude 호출 1회의 토큰 사용량을 한 줄(JSON)로 덧붙인다 — 세션당 실제 비용 확인용."""
+    path = session_dir(session_id) / "api_usage.jsonl"
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps({"at": utc_now_iso(), **record}, ensure_ascii=False) + "\n")
+    return path
+
+
+def save_failed_response(session_id: str, call_name: str, payload) -> Path:
+    """스키마 검증에 실패한 Claude 응답 원본을 보존한다 — 같은 호출을 다시 돌리지 않고도 원인을 볼 수 있게."""
+    stamp = utc_now_iso().replace(":", "").replace("+", "_")
+    path = session_dir(session_id) / "failed" / f"{call_name}_{stamp}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
 
 
 # --- cv/<stem>_cv.json (CV 원본 수치 타임라인 — 임계값 보정·이벤트 재계산용) -----------------

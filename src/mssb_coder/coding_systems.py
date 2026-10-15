@@ -1,9 +1,9 @@
-"""Load config/coding_systems/mssb_5category.yaml and build the Claude tool_use schema for it.
+"""Load config/coding_systems/mssb_5category.yaml and build the JSON Schema Claude must answer in.
 
 파이프라인 9단계("코딩 체계 로드")와 10단계("AI 코딩 호출")가 쓰는 모듈.
-YAML은 사람이 읽고 고치는 소스, 이 모듈이 그걸 Anthropic tool_use의 input_schema(JSON Schema)로
-변환한다 — 5범주 세부 항목 체크리스트를 하나의 tool로 정의해 스템당 1회 호출로 5범주 값을 동시에 받는다
-(계획 "기술 스택" 섹션의 "구조화 출력" 항목).
+YAML은 사람이 읽고 고치는 소스, 이 모듈이 그걸 JSON Schema로 변환한다 — 5범주 세부 항목 체크리스트를
+스키마 하나로 정의해 스템당 1회 호출로 5범주 값을 동시에 받는다. 실제 호출은 structured outputs
+(output_config.format)로 보내며, to_structured_output_schema가 그 형식에 맞게 다듬는다.
 """
 
 from __future__ import annotations
@@ -64,8 +64,40 @@ def load_coding_system(path: Path | None = None) -> CodingSystem:
     )
 
 
+# structured outputs(output_config.format)가 받지 않는 제약 키워드 — 값 검증은 pydantic이 다시 한다.
+_UNSUPPORTED_SCHEMA_KEYWORDS = frozenset(
+    {"minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength"}
+)
+
+
+def to_structured_output_schema(schema: dict) -> dict:
+    """tool input_schema를 structured outputs용으로 바꾼다.
+
+    모든 object에 additionalProperties:false를 붙이고 지원하지 않는 제약 키워드를 뺀다.
+    description은 남긴다 — rationale의 문체 지시처럼 모델이 읽어야 하는 안내가 들어 있다.
+    """
+
+    def convert(node, is_properties_map: bool = False):
+        if isinstance(node, list):
+            return [convert(v) for v in node]
+        if not isinstance(node, dict):
+            return node
+        if is_properties_map:  # 키가 사용자 정의 속성 이름이라 키워드로 걸러내면 안 된다
+            return {name: convert(sub) for name, sub in node.items()}
+        out = {
+            key: convert(value, is_properties_map=(key == "properties"))
+            for key, value in node.items()
+            if key not in _UNSUPPORTED_SCHEMA_KEYWORDS
+        }
+        if out.get("type") == "object":
+            out["additionalProperties"] = False
+        return out
+
+    return convert(schema)
+
+
 def build_claude_tool_schema(coding_system: CodingSystem) -> dict:
-    """스템당 1회 Claude 호출에 쓰이는 tool_use 정의 (claude_client.py가 사용).
+    """스템당 1회 Claude 호출의 응답 스키마 정의 (claude_client.py가 input_schema를 사용).
 
     반환값의 input_schema.properties.codes는 schema.py의 StemCodingResult.codes와
     구조적으로 일치해야 한다 (pydantic 검증 통과가 이 스키마의 목적).

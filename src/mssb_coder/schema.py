@@ -6,7 +6,7 @@ Mirrors the JSON schemas in the plan document (iterative-wondering-ocean.md):
   - segmentation.py's stem_timestamps.json output (파이프라인 3단계)
 
 These models are the pydantic-validation gate the plan requires after every
-Claude tool_use call (pipeline steps 3, 10, 12) before anything is written to disk.
+Claude call (pipeline steps 3, 10, 12) before anything is written to disk.
 """
 
 from __future__ import annotations
