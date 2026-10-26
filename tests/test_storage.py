@@ -243,3 +243,22 @@ def test_session_metadata_and_transcript_round_trip():
     segments = [TranscriptSegment(start_s=1.0, end_s=2.0, text="안녕")]
     storage.save_transcript("s1", segments)
     assert storage.load_transcript("s1") == segments
+
+
+def test_reviewed_synthesis_records_review_time_and_ai_draft_never_does():
+    from factories import synthesis
+
+    storage.save_session_synthesis("s1", synthesis().model_copy(update={"reviewed_at": "x"}))
+    storage.save_session_synthesis("s1", synthesis(), reviewed=True)
+
+    assert storage.load_session_synthesis("s1").reviewed_at is None
+    assert storage.load_session_synthesis("s1", reviewed=True).reviewed_at
+
+
+def test_old_reviewed_synthesis_without_review_time_counts_as_reviewed():
+    from factories import synthesis
+
+    path = storage.session_dir("s1") / "session_summary_reviewed.json"
+    path.write_text(synthesis().model_dump_json(), encoding="utf-8")  # reviewed_at 필드가 생기기 전 파일
+
+    assert storage.load_session_synthesis("s1", reviewed=True).reviewed_at

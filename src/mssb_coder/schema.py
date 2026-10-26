@@ -220,6 +220,8 @@ class SessionSynthesis(BaseModel):
     disclaimer: str = STANDARD_DISCLAIMER
     model_version: str
     generated_at: str = Field(default_factory=utc_now_iso)
+    # 검사자가 검토 앱에서 종합을 저장한 시각 — 보고서 '해석상 유의점'이 검토 여부를 정직하게 적는 근거
+    reviewed_at: str | None = None
 
 
 # ---------------------------------------------------------------------------

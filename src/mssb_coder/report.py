@@ -12,13 +12,17 @@ rationale/pattern_description 문장을 그대로(또는 이어붙여서) 서술
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from mssb_coder.coding_systems import CodingSystem, load_coding_system
 from mssb_coder.labels import category_label, scrub_english_ids, stem_label
 from mssb_coder.schema import ResponseMode, SessionSynthesis, StemCodingResult
 from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
 
 
-PLACEHOLDER = "(전체 종합 보고서에서 가져올 예정)"
+KST = timezone(timedelta(hours=9))
+
+PLACEHOLDER ="(전체 종합 보고서에서 가져올 예정)"
 
 TEST_OVERVIEW = (
     "이 검사는 인형으로 짧은 이야기의 시작 부분을 보여 준 뒤, 아이가 이야기를 어떻게 이어 가는지 "
@@ -26,10 +30,18 @@ TEST_OVERVIEW = (
     "어떻게 표현하는지를 통해 아이가 관계와 감정을 어떻게 이해하고 있는지 살펴본다."
 )
 
-INTERPRETATION_CAVEAT = (
-    "이 보고서는 한 번의 검사 장면에서 관찰된 내용에 근거한 것으로, 아이의 전체 모습을 대표하지 않을 수 있다. "
-    "내용은 인공지능이 작성한 초안을 검사자가 검토해 확정한 것이며, 제언은 참고용 안내이다."
-)
+INTERPRETATION_CAVEAT = "이 보고서는 한 번의 검사 장면에서 관찰한 내용에 근거하므로 아이의 전체 모습을 대표하지 않을 수 있다."
+REVIEW_STATUS_REVIEWED = "인공지능이 작성한 초안을 검사자가 검토해 확정했다. 제언은 참고용 안내이다."
+REVIEW_STATUS_DRAFT = "인공지능이 작성한 초안이며, 검사자가 아직 검토하지 않았다. 제언은 참고용 안내이다."
+
+
+def _korean_date(iso_timestamp: str) -> str:
+    """'2026-10-14T10:21:30.61+00:00' → '2026년 10월 14일' (한국 시간 기준). 형식이 다르면 원문 그대로."""
+    try:
+        moment = datetime.fromisoformat(iso_timestamp).astimezone(KST)
+    except (TypeError, ValueError):
+        return iso_timestamp
+    return f"{moment.year}년 {moment.month}월 {moment.day}일"
 
 
 def _completion_sentence(result: StemCodingResult) -> str:
@@ -64,16 +76,16 @@ def build_session_report_markdown(
     lines: list[str] = [
         f"# MSSB 세션 결과 — {synthesis.session_id}",
         "",
-        f"생성 시각: {synthesis.generated_at}",
+        f"작성일: {_korean_date(synthesis.reviewed_at or synthesis.generated_at)}",
         "",
         f"> {synthesis.disclaimer}",
         "",
-        f"**정상 실시된 스템**: {synthesis.stems_administered_count}개 "
+        f"**실시한 이야기**: {synthesis.stems_administered_count}편 "
         f"({', '.join(stem_label(story_stems, s) for s in synthesis.stems_included) or '없음'})",
     ]
     if synthesis.stems_missing_or_partial:
         lines.append(
-            "**미실시/부분실시**: "
+            "**실시하지 않았거나 일부만 실시한 이야기**: "
             f"{', '.join(stem_label(story_stems, s) for s in synthesis.stems_missing_or_partial)}"
         )
     lines.append("")
@@ -160,8 +172,10 @@ def build_session_report_markdown(
     lines.append("")
     lines.append("## 해석상 유의점")
     lines.append("")
-    lines.append(INTERPRETATION_CAVEAT)
+    review_status = REVIEW_STATUS_REVIEWED if synthesis.reviewed_at else REVIEW_STATUS_DRAFT
+    lines.append(f"{INTERPRETATION_CAVEAT} {review_status}")
     lines.append("")
-    lines.append(synthesis.not_included_by_design)
+    scope_note = synthesis.not_included_by_design.strip()
+    lines.append(scope_note if scope_note.endswith(".") else scope_note + ".")
 
     return "\n".join(lines)

@@ -5,3 +5,4 @@
 streamlit
 pydantic>=2
 pyyaml
+fpdf2>=2.8

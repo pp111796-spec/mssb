@@ -140,3 +140,28 @@ def test_report_omits_optional_sections_for_old_synthesis_without_new_fields():
     assert "## 제언" not in report
     assert "## 강점과 지원이 필요한 영역" not in report
     assert "## 해석상 유의점" in report
+
+
+def test_caveat_says_draft_until_examiner_saves_review():
+    from factories import synthesis
+    from mssb_coder.report import REVIEW_STATUS_DRAFT, REVIEW_STATUS_REVIEWED
+
+    draft = build_session_report_markdown(synthesis())
+    reviewed = build_session_report_markdown(synthesis().model_copy(update={"reviewed_at": "2026-10-26T00:00:00+00:00"}))
+
+    assert REVIEW_STATUS_DRAFT in draft and REVIEW_STATUS_REVIEWED not in draft
+    assert REVIEW_STATUS_REVIEWED in reviewed and REVIEW_STATUS_DRAFT not in reviewed
+
+
+def test_report_header_uses_korean_date_and_no_scorer_jargon():
+    from factories import stem_result, synthesis
+
+    report = build_session_report_markdown(
+        synthesis().model_copy(update={"generated_at": "2026-10-14T20:21:30.610292+00:00"}),
+        stem_results=[stem_result("spilled_juice")],
+    )
+
+    assert "작성일: 2026년 10월 15일" in report  # 한국 시간으로 바꾸면 다음 날
+    assert "T20:21" not in report
+    assert "스템" not in report
+    assert report.rstrip().endswith(".")

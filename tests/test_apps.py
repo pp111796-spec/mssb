@@ -162,3 +162,17 @@ def test_stem_edit_saves_reviewed_copy_used_by_report_then_reverts(data_dir):
     assert not at.exception
     assert not storage.stem_reviewed_exists("s1", "spilled_juice")
     assert list((storage.session_dir("s1") / "coding").glob("spilled_juice_reviewed.*.bak.json"))
+
+
+def test_both_apps_offer_pdf_download(data_dir):
+    make_session()
+    review = AppTest.from_file(REVIEW_APP, default_timeout=60).run()
+    assert not review.exception
+    assert any("PDF" in str(getattr(el, "label", "")) for el in review.get("download_button"))
+
+    public = AppTest.from_file(PUBLIC_APP, default_timeout=60)
+    public.secrets["APP_PASSWORD"] = "pw"
+    public.run()
+    public.text_input[0].input("pw").run()
+    assert not public.exception
+    assert any("PDF" in str(getattr(el, "label", "")) for el in public.get("download_button"))

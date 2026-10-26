@@ -49,6 +49,13 @@ def _story_stems():
     return load_story_stems()
 
 
+@st.cache_data(show_spinner="PDF를 만드는 중...")
+def _report_pdf(markdown: str, title: str) -> bytes:
+    from mssb_coder.report_pdf import markdown_to_pdf  # noqa: PLC0415
+
+    return markdown_to_pdf(markdown, title)
+
+
 def _plain(text: str | None) -> str:
     """Claude 자유 텍스트에 섞인 영문 id·표정 코드를 한글로 바꾼다 (보고서와 같은 규칙)."""
     return scrub_english_ids(text or "", _coding_system(), _story_stems())
@@ -101,12 +108,22 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
     report_markdown = build_session_report_markdown(
         synthesis, stem_results=stem_results, coding_system=coding_system, story_stems=story_stems
     )
-    st.download_button(
-        "📄 보고서 다운로드 (.md)",
-        data=report_markdown,
-        file_name=f"{synthesis.session_id}_mssb_report.md",
-        mime="text/markdown",
-    )
+    pdf_col, md_col = st.columns(2)
+    with pdf_col:
+        st.download_button(
+            "📑 보고서 PDF 다운로드",
+            data=_report_pdf(report_markdown, f"MSSB 세션 결과 — {synthesis.session_id}"),
+            file_name=f"{synthesis.session_id}_mssb_report.pdf",
+            mime="application/pdf",
+            type="primary",
+        )
+    with md_col:
+        st.download_button(
+            "📄 보고서 원문 (.md)",
+            data=report_markdown,
+            file_name=f"{synthesis.session_id}_mssb_report.md",
+            mime="text/markdown",
+        )
 
     if synthesis.behavioral_observation:
         st.header("검사 중 행동관찰")

@@ -10,6 +10,7 @@ py-feat
 pydantic>=2
 pyyaml
 streamlit
+fpdf2>=2.8
 python-dotenv
 pytest
 

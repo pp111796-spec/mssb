@@ -25,6 +25,14 @@ def story_stems() -> StoryStemsConfig:
     return load_story_stems()
 
 
+@st.cache_data(show_spinner="PDF를 만드는 중...")
+def report_pdf_bytes(markdown: str, title: str) -> bytes:
+    """보고서 마크다운이 같으면 PDF를 다시 만들지 않는다 (화면이 다시 그려질 때마다 1초 넘게 걸리기 때문)."""
+    from mssb_coder.report_pdf import markdown_to_pdf  # noqa: PLC0415
+
+    return markdown_to_pdf(markdown, title)
+
+
 def plain(text: str | None) -> str:
     """Claude 자유 텍스트에 섞인 영문 id·표정 코드를 한글로 바꿔 화면에 보여줄 문장으로 만든다."""
     return scrub_english_ids(text or "", coding_system(), story_stems())

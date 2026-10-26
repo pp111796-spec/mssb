@@ -10,7 +10,15 @@ import streamlit as st
 from mssb_coder import git_publish, storage
 from mssb_coder.labels import category_label, stem_label
 from mssb_coder.report import build_session_report_markdown
-from review_app.common import FILE_FORMAT_ERRORS, coding_system, plain, show_file_error, story_stems, widget_key
+from review_app.common import (
+    FILE_FORMAT_ERRORS,
+    coding_system,
+    plain,
+    report_pdf_bytes,
+    show_file_error,
+    story_stems,
+    widget_key,
+)
 from review_app.stem_page import render_stem_detail
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -64,10 +72,20 @@ def render(session_id: str) -> None:
     report_markdown = build_session_report_markdown(
         synthesis, stem_results=stem_results, coding_system=cs, story_stems=stems
     )
+    if not reviewed:
+        st.caption("아직 종합 검토본을 저장하지 않아, 보고서의 '해석상 유의점'에 '검사자가 아직 검토하지 않았다'고 적힙니다.")
     dl_col1, dl_col2, dl_col3 = st.columns(3)
     with dl_col1:
         st.download_button(
-            "📄 분석 결과 보고서 다운로드 (.md)",
+            "📑 보고서 PDF 다운로드",
+            data=report_pdf_bytes(report_markdown, f"MSSB 세션 결과 — {session_id}"),
+            file_name=f"{session_id}_mssb_report.pdf",
+            mime="application/pdf",
+            type="primary",
+            key=widget_key(session_id, "report_pdf"),
+        )
+        st.download_button(
+            "📄 보고서 원문 (.md)",
             data=report_markdown,
             file_name=f"{session_id}_mssb_report.md",
             mime="text/markdown",

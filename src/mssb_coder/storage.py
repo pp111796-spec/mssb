@@ -27,6 +27,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, TypeVar
 
@@ -304,13 +305,22 @@ def cv_timeline_exists(session_id: str, stem_name: str) -> bool:
 
 
 def save_session_synthesis(session_id: str, result: SessionSynthesis, reviewed: bool = False) -> Path:
-    filename = "session_summary_reviewed.json" if reviewed else "session_summary_ai_draft.json"
-    return _write_model(session_dir(session_id) / filename, result)
+    if reviewed:
+        return _write_model(
+            session_dir(session_id) / "session_summary_reviewed.json",
+            result.model_copy(update={"reviewed_at": utc_now_iso()}),
+        )
+    return _write_model(session_dir(session_id) / "session_summary_ai_draft.json", result.model_copy(update={"reviewed_at": None}))
 
 
 def load_session_synthesis(session_id: str, reviewed: bool = False) -> SessionSynthesis:
     filename = "session_summary_reviewed.json" if reviewed else "session_summary_ai_draft.json"
-    return _read_model(session_dir(session_id) / filename, SessionSynthesis)
+    path = session_dir(session_id) / filename
+    synthesis = _read_model(path, SessionSynthesis)
+    if reviewed and synthesis.reviewed_at is None:  # reviewed_at 필드가 생기기 전에 저장한 검토본
+        modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
+        synthesis = synthesis.model_copy(update={"reviewed_at": modified})
+    return synthesis
 
 
 # --- 공개 사이트 업로드용 내보내기 번들 -----------------------------------------
