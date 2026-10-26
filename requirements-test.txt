@@ -1,0 +1,8 @@
+# 자동 테스트(GitHub Actions)용 가벼운 의존성 — 무거운 CV·전사 라이브러리 없이 전체 테스트가 돈다.
+# CV·Claude 호출은 테스트에서 가짜로 바꾸고, 해당 라이브러리는 함수 안에서만 불러오기 때문.
+pydantic>=2
+pyyaml
+python-dotenv
+streamlit
+fpdf2>=2.8
+pytest

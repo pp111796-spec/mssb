@@ -28,6 +28,23 @@ st.set_page_config(page_title="MSSB AI 코딩 검토", layout="wide")
 
 PAGES = ("1. 구간 확인", "2. 결과 검토")
 
+# 스크롤을 줄이기 위한 촘촘한 레이아웃 — 여백·제목 크기·입력칸 간격을 줄인다
+COMPACT_CSS = """
+<style>
+.block-container { padding: 1rem 1.5rem 0.5rem 1.5rem; max-width: 100%; }
+h1 { font-size: 1.4rem !important; line-height: 1.5 !important; padding: 0 !important; }
+h2 { font-size: 1.1rem !important; line-height: 1.5 !important; padding: 0 !important; }
+h3 { font-size: 0.98rem !important; line-height: 1.5 !important; padding: 0 !important; }
+[data-testid="stHeadingWithActionElements"] { margin-bottom: 0.35rem; }
+[data-testid="stVerticalBlock"] { gap: 0.45rem; }
+.stTextArea textarea { font-size: 0.86rem; line-height: 1.4; }
+.stTextArea label p, .stCaption, [data-testid="stCaptionContainer"] { font-size: 0.78rem; }
+[data-testid="stAlert"] { padding: 0.4rem 0.7rem; font-size: 0.82rem; }
+.stButton button, .stDownloadButton button { padding: 0.15rem 0.6rem; min-height: 0; font-size: 0.8rem; }
+hr { margin: 0.5rem 0; }
+</style>
+"""
+
 
 def list_sessions() -> list[str] | None:
     """세션 폴더 이름 목록. MSSB_DATA_DIR이 설정되지 않았으면 None."""
@@ -41,6 +58,7 @@ def list_sessions() -> list[str] | None:
 
 
 def main() -> None:
+    st.markdown(COMPACT_CSS, unsafe_allow_html=True)
     try:
         coding_system()
         story_stems()
