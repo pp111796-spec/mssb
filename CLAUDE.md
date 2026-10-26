@@ -20,7 +20,10 @@ pytest                      # 전체 테스트
 pytest tests/test_report.py # 단일 파일
 pytest tests/test_report.py::test_report_handles_no_recurring_patterns  # 단일 테스트
 
-# 파이프라인 실행 — 단계마다 따로 (한 번에 몰아 돌리는 옵션은 일부러 없음)
+# 일반 사용은 검토 앱만으로 끝난다: 「새 세션 만들기」(영상 업로드→구간분리) → 「1. 구간 확인」(확정) → 「2. 결과 검토」의 '채점·종합 시작'
+C:\mssb_venv\Scripts\streamlit.exe run src\review_app\app.py   # http://localhost:8501
+
+# CLI로도 같은 단계를 따로 실행할 수 있다 (--stage cv, --force, --recompute-cv는 CLI에만 있음). 한 번에 몰아 돌리는 옵션은 일부러 없음
 python scripts\run_pipeline.py --session <id> --video <mp4> --child-age-months <n> --child-gender <male|female> --subject-type <adult|child> --stage segmentation
 C:\mssb_venv\Scripts\streamlit.exe run src\review_app\app.py   # 「1. 구간 확인」에서 구간 확정 (확정해야 cv·coding 실행 가능)
 python scripts\run_pipeline.py --session <id> --stage cv        # (선택) 표정·자세·인형·음성 원본 수치만 저장 (Claude 호출 없음)
@@ -34,7 +37,7 @@ streamlit run src\public_app\app.py     # 공개 결과 뷰어(비밀번호 게�
 
 ## Architecture
 
-**데이터 흐름(파이프라인, `src/mssb_coder/pipeline.py`)**: `run_segmentation_stage` → (사람 확인: 검토 앱 「1. 구간 확인」에서 확정) → (`run_cv_stage`) → `run_coding_stage` → `run_synthesis_stage`. 모두 `scripts/run_pipeline.py --stage`로 따로 실행한다.
+**데이터 흐름(파이프라인, `src/mssb_coder/pipeline.py`)**: `run_segmentation_stage` → (사람 확인: 검토 앱 「1. 구간 확인」에서 확정) → (`run_cv_stage`) → `run_coding_stage` → `run_synthesis_stage`. 검토 앱의 버튼(`upload_page`가 구간분리, `synthesis_page._render_run_coding_button`이 채점+종합)이나 `scripts/run_pipeline.py --stage`로 실행한다.
 
 **단계 사이의 안전장치**:
 - **구간 확정**: 「1. 구간 확인」(`review_app/segmentation_page.py`)의 '구간 확정'이 `segmentation_review.json`(구간 지문 sha256)을 만든다. cv·coding은 미확정이거나 확정 뒤 `stem_timestamps.json`이 바뀌었으면 `SegmentationNotConfirmedError`로 거부한다(`storage.segmentation_review_status`).
@@ -65,10 +68,12 @@ streamlit run src\public_app\app.py     # 공개 결과 뷰어(비밀번호 게�
 - Py-Feat 머리 방향(pitch/yaw) 단위는 도(degree)로 가정했고 실제 영상으로 검증하지 못했다(`facial_expression.py`). 표정 시각은 Py-Feat 결과의 입력 경로(frame_NNNNNN.png)로 프레임 번호를 계산하고 한 프레임에 얼굴이 여럿이면 가장 큰 얼굴을 쓴다(`pick_one_face_per_frame`). `--stage cv`는 프레임·오디오가 없고 영상 경로도 없는 스템은 경고만 남기고 건너뛴다.
 - `adult_demo_01`(성인 대역 시연, 유일한 세션)은 이번 안정화 전에 만든 세션이라 `session.json`·`transcript.json`·구간 확정 기록이 없고, 채점 결과에 `source_window`/`timestamp_basis`가 없다. 그래서 cv·coding을 다시 돌리려면 먼저 「1. 구간 확인」에서 확정해야 하고, 근거별 영상 재생 버튼은 재채점 전까지 꺼져 있다.
 
+- 앱 안의 구간분리·채점·종합 버튼은 Streamlit 스크립트 실행 안에서 동기로 돈다(백그라운드 작업 아님). 수십 분 걸리는 도중 사용자가 앱의 다른 위젯을 건드리면 Streamlit이 재실행하면서 진행 중인 작업이 중단된다 — 채점은 스템 단위로 저장되므로 다시 누르면 남은 스템부터 이어지지만, 구간분리(전사+Claude)는 처음부터 다시 돈다.
+
 **알려진 비효율**: CV 모델(Py-Feat·MediaPipe·YOLO)을 스템마다 다시 불러온다. 비용 기록은 `api_usage.jsonl`로 세션별 확인 가능하다(호스팅·비용 논의 근거는 `결정사항.md`).
 
 **앱 2개, 역할이 분리됨**:
-- `src/review_app/` — 로컬에서만 실행. `app.py`는 세션 선택·진행 상태(`review_ops.session_progress`)·화면 전환만 맡고, 「1. 구간 확인」(`segmentation_page.py`: 구간 표 수정·검증·확정, 전사문 미리보기, 검사자 재개입 구간), 「2. 결과 검토」(`synthesis_page.py`: 종합 초안 검토·저장, 하단에서 스템 선택), 스템 상세(`stem_page.py`: 부록 B·항목·판단 이유·근거 제외 수정 → `*_reviewed.json`, AI 원본 되돌리기는 `.bak`로 이동), 구간 미리보기 영상(`video_panel.py`: 구간만 자른 360p 클립을 `preview/`에 캐시), 공통 도우미(`common.py`: 캐시된 설정, `plain`=영문 id 치환, 세션별 위젯 key, 파일 오류 안내)로 나뉜다. 판단 로직(구간 검증, 스템 수정 적용, 재생 가능 여부)은 테스트를 위해 `mssb_coder/review_ops.py`에 둔다. 위젯 key는 반드시 `widget_key(session_id, ...)`로 만든다(세션을 바꿨을 때 입력이 섞이지 않게). 「2. 결과 검토」(`synthesis_page.py`)는 스크롤을 줄이려고 3단(행동관찰·단발성 | 반복 패턴 | 강점·지원·제언) 레이아웃이고, 촘촘한 CSS는 `app.py`의 `COMPACT_CSS`, 입력칸 높이는 `fit_height`가 글자 수로 어림잡는다. 화면의 .md·.json 내보내기와 "사업단 공유 사이트에 게시" 버튼은 제거됨(`storage.publish_session_bundle_to_repo`/`git_publish`는 남아 있으나 앱에서 호출하지 않음 — 게시는 현재 수동). 8501 포트에 시스템 파이썬으로 띄운 옛 streamlit 프로세스가 남아 있으면 코드 수정이 반영되지 않으니, 안 바뀌면 `Get-NetTCPConnection -LocalPort 8501`로 프로세스를 확인해 종료 후 `C:\mssb_venv\Scripts\streamlit.exe`로 다시 띄운다.
+- `src/review_app/` — 로컬에서만 실행. `app.py`는 세션 선택(`common.SESSION_SELECT_KEY`)·진행 상태(`review_ops.session_progress`)·화면 전환만 맡고, 「새 세션 만들기」(`upload_page.py`: 영상을 `MSSB_DATA_DIR/sessions/<id>/upload/`에 저장하고 `run_segmentation_stage` 실행 — Claude 1회 호출), 「1. 구간 확인」(`segmentation_page.py`: 구간 표 수정·검증·확정, 전사문 미리보기, 검사자 재개입 구간), 「2. 결과 검토」(`synthesis_page.py`: 종합이 없으면 확정된 세션에 '채점·종합 시작' 버튼, 있으면 종합 초안 검토·저장과 하단 스템 선택), 스템 상세(`stem_page.py`: 부록 B·항목·판단 이유·근거 제외 수정 → `*_reviewed.json`, AI 원본 되돌리기는 `.bak`로 이동), 구간 미리보기 영상(`video_panel.py`: 구간만 자른 360p 클립을 `preview/`에 캐시), 공통 도우미(`common.py`: 캐시된 설정, `plain`=영문 id 치환, 세션별 위젯 key, 파일 오류 안내)로 나뉜다. 판단 로직(구간 검증, 스템 수정 적용, 재생 가능 여부)은 테스트를 위해 `mssb_coder/review_ops.py`에 둔다. 위젯 key는 반드시 `widget_key(session_id, ...)`로 만든다(세션을 바꿨을 때 입력이 섞이지 않게). 「2. 결과 검토」(`synthesis_page.py`)는 스크롤을 줄이려고 3단(행동관찰·단발성 | 반복 패턴 | 강점·지원·제언) 레이아웃이고, 촘촘한 CSS는 `app.py`의 `COMPACT_CSS`, 입력칸 높이는 `fit_height`가 글자 수로 어림잡는다. 화면의 .md·.json 내보내기와 "사업단 공유 사이트에 게시" 버튼은 제거됨(`storage.publish_session_bundle_to_repo`/`git_publish`는 남아 있으나 앱에서 호출하지 않음 — 게시는 현재 수동). 8501 포트에 시스템 파이썬으로 띄운 옛 streamlit 프로세스가 남아 있으면 코드 수정이 반영되지 않으니, 안 바뀌면 `Get-NetTCPConnection -LocalPort 8501`로 프로세스를 확인해 종료 후 `C:\mssb_venv\Scripts\streamlit.exe`로 다시 띄운다.
 - `src/public_app/app.py` — Streamlit Community Cloud에 배포되는 공개 뷰어(`APP_PASSWORD` 비밀번호 게이트). `results/*.json`만 읽으며 영상·`MSSB_DATA_DIR`에는 전혀 접근하지 않음. 자체 `requirements.txt`(가벼움, CV 라이브러리 없음)를 둬서 Streamlit Cloud가 무거운 루트 `requirements.txt` 대신 이걸 설치하게 함.
 
 **테스트**: `pytest`, `tests/`에 `src/mssb_coder/` 각 모듈당 거의 1:1로 대응하는 테스트 파일. 전부 외부 설치(ffmpeg/CV 라이브러리/Claude API) 없이 돈다 — `requirements-test.txt`(pydantic·pyyaml·dotenv·streamlit·fpdf2·pytest)만으로 전체가 통과하며, GitHub Actions(`.github/workflows/test.yml`, windows-latest)가 main 푸시·PR마다 돌린다. `test_pipeline.py`는 CV·전사·Claude를 monkeypatch로 바꿔 단계 흐름(확정 확인·재계산·실패 격리·이어하기)을, `test_claude_client.py`는 가짜 클라이언트로 요청 형식·거절·잘림을, `test_apps.py`는 Streamlit `AppTest`로 두 앱을 화면 없이 띄워 본다. 공용 가짜 세션은 `tests/factories.py`. 실제 모델 추론 함수(`run_facial_expression`/`run_voice_prosody`/`run_pose_analysis`/`run_object_tracking`의 추론부, `transcribe_session`)는 해당 패키지가 필요해 단위 테스트가 없다. 검토 앱을 고쳤으면 사용자에게 넘기기 전에 `AppTest`로 실제로 띄워 예외가 없는지 확인한다.
