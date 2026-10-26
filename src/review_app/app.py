@@ -1,6 +1,7 @@
 """Streamlit 검토 앱 (로컬 전용) — 세션 선택과 화면 전환만 담당한다.
 
 화면:
+  「새 세션 만들기」 upload_page — 영상 업로드 + 세션 정보 입력 → 구간분리 자동 실행 (파이프라인 1~3단계)
   「1. 구간 확인」 segmentation_page — AI가 나눈 이야기 구간을 확인·수정하고 확정 (파이프라인 4단계)
   「2. 결과 검토」 synthesis_page — 세션 종합 초안 검토, 스템 상세 드릴다운, 보고서·게시
 
@@ -17,10 +18,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import streamlit as st
 from dotenv import load_dotenv
 
-from mssb_coder import storage
 from mssb_coder.review_ops import session_progress
-from review_app import segmentation_page, synthesis_page
-from review_app.common import FILE_FORMAT_ERRORS, coding_system, story_stems
+from review_app import segmentation_page, synthesis_page, upload_page
+from review_app.common import FILE_FORMAT_ERRORS, SESSION_SELECT_KEY, coding_system, list_sessions, story_stems
 
 load_dotenv()
 
@@ -46,15 +46,7 @@ hr { margin: 0.5rem 0; }
 """
 
 
-def list_sessions() -> list[str] | None:
-    """세션 폴더 이름 목록. MSSB_DATA_DIR이 설정되지 않았으면 None."""
-    try:
-        sessions_root = storage.get_data_dir() / "sessions"
-    except storage.DataDirNotConfiguredError:
-        return None
-    if not sessions_root.exists():
-        return []
-    return sorted(p.name for p in sessions_root.iterdir() if p.is_dir())
+NEW_SESSION_OPTION = "➕ 새 세션 만들기"
 
 
 def main() -> None:
@@ -72,12 +64,17 @@ def main() -> None:
         st.title("MSSB AI 코딩 검토")
         st.error(".env에 MSSB_DATA_DIR(세션 데이터 폴더)이 설정되지 않았습니다. 예: MSSB_DATA_DIR=C:\\mssb_data")
         return
-    if not sessions:
-        st.title("MSSB AI 코딩 검토")
-        st.write("아직 처리된 세션이 없습니다 — `scripts/run_pipeline.py --stage segmentation`으로 세션을 먼저 만드세요.")
-        return
 
-    selected = st.sidebar.selectbox("세션 선택", sessions)
+    # 새 세션 만들기는 목록 맨 뒤 — 세션이 있으면 기본으로 첫 세션이 바로 열린다(예전과 같은 동작),
+    # 세션이 하나도 없을 때만 기본으로 이 화면이 열린다.
+    options = [*sessions, NEW_SESSION_OPTION]
+    if st.session_state.get(SESSION_SELECT_KEY) not in options:
+        st.session_state[SESSION_SELECT_KEY] = sessions[0] if sessions else NEW_SESSION_OPTION
+    selected = st.sidebar.selectbox("세션 선택", options, key=SESSION_SELECT_KEY)
+
+    if selected == NEW_SESSION_OPTION:
+        upload_page.render()
+        return
 
     has_synthesis = False
     try:

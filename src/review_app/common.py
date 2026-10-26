@@ -7,12 +7,28 @@ import json
 import streamlit as st
 from pydantic import ValidationError
 
+from mssb_coder import storage
 from mssb_coder.coding_systems import CodingSystem, load_coding_system
 from mssb_coder.labels import scrub_english_ids
 from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
 
 # 저장된 JSON이 깨졌거나 예전 형식일 때 나는 오류들
 FILE_FORMAT_ERRORS = (ValidationError, json.JSONDecodeError, UnicodeDecodeError)
+
+# app.py의 세션 선택 selectbox 위젯 key — upload_page가 새 세션 생성 후 이 키로 선택값을 미리
+# 지정해 rerun하면, 사용자가 다시 고르지 않아도 방금 만든 세션이 바로 선택된 채로 열린다.
+SESSION_SELECT_KEY = "sidebar_session_select"
+
+
+def list_sessions() -> list[str] | None:
+    """세션 폴더 이름 목록. MSSB_DATA_DIR이 설정되지 않았으면 None."""
+    try:
+        sessions_root = storage.get_data_dir() / "sessions"
+    except storage.DataDirNotConfiguredError:
+        return None
+    if not sessions_root.exists():
+        return []
+    return sorted(p.name for p in sessions_root.iterdir() if p.is_dir())
 
 
 @st.cache_resource

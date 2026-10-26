@@ -25,6 +25,44 @@ def fit_height(text: str, chars_per_line: int) -> int:
     return max(68, min(lines * 22 + 20, 600))
 
 
+def _render_run_coding_button(session_id: str) -> None:
+    """종합 결과가 아직 없을 때: 구간이 확정됐으면 채점·종합을 앱 안에서 바로 시작할 수 있게 한다.
+
+    mssb_coder.pipeline은 CV 라이브러리를 모듈 최상단에서 import하므로, 화면을 열 때마다 그 무게를
+    짊어지지 않도록 버튼을 눌렀을 때만 지연 import한다(review_app.common.report_pdf_bytes와 같은 이유).
+    """
+    status = storage.segmentation_review_status(session_id)
+    if status != "confirmed":
+        st.warning("먼저 「1. 구간 확인」 화면에서 구간을 확인하고 확정하세요.")
+        return
+
+    st.info("구간이 확정되어 있습니다. 아래 버튼을 누르면 이야기별 채점(CV 분석 + Claude 호출)과 세션 종합까지 진행합니다.")
+    st.warning("⚠️ Claude API를 이야기 개수만큼 반복 호출합니다 (비용 발생). 영상 길이에 따라 여러 분 걸릴 수 있습니다.")
+    if not st.button("채점·종합 시작", type="primary", key=widget_key(session_id, "run_coding")):
+        return
+
+    from mssb_coder.pipeline import StageFailedError, run_coding_stage, run_synthesis_stage  # noqa: PLC0415
+
+    try:
+        metadata = storage.load_session_metadata(session_id)
+    except FileNotFoundError:
+        st.error("세션 정보(session.json)가 없어 채점을 진행할 수 없습니다 — 예전 CLI로 만든 세션일 수 있습니다.")
+        return
+
+    try:
+        with st.spinner("채점 중... (이야기마다 CV 분석 + Claude 호출)"):
+            run_coding_stage(None, metadata)
+        with st.spinner("세션 종합 중..."):
+            run_synthesis_stage(metadata)
+    except StageFailedError as exc:
+        st.error(str(exc))
+        return
+    except Exception as exc:  # noqa: BLE001 — CV 라이브러리·API 오류가 무엇이든 사람이 읽을 메시지로 보여줌
+        st.error(f"처리 중 오류가 발생했습니다: {exc}")
+        return
+    st.rerun()
+
+
 def render(session_id: str) -> None:
     cs, stems = coding_system(), story_stems()
     reviewed = (storage.session_dir(session_id) / "session_summary_reviewed.json").exists()
@@ -32,7 +70,7 @@ def render(session_id: str) -> None:
         synthesis = storage.load_session_synthesis(session_id, reviewed=reviewed)
     except FileNotFoundError:
         st.title(session_id)
-        st.warning("세션 종합 결과가 아직 없습니다. 파이프라인의 coding·synthesis 단계를 먼저 실행하세요.")
+        _render_run_coding_button(session_id)
         return
     except FILE_FORMAT_ERRORS as exc:
         st.title(session_id)

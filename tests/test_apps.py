@@ -100,6 +100,30 @@ def test_public_app_rejects_wrong_password():
     assert any("틀렸습니다" in str(e.value) for e in at.error)
 
 
+def test_review_app_shows_new_session_form_when_no_sessions(data_dir):
+    """세션이 하나도 없으면 예전처럼 CLI 안내문만 보여주는 게 아니라, 업로드 화면이 기본으로 열린다."""
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+
+    assert not at.exception
+    assert any("새 세션 만들기" in str(t.value) for t in at.title)
+    assert any("세션 ID" in str(t.label) for t in at.text_input)
+    new_session_button = next(b for b in at.button if "구간분리 시작" in (b.label or ""))
+    assert new_session_button.disabled  # 영상도 세션 ID도 없으니 비활성
+
+
+def test_review_app_can_switch_to_new_session_form_when_sessions_exist(data_dir):
+    """기존 세션이 있을 때는 그 세션이 기본으로 열리되, 사이드바에서 '새 세션 만들기'로 바꿀 수 있다."""
+    make_session()
+    at = AppTest.from_file(REVIEW_APP, default_timeout=30).run()
+    assert any("세션 종합" in str(t.value) for t in at.title)  # 기본은 기존 세션(종합까지 끝남)
+
+    session_select = next(s for s in at.sidebar.selectbox if s.label == "세션 선택")
+    session_select.select("➕ 새 세션 만들기").run()
+
+    assert not at.exception
+    assert any("새 세션 만들기" in str(t.value) for t in at.title)
+
+
 def test_segmentation_page_confirms_segments(data_dir):
     make_session(confirm=False, coded=False, synthesized=False)
 

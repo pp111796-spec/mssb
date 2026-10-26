@@ -186,8 +186,7 @@ def render(session_id: str) -> None:
             storage.confirm_segmentation(session_id)
             _reset_editors(session_id)
             st.session_state[widget_key(session_id, "flash")] = (
-                "구간을 확정했습니다. 이제 다음 명령으로 분석·채점을 실행할 수 있습니다: "
-                f"python scripts\\run_pipeline.py --session {session_id} --stage coding"
+                "구간을 확정했습니다. 「2. 결과 검토」 화면에서 채점·종합을 시작할 수 있습니다."
             )
             st.rerun()
 
