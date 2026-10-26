@@ -22,7 +22,7 @@ pytest tests/test_report.py::test_report_handles_no_recurring_patterns  # 단일
 
 # 파이프라인 실행 (4단계=사람 확인이 segmentation과 coding 사이에 끼어들므로 단계별 실행)
 python scripts\run_pipeline.py --session <id> --video <mp4> --child-age-months <n> --child-gender <male|female> --subject-type <adult|child> --stage segmentation
-streamlit run src\review_app\app.py     # 구간분리 확인·수정, 이후 게시까지 — 로컬 검토 앱
+streamlit run src\review_app\app.py     # 구간분리 확인·수정, 결과 검토 — 로컬 검토 앱 (반드시 C:\mssb_venv의 streamlit으로 — 아래 참고)
 python scripts\run_pipeline.py ... --stage cv        # 표정·자세·인형·음성 원본 수치만 저장 (Claude 호출 없음)
 python scripts\calibrate_cv.py --session <id> --subject-type child   # 저장된 수치로 임계값 보정 리포트 (Claude·영상 불필요)
 python scripts\run_pipeline.py ... --stage coding
@@ -61,7 +61,7 @@ streamlit run src\public_app\app.py     # 공개 결과 뷰어(비밀번호 게�
 - 모델은 `claude_client.MODEL_VERSION = "claude-opus-5"`이고 `tool_choice={"type": "tool", ...}`(강제 도구 호출)을 쓴다. Opus 5.5 이상은 강제 tool_choice를 400으로 거부하므로, 모델을 올리려면 호출 방식도 바꿔야 한다.
 
 **앱 2개, 역할이 분리됨**:
-- `src/review_app/app.py` — 로컬에서만 실행. 세션 종합 초안이 1차 화면, 근거 클릭 시 스템 상세로 드릴다운. 검토·수정 저장(`*_reviewed.json`) + "🚀 사업단 공유 사이트에 게시" 버튼(`results/`에 git add/commit/push).
+- `src/review_app/app.py` — 로컬에서만 실행. 세션 종합 초안이 1차 화면, 근거 클릭 시 스템 상세로 드릴다운. 검토·수정 저장(`*_reviewed.json`) + 보고서 PDF 다운로드. 「2. 결과 검토」(`synthesis_page.py`)는 스크롤을 줄이려고 3단(행동관찰·단발성 | 반복 패턴 | 강점·지원·제언) 레이아웃이고, 촘촘한 CSS는 `app.py`의 `COMPACT_CSS`, 입력칸 높이는 `fit_height`가 글자 수로 어림잡는다. 화면의 .md·.json 내보내기와 "사업단 공유 사이트에 게시" 버튼은 제거됨(`storage.publish_session_bundle_to_repo`/`git_publish`는 남아 있으나 앱에서 호출하지 않음 — 게시는 현재 수동). 8501 포트에 시스템 파이썬으로 띄운 옛 streamlit 프로세스가 남아 있으면 코드 수정이 반영되지 않으니, 안 바뀌면 `Get-NetTCPConnection -LocalPort 8501`로 프로세스를 확인해 종료 후 `C:\mssb_venv\Scripts\streamlit.exe`로 다시 띄운다.
 - `src/public_app/app.py` — Streamlit Community Cloud에 배포되는 공개 뷰어(`APP_PASSWORD` 비밀번호 게이트). `results/*.json`만 읽으며 영상·`MSSB_DATA_DIR`에는 전혀 접근하지 않음. 자체 `requirements.txt`(가벼움, CV 라이브러리 없음)를 둬서 Streamlit Cloud가 무거운 루트 `requirements.txt` 대신 이걸 설치하게 함.
 
 **테스트**: `pytest`, `tests/`에 `src/mssb_coder/` 각 모듈당 거의 1:1로 대응하는 테스트 파일. 전부 외부 설치(ffmpeg/CV 라이브러리) 없이 도는 순수 함수 테스트다(`schema`/`storage`/`coding_systems`/`posture_metrics`/`feature_summary`/`labels`/`bundle`/`verbatim`/`cv_events`/`calibration`, 그리고 `facial_expression`/`voice_prosody`/`object_tracking`의 임계값·이벤트 로직). 실제 모델 추론 함수(`run_facial_expression`/`run_voice_prosody`/`run_pose_analysis`/`run_object_tracking`의 추론부, `transcribe_session`)는 해당 패키지가 필요해 단위 테스트가 없다.
