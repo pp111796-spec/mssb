@@ -1,0 +1,25 @@
+# GitHub에 푸시하거나 PR을 열 때마다 전체 자동 테스트를 돌린다.
+# 무거운 CV·전사 라이브러리와 Claude API 없이 도는 테스트만 있으므로 requirements-test.txt만 설치한다.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: windows-latest  # 실제 사용 환경(Windows)과 같은 조건
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: src
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m pytest -q
