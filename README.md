@@ -80,7 +80,7 @@ pytest
 
 **중요**: 영상 분석은 항상 로컬에서만 이루어진다. 공개 사이트(`src/public_app/app.py`)는 영상·`MSSB_DATA_DIR`에 전혀 접근하지 않는다.
 
-**비공개 뷰어**: 이 앱은 관리자 한 사람만 본다. 앱 설정 > Secrets의 `OWNER_EMAIL`과 Streamlit에 로그인한 이메일이 같아야 하고, 그다음 `APP_PASSWORD`까지 맞아야 열린다. 앱의 Settings > Sharing에서도 관리자 이메일만 초대해 둔다.
+**비공개 뷰어**: 이 앱은 관리자 한 사람만 본다. 앱의 Settings > Sharing을 'Only specific people can view this app'으로 두고 다른 사람을 초대하지 않는다. 앱에 들어온 뒤에는 Secrets의 `APP_PASSWORD`까지 맞아야 열린다. GitHub 저장소 공동 작업자도 앱을 볼 수 있으니 저장소 접근 권한도 함께 관리한다.
 
 **게시 방식**: 공개 사이트는 이 저장소의 `results/<session_id>.json`(결과 JSON, 영상 미포함)을 읽는다. Streamlit Cloud는 push를 감지하면 자동으로 앱을 재배포하므로, 파일을 커밋·푸시하면 1~2분 뒤 공개 사이트의 세션 목록에 나타난다. 검토 앱의 "사업단 공유 사이트에 게시" 버튼은 2026-10-26 사용자 요청으로 화면에서 뺐다 — 지금은 수동으로 게시한다(게시용 파일을 만드는 `storage.publish_session_bundle_to_repo`와, 그 파일 하나만 커밋·푸시하고 아직 안 올린 다른 커밋이 있으면 멈추는 `git_publish.publish_file`은 코드에 남아 있다). 공개 사이트에는 파일을 저장 없이 잠깐 올려 보는 탭도 있다.
 

@@ -1,4 +1,4 @@
-"""비공개 결과 뷰어 — Streamlit Community Cloud에 올리는 관리자 전용 앱 (OWNER_EMAIL + 비밀번호).
+"""비공개 결과 뷰어 — Streamlit Community Cloud에 올리는 관리자 전용 앱 (Streamlit 공유 제한 + 비밀번호).
 
 **로컬 분석 도구(src/review_app/app.py)와 완전히 분리돼 있다.** 이 앱은 MSSB_DATA_DIR·영상에
 전혀 접근하지 않는다 — 영상 분석·전사·AI 채점은 항상 로컬 컴퓨터에서 끝낸다. **영상 원본은
@@ -8,6 +8,10 @@
 "🚀 사업단 공유 사이트에 게시" 버튼이 그 폴더에 결과(JSON)를 커밋·푸시하면, Streamlit Cloud가
 자동으로 재배포하면서 이 목록에 반영된다(보통 1~2분). 파일 직접 업로드(임시 미리보기, 저장 안 함)
 탭도 별도로 제공한다.
+
+보기 권한: Streamlit Cloud 앱 설정 > Sharing에서 "Only specific people can view this app"으로 막아 둔다.
+Community Cloud에서는 로그인 연동([auth])을 설정하지 않으면 앱이 접속자 이메일(st.user.email)을 읽을 수
+없으므로, 앱 코드에서는 이메일을 확인하지 않는다.
 
 비밀번호 게이트: Streamlit Cloud 앱 설정 > Secrets에 다음을 추가해야 한다.
     APP_PASSWORD = "원하는 비밀번호"
@@ -66,29 +70,6 @@ def _configured_password() -> str | None:
         return st.secrets.get("APP_PASSWORD")
     except Exception:
         return None
-
-
-def _viewer_email() -> str:
-    """Streamlit Cloud에 로그인한 사람의 이메일. 로그인 정보가 없으면 빈 문자열."""
-    try:
-        return str(getattr(st.user, "email", "") or "").strip().lower()
-    except Exception:
-        return ""
-
-
-def check_owner() -> bool:
-    """비공개 뷰어: Secrets의 OWNER_EMAIL과 로그인 이메일이 같은 사람만 연다. 설정이 없으면 아무도 못 연다."""
-    try:
-        owner = str(st.secrets.get("OWNER_EMAIL") or "").strip().lower()
-    except Exception:
-        owner = ""
-    if not owner:
-        st.error("관리자 이메일이 설정되지 않았습니다 (앱 설정 > Secrets에 OWNER_EMAIL 추가 필요). 설정 전까지는 아무도 볼 수 없습니다.")
-        return False
-    if not hmac.compare_digest(_viewer_email().encode("utf-8"), owner.encode("utf-8")):
-        st.error("이 뷰어는 관리자만 볼 수 있습니다.")
-        return False
-    return True
 
 
 def check_password() -> bool:
@@ -212,7 +193,7 @@ def _load_and_render(raw_bytes: bytes, coding_system) -> None:
 
 
 def main() -> None:
-    if not check_owner() or not check_password():
+    if not check_password():
         return
 
     st.title("📋 MSSB 분석 결과 뷰어")

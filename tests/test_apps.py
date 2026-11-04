@@ -1,7 +1,6 @@
 """두 Streamlit 앱을 화면 없이 실행해 보는 연기 테스트 — 오류 화면 없이 뜨고 영문 id가 안 보이는지."""
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -18,18 +17,10 @@ REVIEW_APP = str(SRC / "review_app" / "app.py")
 PUBLIC_APP = str(SRC / "public_app" / "app.py")
 
 
-OWNER = "owner@example.com"
-
-
 def _review_app():
     at = AppTest.from_file(REVIEW_APP, default_timeout=60)
     at.session_state["actor_name"] = "검사자가"
     return at
-
-
-@pytest.fixture(autouse=True)
-def _viewer_is_owner(monkeypatch):
-    monkeypatch.setattr("streamlit.user", SimpleNamespace(email=OWNER))
 
 
 def _all_text(at) -> str:
@@ -96,7 +87,6 @@ def test_public_app_renders_published_session_in_korean():
     """results/adult_demo_01.json(예전에 게시된 파일, 패턴 서술에 영문 id가 섞여 있음)이 한글로만 보이는지."""
     at = AppTest.from_file(PUBLIC_APP, default_timeout=30)
     at.secrets["APP_PASSWORD"] = "pw"
-    at.secrets["OWNER_EMAIL"] = OWNER
     at.run()
     at.text_input[0].input("pw").run()
 
@@ -110,7 +100,6 @@ def test_public_app_renders_published_session_in_korean():
 def test_public_app_rejects_wrong_password():
     at = AppTest.from_file(PUBLIC_APP, default_timeout=30)
     at.secrets["APP_PASSWORD"] = "pw"
-    at.secrets["OWNER_EMAIL"] = OWNER
     at.run()
     at.text_input[0].input("nope").run()
 
@@ -351,29 +340,18 @@ def test_review_app_requires_user_name_and_logs_open(data_dir):
     assert len(opens) == 1 and opens[0]["actor"] == "검사자가" and opens[0]["os_user"]
 
 
-def test_private_viewer_blocks_everyone_but_owner(monkeypatch):
-    monkeypatch.setattr("streamlit.user", SimpleNamespace(email="other@example.com"))
+def test_private_viewer_closed_when_password_not_configured():
     at = AppTest.from_file(PUBLIC_APP, default_timeout=30)
-    at.secrets["APP_PASSWORD"] = "pw"
-    at.secrets["OWNER_EMAIL"] = OWNER
+    at.secrets["APP_PASSWORD"] = ""  # PC의 .streamlit/secrets.toml 값과 상관없이 비어 있는 상태로 시험한다
     at.run()
 
-    assert any("관리자만" in str(e.value) for e in at.error)
-    assert not at.text_input  # 비밀번호 칸도 안 보임
-
-
-def test_private_viewer_closed_when_owner_not_configured():
-    at = AppTest.from_file(PUBLIC_APP, default_timeout=30)
-    at.secrets["APP_PASSWORD"] = "pw"
-    at.run()
-
-    assert any("OWNER_EMAIL" in str(e.value) for e in at.error)
+    assert any("APP_PASSWORD" in str(e.value) for e in at.error)
+    assert not at.text_input
 
 
 def test_private_viewer_hides_pdf_for_unconfirmed_published_session():
     at = AppTest.from_file(PUBLIC_APP, default_timeout=60)
     at.secrets["APP_PASSWORD"] = "pw"
-    at.secrets["OWNER_EMAIL"] = OWNER
     at.run()
     at.text_input[0].input("pw").run()
 
