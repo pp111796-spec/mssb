@@ -1,4 +1,4 @@
-"""공개 배포용 결과 뷰어 — Streamlit Community Cloud 등 인터넷에 올리는 앱, 사업단 전체 공유용.
+"""비공개 결과 뷰어 — Streamlit Community Cloud에 올리는 관리자 전용 앱 (OWNER_EMAIL + 비밀번호).
 
 **로컬 분석 도구(src/review_app/app.py)와 완전히 분리돼 있다.** 이 앱은 MSSB_DATA_DIR·영상에
 전혀 접근하지 않는다 — 영상 분석·전사·AI 채점은 항상 로컬 컴퓨터에서 끝낸다. **영상 원본은
@@ -31,7 +31,7 @@ import streamlit as st
 from mssb_coder.bundle import BundleParseError, parse_bundle_dict
 from mssb_coder.coding_systems import load_coding_system
 from mssb_coder.labels import category_label, completion_status_label, item_label, scrub_english_ids, stem_label
-from mssb_coder.report import build_session_report_markdown
+from mssb_coder.report import build_session_report_markdown, report_blockers
 from mssb_coder.segmentation import load_story_stems
 
 REPO_RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
@@ -66,6 +66,29 @@ def _configured_password() -> str | None:
         return st.secrets.get("APP_PASSWORD")
     except Exception:
         return None
+
+
+def _viewer_email() -> str:
+    """Streamlit Cloud에 로그인한 사람의 이메일. 로그인 정보가 없으면 빈 문자열."""
+    try:
+        return str(getattr(st.user, "email", "") or "").strip().lower()
+    except Exception:
+        return ""
+
+
+def check_owner() -> bool:
+    """비공개 뷰어: Secrets의 OWNER_EMAIL과 로그인 이메일이 같은 사람만 연다. 설정이 없으면 아무도 못 연다."""
+    try:
+        owner = str(st.secrets.get("OWNER_EMAIL") or "").strip().lower()
+    except Exception:
+        owner = ""
+    if not owner:
+        st.error("관리자 이메일이 설정되지 않았습니다 (앱 설정 > Secrets에 OWNER_EMAIL 추가 필요). 설정 전까지는 아무도 볼 수 없습니다.")
+        return False
+    if not hmac.compare_digest(_viewer_email().encode("utf-8"), owner.encode("utf-8")):
+        st.error("이 뷰어는 관리자만 볼 수 있습니다.")
+        return False
+    return True
 
 
 def check_password() -> bool:
@@ -108,21 +131,16 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
     report_markdown = build_session_report_markdown(
         synthesis, stem_results=stem_results, coding_system=coding_system, story_stems=story_stems
     )
-    pdf_col, md_col = st.columns(2)
-    with pdf_col:
+    blockers = report_blockers(synthesis, stem_results, story_stems)
+    if blockers:
+        st.warning("검사자 확정 전이라 PDF를 내려받을 수 없습니다:\n\n" + "\n".join(f"- {b}" for b in blockers))
+    else:
         st.download_button(
             "📑 보고서 PDF 다운로드",
             data=_report_pdf(report_markdown, f"MSSB 세션 결과 — {synthesis.session_id}"),
             file_name=f"{synthesis.session_id}_mssb_report.pdf",
             mime="application/pdf",
             type="primary",
-        )
-    with md_col:
-        st.download_button(
-            "📄 보고서 원문 (.md)",
-            data=report_markdown,
-            file_name=f"{synthesis.session_id}_mssb_report.md",
-            mime="text/markdown",
         )
 
     if synthesis.behavioral_observation:
@@ -162,7 +180,7 @@ def render_synthesis_readonly(synthesis, stem_results, coding_system) -> None:
 
     if stem_results:
         st.header("이야기별 상세 (부록)")
-        for result in sorted(stem_results, key=lambda r: r.stem_name):
+        for result in stem_results:  # 번들 순서가 실시 순서
             stem_display = stem_label(story_stems, result.stem_name)
             with st.expander(f"{stem_display} ({completion_status_label(result.completion_status)})"):
                 for category_id, category_code in result.codes.items():
@@ -194,7 +212,7 @@ def _load_and_render(raw_bytes: bytes, coding_system) -> None:
 
 
 def main() -> None:
-    if not check_password():
+    if not check_owner() or not check_password():
         return
 
     st.title("📋 MSSB 분석 결과 뷰어")

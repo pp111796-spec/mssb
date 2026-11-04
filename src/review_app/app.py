@@ -18,9 +18,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import streamlit as st
 from dotenv import load_dotenv
 
+from mssb_coder import storage
 from mssb_coder.review_ops import session_progress
 from review_app import segmentation_page, synthesis_page, upload_page
-from review_app.common import FILE_FORMAT_ERRORS, SESSION_SELECT_KEY, coding_system, list_sessions, story_stems
+from review_app.common import (
+    ACTOR_KEY,
+    FILE_FORMAT_ERRORS,
+    SESSION_SELECT_KEY,
+    coding_system,
+    list_sessions,
+    log_event,
+    story_stems,
+)
 
 load_dotenv()
 
@@ -65,6 +74,12 @@ def main() -> None:
         st.error(".env에 MSSB_DATA_DIR(세션 데이터 폴더)이 설정되지 않았습니다. 예: MSSB_DATA_DIR=C:\\mssb_data")
         return
 
+    actor = st.sidebar.text_input("사용자 이름", key=ACTOR_KEY, help="누가 언제 열어 봤는지 접근 기록에 남습니다.").strip()
+    if not actor:
+        st.title("MSSB AI 코딩 검토")
+        st.info("왼쪽에 사용자 이름을 입력하면 세션을 열 수 있습니다. 접근 기록에 남깁니다.")
+        return
+
     # 새 세션 만들기는 목록 맨 뒤 — 세션이 있으면 기본으로 첫 세션이 바로 열린다(예전과 같은 동작),
     # 세션이 하나도 없을 때만 기본으로 이 화면이 열린다.
     options = [*sessions, NEW_SESSION_OPTION]
@@ -76,6 +91,11 @@ def main() -> None:
         upload_page.render()
         return
 
+    logged = st.session_state.setdefault("logged_opens", set())
+    if selected not in logged:  # 화면을 다시 그릴 때마다가 아니라 세션을 처음 열 때 한 번만 남긴다
+        logged.add(selected)
+        log_event("session_open", selected)
+
     has_synthesis = False
     try:
         progress = session_progress(selected)
@@ -86,6 +106,9 @@ def main() -> None:
 
     # 종합까지 끝난 세션은 결과 검토부터, 아니면 구간 확인부터 연다 (세션별로 사용자가 고른 화면은 유지)
     page = st.sidebar.radio("화면", PAGES, index=1 if has_synthesis else 0, key=f"page:{selected}")
+    with st.sidebar.expander("접근 기록"):
+        for record in storage.read_access_log(selected, limit=20):
+            st.caption(f"{record['at'][:16].replace('T', ' ')} UTC · {record['actor']} · {record['event']}")
     if page == PAGES[0]:
         segmentation_page.render(selected)
     else:

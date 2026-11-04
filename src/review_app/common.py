@@ -18,6 +18,7 @@ FILE_FORMAT_ERRORS = (ValidationError, json.JSONDecodeError, UnicodeDecodeError)
 # app.py의 세션 선택 selectbox 위젯 key — upload_page가 새 세션 생성 후 이 키로 선택값을 미리
 # 지정해 rerun하면, 사용자가 다시 고르지 않아도 방금 만든 세션이 바로 선택된 채로 열린다.
 SESSION_SELECT_KEY = "sidebar_session_select"
+ACTOR_KEY = "actor_name"  # 사이드바의 '사용자 이름' — 접근 기록의 '누가'
 
 
 def list_sessions() -> list[str] | None:
@@ -57,6 +58,33 @@ def plain(text: str | None) -> str:
 def widget_key(session_id: str, *parts) -> str:
     """세션마다 다른 위젯 key — 세션을 바꿨을 때 이전 세션의 입력 내용이 남지 않게 한다."""
     return ":".join([session_id, *(str(p) for p in parts)])
+
+
+def current_actor() -> str:
+    return (st.session_state.get(ACTOR_KEY) or "").strip()
+
+
+def log_event(event: str, session_id: str | None = None, detail: str | None = None) -> None:
+    storage.append_access_log(current_actor(), event, session_id, detail)
+
+
+def rewrite_synthesis(session_id: str) -> str | None:
+    """이야기별 확정 내용으로 종합을 다시 쓴다 (Claude 1회 호출). 실패하면 사람이 읽을 메시지를 돌려준다."""
+    from mssb_coder.pipeline import run_synthesis_for_session  # noqa: PLC0415
+
+    try:
+        with st.spinner("이야기 수정 내용으로 종합 서술을 다시 쓰는 중... (Claude 호출, 약 1분)"):
+            run_synthesis_for_session(session_id)
+    except Exception as exc:  # noqa: BLE001 — API·검증 오류가 무엇이든 표시하고, stale 표시가 PDF를 계속 막는다
+        return f"종합 서술을 다시 쓰지 못했습니다: {exc}"
+    prefixes = tuple(
+        widget_key(session_id, name)
+        for name in ("behavioral_observation", "strengths", "support_areas", "recommendations", "pattern", "evidence")
+    )
+    for key in [k for k in st.session_state if isinstance(k, str) and k.startswith(prefixes)]:
+        del st.session_state[key]  # 입력칸이 옛 문장을 계속 들고 있지 않게
+    log_event("synthesis_rewrite", session_id)
+    return None
 
 
 def show_file_error(what: str, exc: Exception) -> None:

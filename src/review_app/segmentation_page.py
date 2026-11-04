@@ -19,7 +19,7 @@ from mssb_coder.review_ops import (
     validate_stem_timestamps,
 )
 from mssb_coder.schema import StemTimestamp
-from review_app.common import FILE_FORMAT_ERRORS, show_file_error, story_stems, widget_key
+from review_app.common import FILE_FORMAT_ERRORS, log_event, show_file_error, story_stems, widget_key
 from review_app.video_panel import render_clip
 
 COLUMNS = {
@@ -184,6 +184,7 @@ def render(session_id: str) -> None:
         if st.button("✅ 구간 확정", type="primary", disabled=bool(errors), key=widget_key(session_id, "confirm_segments")):
             storage.save_stem_timestamps(session_id, timestamps)
             storage.confirm_segmentation(session_id)
+            log_event("segmentation_confirm", session_id)
             _reset_editors(session_id)
             st.session_state[widget_key(session_id, "flash")] = (
                 "구간을 확정했습니다. 「2. 결과 검토」 화면에서 채점·종합을 시작할 수 있습니다."

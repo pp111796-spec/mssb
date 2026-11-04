@@ -15,9 +15,9 @@ from pathlib import Path
 
 import streamlit as st
 
-from mssb_coder import storage
+from mssb_coder import storage, video_vault
 from mssb_coder.schema import SessionMetadata, SubjectType
-from review_app.common import SESSION_SELECT_KEY, list_sessions
+from review_app.common import SESSION_SELECT_KEY, list_sessions, log_event
 
 _SESSION_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 _VIDEO_TYPES = ["mp4", "mov", "avi", "mkv", "m4v"]
@@ -78,9 +78,11 @@ def _create_and_segment(session_id: str, uploaded, child_age_months: int, child_
     session_dir = storage.session_dir(session_id)
     upload_dir = session_dir / "upload"
     upload_dir.mkdir(parents=True, exist_ok=True)
-    video_path = upload_dir / f"original{Path(uploaded.name).suffix or '.mp4'}"
-    with st.spinner("영상 저장 중..."):
-        video_path.write_bytes(uploaded.getbuffer())
+    video_path = upload_dir / f"original{Path(uploaded.name).suffix or '.mp4'}{video_vault.ENCRYPTED_SUFFIX}"
+    with st.spinner("영상을 암호화해 저장하는 중..."):
+        uploaded.seek(0)
+        video_vault.encrypt_upload(uploaded, video_path)
+    log_event("session_create", session_id)
 
     metadata = SessionMetadata(
         session_id=session_id,

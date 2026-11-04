@@ -53,7 +53,11 @@ def _valid_coding_data():
         }
         for category in load_coding_system().categories
     }
-    return {"codes": codes, "story_specific_notes_applied": "—"}
+    return {
+        "codes": codes, "story_specific_notes_applied": "—",
+        "completion_status": "partial", "response_mode": "prompted", "issue_prompt_count": 1,
+        "administration_note": "검사자가 한 번 되물었다.",
+    }
 
 
 class FakeCoder:
@@ -162,6 +166,8 @@ def test_coding_records_window_and_session_time_and_reuses_transcript(fake_cv, f
     saved = storage.load_stem_coding(SESSION, "spilled_juice")
     assert saved.source_window == StemWindow.of(STEMS[1])
     assert saved.timestamp_basis == "session_absolute"
+    assert (saved.completion_status.value, saved.response_mode.value, saved.issue_prompt_count) == ("partial", "prompted", 1)
+    assert saved.administration_source == "ai" and saved.administration_note and saved.reviewed_at is None
     assert saved.model_version == "claude-opus-5-5"
     assert "[35.0s] 주스를 닦았어요." in fake_coder.calls[0]["transcript_text"]
     assert storage.load_stem_verbatim(SESSION, "spilled_juice").lines  # 채점 성공 뒤 축어록 저장

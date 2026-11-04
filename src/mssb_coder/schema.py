@@ -166,6 +166,12 @@ class StemCodingResult(BaseModel):
     # 아래 두 필드는 예전 결과 파일엔 없다 — None이면 "확인 불가"로 다룬다.
     source_window: StemWindow | None = None  # 채점에 쓴 구간 (구간이 같으면 재채점 생략)
     timestamp_basis: Literal["session_absolute"] | None = None  # 근거 시각이 세션 절대 시각인지
+    # 실시 기록(완료상태·자발 여부·쟁점 프롬프트 횟수)의 출처. None=예전 결과의 자동 기본값(미입력으로 취급),
+    # "ai"=Claude 판단(검사자 확인 전), "examiner"=검사자가 확인·확정.
+    administration_source: Literal["ai", "examiner"] | None = None
+    administration_note: str = ""  # Claude가 실시 기록을 그렇게 판단한 이유 (검사자 확인용)
+    reviewed_at: str | None = None  # 검사자가 이 이야기를 확인·확정한 시각
+    reviewed_by: str | None = None
     generated_at: str = Field(default_factory=utc_now_iso)
 
 
@@ -216,12 +222,17 @@ class SessionSynthesis(BaseModel):
         "이 요약은 다른 자료(부모 보고·행동관찰 등)와의 통합이나 임상적 진단·위험 분류를 포함하지 않는다"
     )
     interpretation_layer: Literal["2_cross_story_pattern"] = "2_cross_story_pattern"
-    based_on: Literal["ai_draft_stem_results"] = "ai_draft_stem_results"
+    # 검사자가 확정한 이야기가 하나라도 입력에 들어가면 reviewed_stem_results
+    based_on: Literal["ai_draft_stem_results", "reviewed_stem_results"] = "ai_draft_stem_results"
     disclaimer: str = STANDARD_DISCLAIMER
     model_version: str
     generated_at: str = Field(default_factory=utc_now_iso)
     # 검사자가 검토 앱에서 종합을 저장한 시각 — 보고서 '해석상 유의점'이 검토 여부를 정직하게 적는 근거
     reviewed_at: str | None = None
+    # 이야기별 확정 내용이 바뀐 뒤 종합을 아직 다시 쓰지 못한 상태 (다시 쓰기 실패 등) — PDF를 막는다
+    stale: bool = False
+    test_date: str | None = None  # 검사일 (YYYY-MM-DD), 보고서 인적 사항
+    examiner_name: str | None = None  # 검사자, 보고서 인적 사항
 
 
 # ---------------------------------------------------------------------------
@@ -320,3 +331,4 @@ class SessionMetadata(BaseModel):
     video_path: str | None = Field(
         default=None, description="원본 영상 경로 (MSSB_DATA_DIR 쪽, 검토 앱 미리보기·재분석용)"
     )
+    media_deleted_at: str | None = None  # PDF 다운로드 후 영상·오디오·프레임을 자동 삭제한 시각

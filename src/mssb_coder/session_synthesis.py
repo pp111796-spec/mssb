@@ -1,8 +1,7 @@
 """스템별 AI 채점 원본 전체 → Claude(텍스트만)로 세션 종합 패턴 초안 생성 (파이프라인 12단계).
 
-입력은 사람이 검토하기 전의 AI 원본 드래프트 전체(based_on: "ai_draft_stem_results") —
-검토 시간 단축이 목적이라는 사용자 결정에 따른 의도적 트레이드오프
-(계획 "세션 종합 패턴 초안 JSON 스키마" 설계 원칙 참고).
+입력은 스템별 채점 결과이고, 검사자가 확정한 이야기는 확정본을 쓴다(based_on으로 구분).
+검사자가 이야기를 고치면 종합도 다시 써서 보고서 안의 내용이 서로 어긋나지 않게 한다.
 """
 
 from __future__ import annotations
@@ -71,7 +70,7 @@ def build_synthesis_user_message(stem_results: list[StemCodingResult]) -> str:
             f"{result.response_mode.value})\n" + "\n".join(category_lines)
         )
 
-    return "--- 스템별 AI 채점 원본 (전체) ---\n\n" + "\n\n".join(blocks)
+    return "--- 스템별 채점 결과 (검사자가 확정한 이야기는 확정본) ---\n\n" + "\n\n".join(blocks)
 
 
 SYNTHESIS_TOOL = {

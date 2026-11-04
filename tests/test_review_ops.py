@@ -160,7 +160,7 @@ def test_apply_stem_edits_recounts_and_drops_evidence():
         excluded_evidence={("empathy_warmth", first_item, 0)},
     )
 
-    edited = apply_stem_edits(result, edits)
+    edited = apply_stem_edits(result, edits, reviewer="검사자가")
 
     category = edited.codes["empathy_warmth"]
     assert category.present_count == 2  # 원래 존재 1개 + 새로 체크 1개
@@ -170,6 +170,7 @@ def test_apply_stem_edits_recounts_and_drops_evidence():
         CompletionStatus.PARTIAL, ResponseMode.PROMPTED, 2,
     )
     assert result.codes["empathy_warmth"].present_count == 1  # 원본은 그대로
+    assert edited.administration_source == "examiner" and edited.reviewed_by == "검사자가" and edited.reviewed_at
 
 
 def test_can_play_evidence_only_for_session_time_inside_window():

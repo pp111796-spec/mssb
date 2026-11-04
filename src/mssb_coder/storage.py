@@ -8,6 +8,7 @@
 디렉토리 레이아웃:
   <MSSB_DATA_DIR>/sessions/<session_id>/
     session.json                            (아동 연령·성별·subject_type·원본 영상 경로)
+    upload/original.*.enc                   (앱으로 올린 원본 영상, video_vault로 암호화 — PDF 다운로드 시 삭제)
     transcript.json                         (전체 전사 — 코딩 단계가 다시 전사하지 않도록)
     stem_timestamps_ai_draft.json           (Claude 구간분리 원안)
     stem_timestamps.json                    (사람이 확인·수정한 구간)
@@ -24,9 +25,11 @@
 
 from __future__ import annotations
 
+import getpass
 import hashlib
 import json
 import os
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, TypeVar
@@ -262,6 +265,67 @@ def load_stem_verbatim(session_id: str, stem_name: str) -> StemVerbatimRecord:
     return _read_model(session_dir(session_id) / "coding" / f"{stem_name}_verbatim.json", StemVerbatimRecord)
 
 
+# --- access_log.jsonl (누가 언제 무엇을 열고 고쳤는지) -----------------------------------------
+
+
+def append_access_log(actor: str, event: str, session_id: str | None = None, detail: str | None = None) -> Path:
+    """접근 기록을 한 줄 덧붙인다. actor는 검토 앱에 입력한 이름, os_user는 윈도우 로그인 계정이다."""
+    path = get_data_dir() / "access_log.jsonl"
+    record = {
+        "at": utc_now_iso(), "actor": actor, "os_user": getpass.getuser(),
+        "event": event, "session_id": session_id, "detail": detail,
+    }
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return path
+
+
+def read_access_log(session_id: str | None = None, limit: int = 50) -> list[dict]:
+    """최근 기록부터 돌려준다. 깨진 줄은 건너뛴다."""
+    path = get_data_dir() / "access_log.jsonl"
+    if not path.exists():
+        return []
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    if session_id is not None:
+        records = [r for r in records if r.get("session_id") == session_id]
+    return records[-limit:][::-1]
+
+
+# --- 세션 영상·오디오·프레임 삭제 (PDF 다운로드 후) -------------------------------------------
+
+# 아동의 얼굴·목소리가 담긴 것만 지운다. 채점·종합 JSON, 전사문, CV 수치는 재다운로드·재검토를 위해 남긴다.
+_MEDIA_DIRS = ("upload", "frames", "audio_segments", "preview")
+_MEDIA_FILES = ("audio.wav",)
+
+
+def delete_session_media(session_id: str) -> list[str]:
+    """세션 폴더 안의 영상·오디오·프레임을 지우고 지운 이름을 돌려준다. 세션 폴더 밖 파일은 건드리지 않는다."""
+    root = session_dir(session_id)
+    removed: list[str] = []
+    for name in _MEDIA_DIRS:
+        target = root / name
+        if target.is_dir():
+            shutil.rmtree(target)
+            removed.append(name)
+    for name in _MEDIA_FILES:
+        target = root / name
+        if target.exists():
+            target.unlink()
+            removed.append(name)
+    if session_metadata_exists(session_id):
+        metadata = load_session_metadata(session_id)
+        update = {"media_deleted_at": utc_now_iso()}
+        if metadata.video_path and Path(metadata.video_path).resolve().is_relative_to(root.resolve()):
+            update["video_path"] = None
+        save_session_metadata(metadata.model_copy(update=update))
+    return removed
+
+
 # --- api_usage.jsonl / failed/ (Claude 호출 기록) ----------------------------------------------
 
 
@@ -321,6 +385,25 @@ def load_session_synthesis(session_id: str, reviewed: bool = False) -> SessionSy
         modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
         synthesis = synthesis.model_copy(update={"reviewed_at": modified})
     return synthesis
+
+
+def mark_synthesis_stale(session_id: str) -> None:
+    """이야기별 확정 내용이 바뀌었는데 종합을 아직 다시 쓰지 않았다고 표시한다 (다시 쓰면 풀린다)."""
+    for name in ("session_summary_ai_draft.json", "session_summary_reviewed.json"):
+        path = session_dir(session_id) / name
+        if path.exists():
+            _write_model(path, _read_model(path, SessionSynthesis).model_copy(update={"stale": True}))
+
+
+def archive_reviewed_synthesis(session_id: str) -> Path | None:
+    """종합을 다시 쓰기 전에 이전 검토본을 지우지 않고 시각 붙은 백업으로 옮긴다."""
+    reviewed = session_dir(session_id) / "session_summary_reviewed.json"
+    if not reviewed.exists():
+        return None
+    stamp = utc_now_iso().replace(":", "").replace("+", "_")
+    backup = reviewed.with_name(f"session_summary_reviewed.{stamp}.bak.json")
+    reviewed.replace(backup)
+    return backup
 
 
 # --- 공개 사이트 업로드용 내보내기 번들 -----------------------------------------

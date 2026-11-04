@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import streamlit as st
 
 from mssb_coder import storage
 from mssb_coder.labels import category_label, stem_label
-from mssb_coder.report import build_session_report_markdown
+from mssb_coder.report import build_session_report_markdown, report_blockers, stem_is_confirmed
 from review_app.common import (
     FILE_FORMAT_ERRORS,
     coding_system,
+    current_actor,
+    log_event,
     plain,
     report_pdf_bytes,
+    rewrite_synthesis,
     show_file_error,
     story_stems,
     widget_key,
@@ -63,6 +68,21 @@ def _render_run_coding_button(session_id: str) -> None:
     st.rerun()
 
 
+def _media_already_deleted(session_id: str) -> bool:
+    if not storage.session_metadata_exists(session_id):
+        return False
+    return storage.load_session_metadata(session_id).media_deleted_at is not None
+
+
+def _after_pdf_download(session_id: str) -> None:
+    """PDF를 내려받으면 아동의 얼굴·목소리가 담긴 파일을 지운다. 보고서는 결과 JSON으로 다시 만들 수 있다."""
+    log_event("pdf_download", session_id)
+    removed = storage.delete_session_media(session_id)
+    if removed:
+        log_event("media_deleted", session_id, ", ".join(removed))
+        st.session_state[widget_key(session_id, "pdf_flash")] = "PDF를 내려받고 이 세션의 영상·오디오·프레임을 삭제했습니다."
+
+
 def render(session_id: str) -> None:
     cs, stems = coding_system(), story_stems()
     reviewed = (storage.session_dir(session_id) / "session_summary_reviewed.json").exists()
@@ -96,17 +116,46 @@ def render(session_id: str) -> None:
     report_markdown = build_session_report_markdown(
         synthesis, stem_results=stem_results, coding_system=cs, story_stems=stems
     )
-    if not reviewed:
-        st.caption("아직 종합 검토본을 저장하지 않아, 보고서의 '해석상 유의점'에 '검사자가 아직 검토하지 않았다'고 적힙니다.")
+    if synthesis.stale:
+        st.warning("이야기 수정 내용이 종합 서술에 아직 반영되지 않았습니다.")
+        if st.button("🔄 종합 서술 다시 쓰기 (Claude 1회 호출)", key=widget_key(session_id, "rewrite_synthesis")):
+            error = rewrite_synthesis(session_id)
+            if error:
+                st.error(error)
+            else:
+                st.rerun()
 
-    st.download_button(
-        "📑 보고서 PDF 다운로드",
-        data=report_pdf_bytes(report_markdown, f"MSSB 세션 결과 — {session_id}"),
-        file_name=f"{session_id}_mssb_report.pdf",
-        mime="application/pdf",
-        type="primary",
-        key=widget_key(session_id, "report_pdf"),
-    )
+    flash = st.session_state.pop(widget_key(session_id, "pdf_flash"), None)
+    if flash:
+        st.success(flash)
+    blockers = report_blockers(synthesis, stem_results, stems)
+    if blockers:
+        st.warning("보고서 PDF를 내려받으려면 다음을 끝내세요:\n\n" + "\n".join(f"- {b}" for b in blockers))
+    else:
+        media_deleted = _media_already_deleted(session_id)
+        if not media_deleted:
+            st.warning("⚠️ PDF를 내려받으면 이 세션의 영상·오디오·프레임이 바로 삭제됩니다. 삭제 후에는 영상 재생과 재분석을 할 수 없습니다.")
+        st.download_button(
+            "📑 보고서 PDF 다운로드",
+            data=report_pdf_bytes(report_markdown, f"MSSB 세션 결과 — {session_id}"),
+            file_name=f"{session_id}_mssb_report.pdf",
+            mime="application/pdf",
+            type="primary",
+            key=widget_key(session_id, "report_pdf"),
+            on_click=_after_pdf_download,
+            args=(session_id,),
+        )
+
+    info_col1, info_col2 = st.columns(2)
+    with info_col1:
+        test_date = st.date_input(
+            "검사일", value=date.fromisoformat(synthesis.test_date) if synthesis.test_date else None,
+            key=widget_key(session_id, "test_date"),
+        )
+    with info_col2:
+        examiner_name = st.text_input(
+            "검사자", value=synthesis.examiner_name or current_actor(), key=widget_key(session_id, "examiner_name")
+        )
 
     # 본문은 위에서 아래로 한 줄씩: 행동관찰 → 단발성 → 반복 패턴 → 강점·지원 → 제언
     st.header("검사 중 행동관찰")
@@ -174,6 +223,8 @@ def render(session_id: str) -> None:
         updated = synthesis.model_copy(
             update={
                 "recurring_patterns": edited_patterns,
+                "test_date": test_date.isoformat() if test_date else None,
+                "examiner_name": examiner_name.strip() or None,
                 "behavioral_observation": edited_observation,
                 "strengths": edited_strengths,
                 "support_areas": edited_support_areas,
@@ -183,11 +234,13 @@ def render(session_id: str) -> None:
             }
         )
         storage.save_session_synthesis(session_id, updated, reviewed=True)
-        st.success("저장했습니다.")
+        log_event("synthesis_save", session_id)
+        st.rerun()
 
     st.divider()
     st.header("이야기별 상세 검토")
     names = [r.stem_name for r in stem_results]
+    confirmed = {r.stem_name for r in stem_results if stem_is_confirmed(r)}
     if not names:
         st.caption("스템 채점 결과가 없습니다.")
         return
@@ -195,7 +248,7 @@ def render(session_id: str) -> None:
     selected = st.selectbox(
         "이야기",
         names,
-        format_func=lambda n: stem_label(stems, n) + (" (검토본)" if storage.stem_reviewed_exists(session_id, n) else ""),
+        format_func=lambda n: stem_label(stems, n) + (" ✅" if n in confirmed else " (확인 전)"),
         key=widget_key(session_id, "stem_select"),
     )
     render_stem_detail(session_id, selected)

@@ -62,6 +62,10 @@ python scripts\run_pipeline.py --session sample_01 --stage synthesis
 # 6) 검토 앱 「2. 결과 검토」에서 종합 서술·이야기별 채점을 고쳐 저장하고 보고서 PDF 다운로드
 ```
 
+**실시 기록과 PDF**: 완료상태·자발 여부·쟁점 프롬프트 횟수는 AI가 판단해 채우고 검사자가 이야기마다 '이 이야기 확정'으로 확정한다. 내용을 고쳐 확정하면 종합 서술을 바로 다시 쓴다(Claude 1회 호출). 모든 이야기 확정, 종합 저장, 검사일·검사자 입력을 마쳐야 PDF를 내려받을 수 있다.
+
+**아동 정보 보호**: 앱으로 올린 원본 영상은 암호화해 저장한다. 키 파일은 `%USERPROFILE%\.mssb\video.key`이고 **잃으면 영상을 복구할 수 없다.** PDF를 내려받으면 그 세션의 영상·오디오·프레임이 자동 삭제된다(결과와 전사문은 남는다). 사용자 이름과 접근 내역은 `MSSB_DATA_DIR\access_log.jsonl`에 남는다.
+
 Claude 호출마다 사용한 토큰 수가 세션 폴더의 `api_usage.jsonl`에 남는다(세션당 실제 비용 확인용).
 
 ## 테스트
@@ -75,6 +79,8 @@ pytest
 ## 공개 사이트 (결과 뷰어) — Streamlit Community Cloud, 사업단 공유용
 
 **중요**: 영상 분석은 항상 로컬에서만 이루어진다. 공개 사이트(`src/public_app/app.py`)는 영상·`MSSB_DATA_DIR`에 전혀 접근하지 않는다.
+
+**비공개 뷰어**: 이 앱은 관리자 한 사람만 본다. 앱 설정 > Secrets의 `OWNER_EMAIL`과 Streamlit에 로그인한 이메일이 같아야 하고, 그다음 `APP_PASSWORD`까지 맞아야 열린다. 앱의 Settings > Sharing에서도 관리자 이메일만 초대해 둔다.
 
 **게시 방식**: 공개 사이트는 이 저장소의 `results/<session_id>.json`(결과 JSON, 영상 미포함)을 읽는다. Streamlit Cloud는 push를 감지하면 자동으로 앱을 재배포하므로, 파일을 커밋·푸시하면 1~2분 뒤 공개 사이트의 세션 목록에 나타난다. 검토 앱의 "사업단 공유 사이트에 게시" 버튼은 2026-10-26 사용자 요청으로 화면에서 뺐다 — 지금은 수동으로 게시한다(게시용 파일을 만드는 `storage.publish_session_bundle_to_repo`와, 그 파일 하나만 커밋·푸시하고 아직 안 올린 다른 커밋이 있으면 멈추는 `git_publish.publish_file`은 코드에 남아 있다). 공개 사이트에는 파일을 저장 없이 잠깐 올려 보는 탭도 있다.
 
@@ -104,7 +110,7 @@ pytest
 - `voice_prosody.py` — openSMILE eGeMAPS 실제 연동, **합성 톤(220Hz)으로 피치 추출값(≈219.7Hz) 검증 완료**
 - `object_tracking.py` — YOLO+ByteTrack 실제 연동. `models/doll_yolo/`에 가중치가 없으면(마일스톤 0 전) 가짜 탐지 대신 빈 결과를 조용히 반환하도록 설계 (테스트됨)
 - `facial_expression.py` — Py-Feat 실제 연동 코드 작성됨. **단, 실제 얼굴이 있는 이미지로 끝까지 검증하지는 못함** — 합성 테스트 이미지로는 얼굴 탐지 자체가 안 되기 때문. 마일스톤 A에서 실제 영상으로 첫 검증 필요
-- `segmentation.call_segmentation`, `claude_client.call_stem_coding`, `session_synthesis.call_session_synthesis` — 세 호출 모두 `claude_client.call_structured`(모델 `claude-opus-5-5`, structured outputs, 거절 시 자동 대체 모델)로 통일됨. `ANTHROPIC_API_KEY` 필요. 요청 형식은 가짜 클라이언트로 테스트했지만 **Opus 5.5로 실제 호출해 본 적은 아직 없음** — 첫 실제 세션에서 확인 필요
+- `segmentation.call_segmentation`, `claude_client.call_stem_coding`, `session_synthesis.call_session_synthesis` — 세 호출 모두 `claude_client.call_structured`(모델 `claude-opus-5-5`, structured outputs, 거절 시 자동 대체 모델)로 통일됨. `ANTHROPIC_API_KEY` 필요. 요청 형식은 가짜 클라이언트로 테스트했지만 **Opus 5.5 실제 호출은 구간분리만 확인됨** — 스템 채점·종합은 첫 실제 세션에서 확인 필요
 - `schema.py`/`storage.py`/`coding_systems.py`/`posture_metrics.py`/`feature_summary.py`/`pipeline.py`의 단계 흐름 — 확정 확인·구간 변경 시 재계산·실패 격리·이어하기까지 테스트됨 (`pytest`, 외부 설치 불필요)
 - `src/review_app` / `src/public_app` — 두 앱 모두 Streamlit `AppTest`로 화면 없이 띄워 테스트함. 「1. 구간 확인」(구간 수정·확정, 미리보기 클립), 「2. 결과 검토」(종합·스템 검토본 저장, 근거 시점 영상 재생, 보고서 PDF)
 - `report.py`/`report_pdf.py`/`bundle.py` — 학부모 보고서(9개 섹션)와 PDF(나눔고딕), 내보내기 번들 테스트됨

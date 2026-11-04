@@ -11,6 +11,7 @@ pydantic>=2
 pyyaml
 streamlit
 fpdf2>=2.8
+cryptography>=42
 python-dotenv
 pytest
 

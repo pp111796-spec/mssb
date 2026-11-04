@@ -6,9 +6,9 @@ from pathlib import Path
 
 import streamlit as st
 
-from mssb_coder import storage, video_prep
+from mssb_coder import storage, video_prep, video_vault
 from mssb_coder.schema import SessionMetadata, SubjectType
-from review_app.common import FILE_FORMAT_ERRORS, widget_key
+from review_app.common import FILE_FORMAT_ERRORS, log_event, widget_key
 
 
 def session_video_path(session_id: str) -> Path | None:
@@ -65,12 +65,33 @@ def _render_video_setup(session_id: str) -> None:
     st.rerun()
 
 
+def _offer_encryption(session_id: str, video_path: Path) -> None:
+    """암호화 기능 전에 앱으로 올린 영상을 암호화한다. 세션 폴더 밖의 원본은 사용자 파일이라 건드리지 않는다."""
+    upload_dir = (storage.session_dir(session_id) / "upload").resolve()
+    if video_vault.is_encrypted(video_path) or video_path.resolve().parent != upload_dir:
+        return
+    st.warning("이 세션의 원본 영상은 아직 암호화되어 있지 않습니다.")
+    if st.button("🔒 원본 영상 암호화", key=widget_key(session_id, "encrypt_video")):
+        encrypted = video_path.with_name(video_path.name + video_vault.ENCRYPTED_SUFFIX)
+        with st.spinner("암호화하는 중..."):
+            video_vault.encrypt_file(video_path, encrypted)
+        metadata = storage.load_session_metadata(session_id)
+        storage.save_session_metadata(metadata.model_copy(update={"video_path": str(encrypted)}))
+        video_path.unlink()
+        log_event("video_encrypted", session_id)
+        st.rerun()
+
+
 def render_clip(session_id: str, start_s: float, end_s: float, jump_to_s: float | None, key: str) -> None:
     """[start_s, end_s] 구간(앞뒤 여백 포함) 클립을 보여주고, jump_to_s(세션 시각)부터 재생한다."""
+    if storage.session_metadata_exists(session_id) and storage.load_session_metadata(session_id).media_deleted_at:
+        st.caption("보고서 PDF를 내려받으면서 이 세션의 영상을 삭제해 재생할 수 없습니다.")
+        return
     video_path = session_video_path(session_id)
     if video_path is None:
         _render_video_setup(session_id)
         return
+    _offer_encryption(session_id, video_path)
 
     out_dir = storage.session_dir(session_id) / "preview"
     clip_path, clip_start, _ = video_prep.preview_clip_path(start_s, end_s, out_dir)
@@ -80,8 +101,9 @@ def render_clip(session_id: str, start_s: float, end_s: float, jump_to_s: float 
             return
         with st.spinner("클립을 만드는 중..."):
             try:
-                video_prep.extract_preview_clip(video_path, start_s, end_s, out_dir)
-            except (video_prep.FfmpegNotFoundError, video_prep.FfmpegError) as exc:
+                with video_vault.open_video(video_path) as plain_video:
+                    video_prep.extract_preview_clip(plain_video, start_s, end_s, out_dir)
+            except (video_prep.FfmpegNotFoundError, video_prep.FfmpegError, video_vault.VideoKeyMissingError) as exc:
                 st.error(str(exc))
                 return
 

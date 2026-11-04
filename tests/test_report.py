@@ -142,15 +142,77 @@ def test_report_omits_optional_sections_for_old_synthesis_without_new_fields():
     assert "## 해석상 유의점" in report
 
 
-def test_caveat_says_draft_until_examiner_saves_review():
+def _confirmed(stem_name):
+    from factories import stem_result
+
+    return stem_result(stem_name).model_copy(
+        update={"administration_source": "examiner", "reviewed_at": "2026-11-04T00:00:00+00:00", "reviewed_by": "검사자가"}
+    )
+
+
+def _ready_synthesis():
     from factories import synthesis
+
+    return synthesis().model_copy(
+        update={"reviewed_at": "2026-11-04T00:00:00+00:00", "test_date": "2026-11-01", "examiner_name": "검사자가"}
+    )
+
+
+def test_caveat_says_confirmed_only_when_every_stem_and_synthesis_are_confirmed():
+    from factories import stem_result
     from mssb_coder.report import REVIEW_STATUS_DRAFT, REVIEW_STATUS_REVIEWED
 
-    draft = build_session_report_markdown(synthesis())
-    reviewed = build_session_report_markdown(synthesis().model_copy(update={"reviewed_at": "2026-10-26T00:00:00+00:00"}))
+    both = [_confirmed("spilled_juice"), _confirmed("lost_dog")]
+    assert REVIEW_STATUS_REVIEWED in build_session_report_markdown(_ready_synthesis(), stem_results=both)
 
-    assert REVIEW_STATUS_DRAFT in draft and REVIEW_STATUS_REVIEWED not in draft
-    assert REVIEW_STATUS_REVIEWED in reviewed and REVIEW_STATUS_DRAFT not in reviewed
+    one_open = [_confirmed("spilled_juice"), stem_result("lost_dog")]
+    report = build_session_report_markdown(_ready_synthesis(), stem_results=one_open)
+    assert REVIEW_STATUS_DRAFT in report and REVIEW_STATUS_REVIEWED not in report
+
+
+def test_blockers_name_each_missing_step():
+    from factories import stem_result, synthesis
+    from mssb_coder.report import report_blockers
+    from mssb_coder.segmentation import load_story_stems
+
+    stems = load_story_stems()
+    assert report_blockers(_ready_synthesis(), [_confirmed("spilled_juice"), _confirmed("lost_dog")], stems) == []
+
+    text = "\n".join(report_blockers(synthesis(), [_confirmed("spilled_juice"), stem_result("lost_dog")], stems))
+    assert "확인·확정하지 않은 이야기" in text and "spilled_juice" not in text
+    assert "종합 서술을 검토해" in text and "검사일" in text and "검사자를" in text
+
+    stale = _ready_synthesis().model_copy(update={"stale": True})
+    assert any("다시 쓰세요" in b for b in report_blockers(stale, [_confirmed("spilled_juice"), _confirmed("lost_dog")], stems))
+    assert report_blockers(_ready_synthesis(), [], stems)
+
+
+def test_completion_sentence_only_after_examiner_confirms():
+    from factories import stem_result
+    from mssb_coder.schema import CompletionStatus, ResponseMode
+
+    ai_judged = stem_result("spilled_juice").model_copy(update={"administration_source": "ai"})
+    assert "자발적" not in build_session_report_markdown(_ready_synthesis(), stem_results=[ai_judged])
+    assert "자발적" in build_session_report_markdown(_ready_synthesis(), stem_results=[_confirmed("spilled_juice")])
+
+    prompted = _confirmed("spilled_juice").model_copy(
+        update={"response_mode": ResponseMode.PROMPTED, "issue_prompt_count": 2, "completion_status": CompletionStatus.PARTIAL}
+    )
+    report = build_session_report_markdown(_ready_synthesis(), stem_results=[prompted])
+    assert "쟁점 프롬프트 2회" in report and "일부만" in report
+
+    skipped = _confirmed("spilled_juice").model_copy(update={"completion_status": CompletionStatus.NOT_ADMINISTERED})
+    assert "실시하지 않았다" in build_session_report_markdown(_ready_synthesis(), stem_results=[skipped])
+
+
+def test_report_keeps_given_order_and_shows_test_info():
+    report = build_session_report_markdown(
+        _ready_synthesis(), stem_results=[_confirmed("spilled_juice"), _confirmed("big_rock")]
+    )
+
+    assert report.index("### 엎지러진 주스") < report.index("### 큰 바위 오르기")  # 영문 이름순이면 반대
+    assert "- 검사일: 2026년 11월 1일" in report
+    assert "- 검사자: 검사자가" in report
 
 
 def test_report_header_uses_korean_date_and_no_scorer_jargon():

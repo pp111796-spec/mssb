@@ -17,6 +17,7 @@ from mssb_coder.schema import (
     ResponseMode,
     StemCodingResult,
     StemTimestamp,
+    utc_now_iso,
 )
 from mssb_coder.segmentation import StoryStemsConfig
 from mssb_coder.transcribe import TranscriptSegment
@@ -217,8 +218,19 @@ class StemEdits:
     excluded_evidence: set[tuple[str, str, int]]
 
 
-def apply_stem_edits(result: StemCodingResult, edits: StemEdits) -> StemCodingResult:
-    """AI 채점 결과에 검사자 수정을 반영한 검토본을 만든다. 존재 항목 개수(present_count)는 다시 센다."""
+# 확정 표시와 시각은 내용이 아니다 — 이것만 달라지면 종합을 다시 쓸 필요가 없다
+_REVIEW_ONLY_FIELDS = {"administration_source", "reviewed_at", "reviewed_by", "generated_at"}
+
+
+def stem_content_changed(before: StemCodingResult, after: StemCodingResult) -> bool:
+    """종합 서술에 영향을 주는 내용이 바뀌었는지 — 그대로 확정만 했으면 Claude를 다시 부르지 않는다."""
+    return before.model_dump(mode="json", exclude=_REVIEW_ONLY_FIELDS) != after.model_dump(
+        mode="json", exclude=_REVIEW_ONLY_FIELDS
+    )
+
+
+def apply_stem_edits(result: StemCodingResult, edits: StemEdits, reviewer: str) -> StemCodingResult:
+    """검사자 수정을 반영한 확정본을 만든다. 존재 항목 개수(present_count)는 다시 센다."""
     codes = {}
     for category_id, category in result.codes.items():
         items = {}
@@ -239,6 +251,9 @@ def apply_stem_edits(result: StemCodingResult, edits: StemEdits) -> StemCodingRe
             "response_mode": edits.response_mode,
             "issue_prompt_count": edits.issue_prompt_count,
             "codes": codes,
+            "administration_source": "examiner",
+            "reviewed_at": utc_now_iso(),
+            "reviewed_by": reviewer,
         }
     )
 

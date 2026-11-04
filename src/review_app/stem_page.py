@@ -1,7 +1,7 @@
 """스템(이야기 1편) 상세 화면 — 검사자가 AI 채점을 확인·수정하고 근거 시점의 영상을 본다.
 
-저장하면 <stem>_reviewed.json이 생기고, 보고서·PDF·내보내기·게시는 이 검토본을 우선 쓴다.
-세션 종합(패턴 서술)은 AI 원본으로 만든 것이라 스템 수정이 자동 반영되지 않는다.
+확정하면 <stem>_reviewed.json이 생기고, 보고서·PDF·내보내기·게시는 이 확정본을 우선 쓴다.
+내용이 바뀌었으면 세션 종합도 바로 다시 쓴다(Claude 1회 호출). 그대로 확정만 하면 호출하지 않는다.
 """
 
 from __future__ import annotations
@@ -17,10 +17,21 @@ from mssb_coder.labels import (
     response_mode_label,
     stem_label,
 )
-from mssb_coder.review_ops import StemEdits, apply_stem_edits, can_play_evidence
+from mssb_coder.report import stem_is_confirmed
+from mssb_coder.review_ops import StemEdits, apply_stem_edits, can_play_evidence, stem_content_changed
 from mssb_coder.schema import CompletionStatus, ResponseMode, StemTimestamp, VerbatimSpeaker
 from mssb_coder.verbatim import render_verbatim_markdown
-from review_app.common import FILE_FORMAT_ERRORS, coding_system, plain, show_file_error, story_stems, widget_key
+from review_app.common import (
+    FILE_FORMAT_ERRORS,
+    coding_system,
+    current_actor,
+    log_event,
+    plain,
+    rewrite_synthesis,
+    show_file_error,
+    story_stems,
+    widget_key,
+)
 from review_app.video_panel import render_clip
 
 TONE_HINT = (
@@ -61,7 +72,17 @@ def render_stem_detail(session_id: str, stem_name: str) -> None:
     flash = st.session_state.pop(k("flash"), None)
     if flash:
         st.success(flash)
-    st.caption("검토본(사람이 고친 결과)을 보고 있습니다." if reviewed else "AI 원본을 보고 있습니다. 고친 뒤 저장하면 검토본이 됩니다.")
+    error = st.session_state.pop(k("rewrite_error"), None)
+    if error:
+        st.error(error)
+    if stem_is_confirmed(result):
+        st.caption(f"✅ {result.reviewed_by}님이 확정한 내용을 보고 있습니다.")
+    else:
+        st.caption("아직 확정하지 않았습니다. AI 판단을 확인하고 아래에서 확정하세요.")
+    log_key = k("view_logged")
+    if log_key not in st.session_state:
+        st.session_state[log_key] = True
+        log_event("stem_view", session_id, stem_name)
     st.info(result.disclaimer)
 
     window = _current_window(session_id, stem_name)
@@ -74,23 +95,30 @@ def render_stem_detail(session_id: str, stem_name: str) -> None:
 
     _render_verbatim(session_id, stem_name)
 
-    st.markdown("**실시 기록 (부록 B)** — 사람이 기록하는 값입니다. AI 채점 때는 기본값이 들어 있습니다.")
+    legacy = result.administration_source is None  # 예전 결과 — 값이 판단이 아니라 자동 기본값이었다
+    if legacy:
+        st.markdown("**실시 기록 (부록 B)** — 미입력입니다. 영상을 보고 직접 입력하세요.")
+    elif result.administration_source == "ai":
+        st.markdown(f"**실시 기록 (부록 B)** — AI 판단입니다. 맞는지 확인하세요. {plain(result.administration_note)}")
+    else:
+        st.markdown("**실시 기록 (부록 B)** — 검사자가 확정했습니다.")
     b1, b2, b3 = st.columns(3)
     statuses = list(CompletionStatus)
     modes = list(ResponseMode)
     with b1:
         completion = st.selectbox(
-            "완료상태", statuses, index=statuses.index(result.completion_status),
-            format_func=completion_status_label, key=k("completion"),
+            "완료상태", statuses, index=None if legacy else statuses.index(result.completion_status),
+            format_func=completion_status_label, key=k("completion"), placeholder="미입력",
         )
     with b2:
         mode = st.selectbox(
-            "자발/프롬프트후", modes, index=modes.index(result.response_mode),
-            format_func=response_mode_label, key=k("mode"),
+            "자발/프롬프트후", modes, index=None if legacy else modes.index(result.response_mode),
+            format_func=response_mode_label, key=k("mode"), placeholder="미입력",
         )
     with b3:
         prompt_count = st.number_input(
-            "쟁점프롬프트 횟수", min_value=0, max_value=2, value=result.issue_prompt_count, step=1, key=k("prompts")
+            "쟁점프롬프트 횟수", min_value=0, max_value=2, value=None if legacy else result.issue_prompt_count,
+            step=1, key=k("prompts"), placeholder="미입력",
         )
 
     present: dict[tuple[str, str], bool] = {}
@@ -99,9 +127,10 @@ def render_stem_detail(session_id: str, stem_name: str) -> None:
     for category_id, category_code in result.codes.items():
         label = category_label(cs, category_id)
         with st.expander(f"{label} — 존재 항목 {category_code.present_count}개", expanded=False):
-            rationale[category_id] = st.text_area(
-                "판단 이유", value=plain(category_code.rationale), key=k("rationale", category_id), help=TONE_HINT
-            )
+            shown = plain(category_code.rationale)
+            edited = st.text_area("판단 이유", value=shown, key=k("rationale", category_id), help=TONE_HINT)
+            # 영문 id 치환은 표시용이다 — 사람이 고치지 않았으면 내용 변경으로 치지 않는다
+            rationale[category_id] = category_code.rationale if edited.strip() == shown.strip() else edited
             for item_id, item in category_code.items.items():
                 present[(category_id, item_id)] = st.checkbox(
                     item_label(cs, category_id, item_id), value=item.present, key=k("present", category_id, item_id)
@@ -121,24 +150,46 @@ def render_stem_detail(session_id: str, stem_name: str) -> None:
                         if st.checkbox("제외", key=k("drop", category_id, item_id, index), help="이 근거를 검토본에서 뺍니다"):
                             excluded.add((category_id, item_id, index))
 
-    st.caption("스템을 고쳐도 위쪽 세션 종합 서술은 자동으로 바뀌지 않습니다. 필요하면 종합 서술도 직접 고치세요.")
+    missing_record = completion is None or mode is None or prompt_count is None
+    if missing_record:
+        st.warning("실시 기록을 모두 입력해야 확정할 수 있습니다.")
+    st.caption("내용을 고쳐 확정하면 세션 종합 서술을 바로 다시 씁니다(Claude 1회 호출, 약 1분). 이때 저장해 둔 종합 수정본은 백업되고 종합을 다시 검토해야 합니다.")
     save_col, revert_col = st.columns(2)
     with save_col:
-        if st.button("💾 이 이야기 검토본 저장", type="primary", key=k("save")):
+        if st.button("✅ 이 이야기 확정", type="primary", disabled=missing_record, key=k("save")):
             edits = StemEdits(
                 completion_status=completion, response_mode=mode, issue_prompt_count=int(prompt_count),
                 present=present, rationale=rationale, excluded_evidence=excluded,
             )
-            storage.save_stem_coding(session_id, stem_name, apply_stem_edits(result, edits), reviewed=True)
-            _reset_stem_widgets(session_id, stem_name)  # 제외한 근거가 빠져 순번이 바뀌므로 위젯을 새로 만든다
-            st.session_state[k("flash")] = "검토본을 저장했습니다. 보고서·내보내기·게시에 이 내용이 쓰입니다."
-            st.rerun()
+            updated = apply_stem_edits(result, edits, reviewer=current_actor())
+            storage.save_stem_coding(session_id, stem_name, updated, reviewed=True)
+            log_event("stem_confirm", session_id, stem_name)
+            _finish_change(session_id, stem_name, stem_content_changed(result, updated), "이 이야기를 확정했습니다.")
     with revert_col:
-        if reviewed and st.button("↩ AI 원본으로 되돌리기", key=k("revert"), help="검토본은 지우지 않고 백업 파일로 옮깁니다"):
+        if reviewed and st.button("↩ AI 원본으로 되돌리기", key=k("revert"), help="확정본은 지우지 않고 백업 파일로 옮깁니다"):
+            original = storage.load_stem_coding(session_id, stem_name)
             backup = storage.revert_stem_review(session_id, stem_name)
-            _reset_stem_widgets(session_id, stem_name)
-            st.session_state[k("flash")] = f"AI 원본으로 되돌렸습니다. 이전 검토본은 {backup.name}에 남아 있습니다."
-            st.rerun()
+            log_event("stem_revert", session_id, stem_name)
+            _finish_change(
+                session_id, stem_name, stem_content_changed(result, original),
+                f"AI 원본으로 되돌렸습니다. 이전 확정본은 {backup.name}에 남아 있습니다.",
+            )
+
+
+def _finish_change(session_id: str, stem_name: str, content_changed: bool, message: str) -> None:
+    """내용이 바뀌었으면 종합을 다시 쓴다. 실패해도 stale 표시가 남아 PDF를 막고 다시 쓰기 버튼이 나온다."""
+    k = lambda *parts: widget_key(session_id, "stem", stem_name, *parts)  # noqa: E731
+    error = None
+    if content_changed:
+        storage.mark_synthesis_stale(session_id)
+        error = rewrite_synthesis(session_id)
+        if not error:
+            message += " 종합 서술도 다시 썼으니 위에서 검토해 저장하세요."
+    _reset_stem_widgets(session_id, stem_name)  # 제외한 근거가 빠져 순번이 바뀌므로 위젯을 새로 만든다
+    st.session_state[k("flash")] = message
+    if error:
+        st.session_state[k("rewrite_error")] = error
+    st.rerun()
 
 
 def _render_verbatim(session_id: str, stem_name: str) -> None:

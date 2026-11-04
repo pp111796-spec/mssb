@@ -132,12 +132,13 @@ def test_user_message_includes_all_fields():
         nonverbal_summary="[12.0s] (posture) torso_tilt=40.0",
         story_specific_notes="공감/순응은 이 이야기에서 긍정적 신호.",
         child_age_months=54,
-        response_mode="spontaneous",
-        issue_prompt_count=0,
+        examiner_followup_text="[40.0s] 그래서 어떻게 됐을까?",
     )
     assert "54개월" in message
     assert "주스를 다시 채웠어요" in message
     assert "torso_tilt" in message
+    assert "그래서 어떻게 됐을까?" in message  # 실시 기록 판단 재료
+    assert "완료 방식" not in message  # 자동 기본값을 사실처럼 넘기지 않는다
 
 
 def test_require_api_key_raises_when_missing(monkeypatch):

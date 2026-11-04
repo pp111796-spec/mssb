@@ -164,7 +164,29 @@ def build_claude_tool_schema(coding_system: CodingSystem) -> dict:
                     "required": coding_system.category_ids(),
                 },
                 "story_specific_notes_applied": {"type": "string"},
+                "completion_status": {
+                    "type": "string",
+                    "enum": ["complete", "partial", "not_administered"],
+                    "description": "complete=아이가 이야기를 끝까지 이어 감, partial=중간에 그침, not_administered=실시하지 않음",
+                },
+                "response_mode": {
+                    "type": "string",
+                    "enum": ["spontaneous", "prompted"],
+                    "description": "spontaneous=검사자의 추가 질문 없이 완성, prompted=추가 질문을 받은 뒤 완성",
+                },
+                "issue_prompt_count": {
+                    "type": "integer",
+                    "enum": [0, 1, 2],
+                    "description": "아이 차례가 시작된 뒤 검사자가 이야기의 쟁점을 다시 물은 횟수 (이야기당 최대 2회)",
+                },
+                "administration_note": {
+                    "type": "string",
+                    "description": "위 실시 기록을 그렇게 판단한 근거를 검사자 확인용으로 한 문장",
+                },
             },
-            "required": ["codes", "story_specific_notes_applied"],
+            "required": [
+                "codes", "story_specific_notes_applied",
+                "completion_status", "response_mode", "issue_prompt_count", "administration_note",
+            ],
         },
     }

@@ -14,8 +14,7 @@ import os
 from dataclasses import dataclass, field
 
 from mssb_coder.coding_systems import CodingSystem, build_claude_tool_schema, to_structured_output_schema
-from mssb_coder.labels import response_mode_label
-from mssb_coder.schema import STANDARD_DISCLAIMER, ResponseMode
+from mssb_coder.schema import STANDARD_DISCLAIMER
 
 MODEL_VERSION = "claude-opus-5-5"
 # Opus 5.5의 기본 effort는 medium — 채점 품질을 위해 명시적으로 high를 쓴다.
@@ -137,6 +136,9 @@ def build_stem_coding_system_prompt(coding_system: CodingSystem) -> str:
         "중요: 코드의 의미는 이야기마다 다를 수 있습니다 — 제공되는 story_specific_notes를 반드시 "
         "반영하세요. 제공되는 child_age_months를 참고해 그 연령대의 정상 발달 범위를 감안하세요 "
         "(예: 어린 연령이 딜레마의 한쪽 측면만 다루는 것은 정상일 수 있음).\n\n"
+        "실시 기록(completion_status, response_mode, issue_prompt_count)도 전사문을 보고 판단하세요. "
+        "'아이 차례 시작 후 검사자 발화'가 쟁점을 다시 묻는 질문이면 쟁점 프롬프트로 세고, 격려나 진행 안내는 세지 "
+        "마세요. 판단 근거는 administration_note에 한 문장으로 쓰세요. 이 값은 검사자가 확인한 뒤 확정합니다.\n\n"
         "근거(evidence)의 timestamp_s에는 전사문과 비언어 요약의 각 줄 앞에 [123.4s]처럼 적힌 시각을 "
         "그대로 쓰세요. 시각을 추정하거나 0으로 채우지 마세요.\n\n"
         f"{REPORT_TONE_GUIDE}\n"
@@ -150,16 +152,14 @@ def build_stem_coding_user_message(
     nonverbal_summary: str,
     story_specific_notes: str,
     child_age_months: int,
-    response_mode: str,
-    issue_prompt_count: int,
+    examiner_followup_text: str,
 ) -> str:
     """10단계 메시지 본문 — 해당 스템 전사문 + 비언어 요약 + 스템 고유 주의사항 + 아동 연령."""
     return (
         f"아동 연령: {child_age_months}개월\n"
-        f"완료 방식: {response_mode_label(ResponseMode(response_mode))} "
-        f"(쟁점 프롬프트 사용 횟수: {issue_prompt_count})\n"
         f"이 스템의 코드 의미 주의사항:\n{story_specific_notes}\n\n"
         f"--- 전사문 (아동 발화 구간, [초]는 세션 시작부터의 시각) ---\n{transcript_text}\n\n"
+        f"--- 아이 차례 시작 후 검사자 발화 ([초]는 세션 시작부터의 시각) ---\n{examiner_followup_text or '(없음)'}\n\n"
         f"--- 비언어 신호 요약 ([초]는 세션 시작부터의 시각) ---\n{nonverbal_summary}\n"
     )
 
@@ -180,8 +180,7 @@ def call_stem_coding(
     nonverbal_summary: str,
     story_specific_notes: str,
     child_age_months: int,
-    response_mode: str,
-    issue_prompt_count: int,
+    examiner_followup_text: str,
     client=None,
 ) -> StructuredResult:
     """스템 1편을 채점한다. 호출 쪽이 결과의 data를 schema.StemCodingResult로 검증할 것."""
@@ -192,8 +191,7 @@ def call_stem_coding(
             nonverbal_summary=nonverbal_summary,
             story_specific_notes=story_specific_notes,
             child_age_months=child_age_months,
-            response_mode=response_mode,
-            issue_prompt_count=issue_prompt_count,
+            examiner_followup_text=examiner_followup_text,
         ),
         schema=build_claude_tool_schema(coding_system)["input_schema"],
         call_name="스템 채점",

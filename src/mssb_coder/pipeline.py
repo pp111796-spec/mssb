@@ -25,7 +25,7 @@ from typing import Callable, TypeVar
 import yaml
 from pydantic import ValidationError
 
-from mssb_coder import storage, video_prep
+from mssb_coder import storage, video_prep, video_vault
 from mssb_coder.claude_client import StructuredResult, call_stem_coding
 from mssb_coder.coding_systems import CodingSystem, load_coding_system
 from mssb_coder.cv_events import CvBaselines, CvThresholdSet, compute_baselines, derive_events, to_session_time
@@ -117,7 +117,7 @@ def normalize_segments(data: dict, story_stems: StoryStemsConfig) -> list[StemTi
         timestamps.append(StemTimestamp.model_validate({**segment, "scored": scored}))
     if unknown:
         raise ValueError(f"이야기 목록(story_stems.yaml)에 없는 구간 이름: {', '.join(unknown)}")
-    return timestamps
+    return sorted(timestamps, key=lambda t: t.start_s)  # 파일 순서가 곧 실시 순서 (보고서 이야기 순서)
 
 
 def run_segmentation_stage(video_path: Path, metadata: SessionMetadata) -> list[StemTimestamp]:
@@ -126,7 +126,8 @@ def run_segmentation_stage(video_path: Path, metadata: SessionMetadata) -> list[
     storage.save_session_metadata(metadata.model_copy(update={"video_path": str(Path(video_path).resolve())}))
 
     logger.info("2단계: 오디오 추출 + 전체 전사")
-    audio_path = video_prep.extract_audio(video_path, storage.session_dir(session_id) / "audio.wav")
+    with video_vault.open_video(video_path) as plain_video:
+        audio_path = video_prep.extract_audio(plain_video, storage.session_dir(session_id) / "audio.wav")
     transcript = transcribe_session(audio_path)
     storage.save_transcript(session_id, transcript)
     full_text = "\n".join(f"[{seg.start_s:.1f}s] {seg.text}" for seg in transcript)
@@ -189,7 +190,8 @@ def _ensure_stem_media(
     if not has_frames or stale:
         if video_path is None:
             raise FileNotFoundError(f"{stem.stem_name}: 프레임을 새로 뽑아야 하는데 원본 영상 경로가 없음")
-        video_prep.extract_stem_frames(video_path, stem, frames_dir.parent, fps=FRAME_FPS)
+        with video_vault.open_video(video_path) as plain_video:
+            video_prep.extract_stem_frames(plain_video, stem, frames_dir.parent, fps=FRAME_FPS)
         storage.save_media_window(session_id, stem.stem_name, window)
 
     if stem.handoff_timestamp_s >= stem.end_s:
@@ -197,7 +199,8 @@ def _ensure_stem_media(
     if not child_audio_path.exists():
         if video_path is None:
             raise FileNotFoundError(f"{stem.stem_name}: 아동 오디오를 새로 뽑아야 하는데 원본 영상 경로가 없음")
-        child_audio_path = video_prep.extract_stem_audio(video_path, stem, child_audio_path.parent)
+        with video_vault.open_video(video_path) as plain_video:
+            child_audio_path = video_prep.extract_stem_audio(plain_video, stem, child_audio_path.parent)
     return frames_dir, child_audio_path
 
 
@@ -343,8 +346,9 @@ def _code_one_stem(
         nonverbal_summary=nonverbal_summary,
         story_specific_notes=stem_def.story_specific_notes,
         child_age_months=metadata.child_age_months,
-        response_mode="spontaneous",  # 검토 앱에서 사람이 바로잡는 값 (§6.6)
-        issue_prompt_count=0,
+        examiner_followup_text=format_child_transcript(
+            [seg for seg in speaker_tagged["examiner"] if seg.start_s >= stem.handoff_timestamp_s]
+        ),
     )
     _record_usage(session_id, f"stem_coding:{stem.stem_name}", response)
     result = _validate_or_keep(
@@ -355,9 +359,7 @@ def _code_one_stem(
             "session_id": session_id,
             "child_age_months": metadata.child_age_months,
             "stem_name": stem.stem_name,
-            "completion_status": "complete",
-            "response_mode": "spontaneous",
-            "issue_prompt_count": 0,
+            "administration_source": "ai",  # 실시 기록은 Claude 판단 — 검사자가 확인해야 확정된다
             "model_version": response.model,
             "source_window": StemWindow.of(stem).model_dump(),
             "timestamp_basis": "session_absolute",
@@ -444,7 +446,7 @@ def run_coding_stage(
 
 
 def load_codings_for_synthesis(session_id: str) -> list[StemCodingResult]:
-    """현재 구간의 채점 대상 스템 결과(AI 원본)만 모은다. 빠졌거나 예전 구간으로 채점된 스템이 있으면 멈춘다."""
+    """현재 구간의 채점 대상 스템 결과를 모은다(검사자 확정본 우선). 빠졌거나 예전 구간으로 채점된 스템이 있으면 멈춘다."""
     timestamps = storage.load_stem_timestamps(session_id)
     results: list[StemCodingResult] = []
     missing: list[str] = []
@@ -453,7 +455,9 @@ def load_codings_for_synthesis(session_id: str) -> list[StemCodingResult]:
         if not stem.scored:
             continue
         try:
-            result = storage.load_stem_coding(session_id, stem.stem_name)
+            result = storage.load_stem_coding(
+                session_id, stem.stem_name, reviewed=storage.stem_reviewed_exists(session_id, stem.stem_name)
+            )
         except FileNotFoundError:
             missing.append(stem.stem_name)
             continue
@@ -470,16 +474,43 @@ def load_codings_for_synthesis(session_id: str) -> list[StemCodingResult]:
     return results
 
 
-def run_synthesis_stage(metadata: SessionMetadata) -> SessionSynthesis:
-    """12단계: 스템별 AI 채점 원본 전체 → 세션 종합 패턴 초안."""
-    stem_results = load_codings_for_synthesis(metadata.session_id)
+def _latest_report_info(session_id: str) -> dict:
+    """종합을 다시 써도 검사자가 입력한 검사일·검사자는 유지한다."""
+    for reviewed in (True, False):
+        try:
+            current = storage.load_session_synthesis(session_id, reviewed=reviewed)
+        except (FileNotFoundError, ValidationError):
+            continue
+        return {"test_date": current.test_date, "examiner_name": current.examiner_name}
+    return {}
+
+
+def run_synthesis_for_session(session_id: str) -> SessionSynthesis:
+    """12단계: 스템별 채점 결과(검사자 확정본 우선) → 세션 종합. 이전 종합 검토본은 백업되고 검토 전 상태가 된다."""
+    stem_results = load_codings_for_synthesis(session_id)
     response = call_session_synthesis(stem_results)
-    _record_usage(metadata.session_id, "synthesis", response)
+    _record_usage(session_id, "synthesis", response)
+    based_on = (
+        "reviewed_stem_results"
+        if any(r.administration_source == "examiner" for r in stem_results)
+        else "ai_draft_stem_results"
+    )
     synthesis = _validate_or_keep(
-        metadata.session_id,
+        session_id,
         "synthesis",
-        response.data | {"session_id": metadata.session_id, "model_version": response.model},
+        response.data
+        | {
+            "session_id": session_id,
+            "model_version": response.model,
+            "based_on": based_on,
+            **_latest_report_info(session_id),
+        },
         SessionSynthesis.model_validate,
     )
-    storage.save_session_synthesis(metadata.session_id, synthesis)
+    storage.archive_reviewed_synthesis(session_id)
+    storage.save_session_synthesis(session_id, synthesis)
     return synthesis
+
+
+def run_synthesis_stage(metadata: SessionMetadata) -> SessionSynthesis:
+    return run_synthesis_for_session(metadata.session_id)

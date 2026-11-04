@@ -5,4 +5,5 @@ pyyaml
 python-dotenv
 streamlit
 fpdf2>=2.8
+cryptography>=42
 pytest

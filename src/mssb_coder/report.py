@@ -12,17 +12,18 @@ rationale/pattern_description 문장을 그대로(또는 이어붙여서) 서술
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from mssb_coder.coding_systems import CodingSystem, load_coding_system
 from mssb_coder.labels import category_label, scrub_english_ids, stem_label
-from mssb_coder.schema import ResponseMode, SessionSynthesis, StemCodingResult
+from mssb_coder.schema import CompletionStatus, ResponseMode, SessionSynthesis, StemCodingResult
 from mssb_coder.segmentation import StoryStemsConfig, load_story_stems
 
 
 KST = timezone(timedelta(hours=9))
 
-PLACEHOLDER ="(전체 종합 보고서에서 가져올 예정)"
+PLACEHOLDER = "(전체 종합 보고서에서 가져올 예정)"
+NOT_ENTERED = "(미입력)"
 
 TEST_OVERVIEW = (
     "이 검사는 인형으로 짧은 이야기의 시작 부분을 보여 준 뒤, 아이가 이야기를 어떻게 이어 가는지 "
@@ -44,13 +45,56 @@ def _korean_date(iso_timestamp: str) -> str:
     return f"{moment.year}년 {moment.month}월 {moment.day}일"
 
 
+def _korean_day(iso_date: str | None) -> str:
+    """검사일 'YYYY-MM-DD' → 'YYYY년 M월 D일'. 비었거나 형식이 다르면 미입력 표시 또는 원문."""
+    if not iso_date:
+        return NOT_ENTERED
+    try:
+        day = date.fromisoformat(iso_date)
+    except ValueError:
+        return iso_date
+    return f"{day.year}년 {day.month}월 {day.day}일"
+
+
+def stem_is_confirmed(result: StemCodingResult) -> bool:
+    return result.administration_source == "examiner" and result.reviewed_at is not None
+
+
+def report_blockers(
+    synthesis: SessionSynthesis, stem_results: list[StemCodingResult], story_stems: StoryStemsConfig
+) -> list[str]:
+    """보고서를 내보내기 전에 남은 일 목록. 비어 있어야 PDF를 내보낼 수 있고 '확정' 문구가 나간다."""
+    blockers: list[str] = []
+    by_name = {r.stem_name: r for r in stem_results}
+    missing = [s for s in synthesis.stems_included if s not in by_name]
+    if missing or not stem_results:
+        names = ", ".join(stem_label(story_stems, s) for s in missing)
+        blockers.append(f"채점 결과가 없는 이야기가 있습니다{f': {names}' if names else ''}.")
+    unconfirmed = [r.stem_name for r in stem_results if not stem_is_confirmed(r)]
+    if unconfirmed:
+        names = ", ".join(stem_label(story_stems, s) for s in unconfirmed)
+        blockers.append(f"검사자가 확인·확정하지 않은 이야기: {names}.")
+    if synthesis.stale:
+        blockers.append("이야기 수정 내용이 종합 서술에 반영되지 않았습니다. 종합을 다시 쓰세요.")
+    elif synthesis.reviewed_at is None:
+        blockers.append("종합 서술을 검토해 저장하지 않았습니다.")
+    if not synthesis.test_date:
+        blockers.append("검사일을 입력하지 않았습니다.")
+    if not synthesis.examiner_name:
+        blockers.append("검사자를 입력하지 않았습니다.")
+    return blockers
+
+
 def _completion_sentence(result: StemCodingResult) -> str:
+    """실시 기록 문장. 검사자가 확정하기 전에는 사실로 단정하지 않도록 쓰지 않는다."""
+    if not stem_is_confirmed(result):
+        return ""
+    if result.completion_status == CompletionStatus.NOT_ADMINISTERED:
+        return "이 이야기는 실시하지 않았다."
+    prefix = "아이는 이 이야기를 일부만 이어 갔다. " if result.completion_status == CompletionStatus.PARTIAL else ""
     if result.response_mode == ResponseMode.SPONTANEOUS:
-        return "아이는 이 이야기를 검사자의 프롬프트 없이 자발적으로 완성했다."
-    return (
-        f"아이는 이 이야기를 검사자의 프롬프트(쟁점 프롬프트 {result.issue_prompt_count}회) "
-        "후에 완성했다."
-    )
+        return prefix + "아이는 이 이야기를 검사자의 프롬프트 없이 자발적으로 이어 갔다."
+    return prefix + f"아이는 검사자의 프롬프트(쟁점 프롬프트 {result.issue_prompt_count}회) 후에 이 이야기를 이어 갔다."
 
 
 def _stem_interpretation_paragraph(
@@ -94,8 +138,8 @@ def build_session_report_markdown(
     lines.append("## 인적 사항")
     lines.append("")
     lines.append(f"- 아동 연령: {f'{age_months}개월' if age_months else PLACEHOLDER}")
-    lines.append(f"- 검사일: {PLACEHOLDER}")
-    lines.append(f"- 검사자: {PLACEHOLDER}")
+    lines.append(f"- 검사일: {_korean_day(synthesis.test_date)}")
+    lines.append(f"- 검사자: {synthesis.examiner_name or NOT_ENTERED}")
     lines.append("")
 
     lines.append("## 검사 개요")
@@ -116,7 +160,7 @@ def build_session_report_markdown(
 
     if stem_results:
         lines.append("## 이야기별 해석")
-        for result in sorted(stem_results, key=lambda r: r.stem_name):
+        for result in stem_results:  # 호출 쪽이 넘긴 순서가 실시 순서 (storage.load_effective_stem_codings)
             lines.append(f"\n### {stem_label(story_stems, result.stem_name)}")
             lines.append(_completion_sentence(result))
             lines.append(_stem_interpretation_paragraph(coding_system, story_stems, result))
@@ -172,7 +216,8 @@ def build_session_report_markdown(
     lines.append("")
     lines.append("## 해석상 유의점")
     lines.append("")
-    review_status = REVIEW_STATUS_REVIEWED if synthesis.reviewed_at else REVIEW_STATUS_DRAFT
+    confirmed = not report_blockers(synthesis, stem_results or [], story_stems)
+    review_status = REVIEW_STATUS_REVIEWED if confirmed else REVIEW_STATUS_DRAFT
     lines.append(f"{INTERPRETATION_CAVEAT} {review_status}")
     lines.append("")
     scope_note = synthesis.not_included_by_design.strip()
