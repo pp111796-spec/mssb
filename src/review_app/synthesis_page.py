@@ -108,87 +108,82 @@ def render(session_id: str) -> None:
         key=widget_key(session_id, "report_pdf"),
     )
 
-    # 본문 3단: 행동관찰·단발성 | 반복 패턴 | 강점·지원·제언 — 한 화면에 모두 보이게
-    left, middle, right = st.columns([1, 1.3, 1])
-
-    with left:
-        st.header("검사 중 행동관찰")
-        observation_text = plain(synthesis.behavioral_observation)
-        edited_observation = st.text_area(
-            "행동관찰 (수정 가능)", value=observation_text,
-            height=fit_height(observation_text, chars_per_line=34),
-            key=widget_key(session_id, "behavioral_observation"),
-        )
-        if synthesis.single_story_notable_signals:
-            st.header("단발성 신호 (패턴 아님)")
-            for signal in synthesis.single_story_notable_signals:
-                label = category_label(cs, signal.category)
-                st.write(f"**{stem_label(stems, signal.stem_name)}** ({label}): {plain(signal.note)}")
+    # 본문은 위에서 아래로 한 줄씩: 행동관찰 → 단발성 → 반복 패턴 → 강점·지원 → 제언
+    st.header("검사 중 행동관찰")
+    observation_text = plain(synthesis.behavioral_observation)
+    edited_observation = st.text_area(
+        "행동관찰 (수정 가능)", value=observation_text,
+        height=fit_height(observation_text, chars_per_line=80),
+        key=widget_key(session_id, "behavioral_observation"),
+    )
+    if synthesis.single_story_notable_signals:
+        st.header("단발성 신호 (패턴 아님)")
+        for signal in synthesis.single_story_notable_signals:
+            label = category_label(cs, signal.category)
+            st.write(f"**{stem_label(stems, signal.stem_name)}** ({label}): {plain(signal.note)}")
 
     edited_patterns = []
-    with middle:
-        st.header("반복되는 패턴")
-        for i, pattern in enumerate(synthesis.recurring_patterns):
-            label = category_label(cs, pattern.category)
-            st.subheader(f"{label} — {len(pattern.observed_in_stems)}/{pattern.stems_administered_count_for_pattern}개 이야기")
-            description = plain(pattern.pattern_description)
-            edited_desc = st.text_area(
-                "패턴 서술 (수정 가능)", value=description, height=fit_height(description, chars_per_line=44),
-                key=widget_key(session_id, "pattern", i), label_visibility="collapsed",
-            )
-            edited_patterns.append(pattern.model_copy(update={"pattern_description": edited_desc}))
-
-            # 근거 버튼은 한 줄에 3개씩
-            for row_start in range(0, len(pattern.evidence), 3):
-                row = pattern.evidence[row_start:row_start + 3]
-                for j, (col, ev) in enumerate(zip(st.columns(3), row), start=row_start):
-                    with col:
-                        if st.button(
-                            f"{stem_label(stems, ev.stem_name)} · {ev.timestamp_s:.1f}s",
-                            key=widget_key(session_id, "evidence", i, j),
-                            help=plain(ev.note) or None,
-                        ) and ev.stem_name in {r.stem_name for r in stem_results}:
-                            st.session_state[widget_key(session_id, "stem_select")] = ev.stem_name
-
-    with right:
-        st.header("강점과 지원이 필요한 영역")
-        strengths_text = plain(synthesis.strengths)
-        edited_strengths = st.text_area(
-            "강점 (수정 가능)", value=strengths_text, height=fit_height(strengths_text, chars_per_line=34),
-            key=widget_key(session_id, "strengths"),
+    st.header("반복되는 패턴")
+    for i, pattern in enumerate(synthesis.recurring_patterns):
+        label = category_label(cs, pattern.category)
+        st.subheader(f"{label} — {len(pattern.observed_in_stems)}/{pattern.stems_administered_count_for_pattern}개 이야기")
+        description = plain(pattern.pattern_description)
+        edited_desc = st.text_area(
+            "패턴 서술 (수정 가능)", value=description, height=fit_height(description, chars_per_line=80),
+            key=widget_key(session_id, "pattern", i), label_visibility="collapsed",
         )
-        support_text = plain(synthesis.support_areas)
-        edited_support_areas = st.text_area(
-            "지원이 필요한 영역 (수정 가능)", value=support_text, height=fit_height(support_text, chars_per_line=34),
-            key=widget_key(session_id, "support_areas"),
-        )
+        edited_patterns.append(pattern.model_copy(update={"pattern_description": edited_desc}))
 
-        st.header("제언")
-        st.caption("AI가 작성한 초안입니다. 진단·위험 판단이 섞이지 않았는지 반드시 확인하고 수정하세요.")
-        recommendations_text = "\n".join(plain(r) for r in synthesis.recommendations)
-        edited_recommendations_text = st.text_area(
-            "제언 (한 줄에 하나씩, 수정 가능)", value=recommendations_text,
-            height=fit_height(recommendations_text, chars_per_line=34),
-            key=widget_key(session_id, "recommendations"),
-        )
+        # 근거 버튼은 한 줄에 3개씩
+        for row_start in range(0, len(pattern.evidence), 3):
+            row = pattern.evidence[row_start:row_start + 3]
+            for j, (col, ev) in enumerate(zip(st.columns(3), row), start=row_start):
+                with col:
+                    if st.button(
+                        f"{stem_label(stems, ev.stem_name)} · {ev.timestamp_s:.1f}s",
+                        key=widget_key(session_id, "evidence", i, j),
+                        help=plain(ev.note) or None,
+                    ) and ev.stem_name in {r.stem_name for r in stem_results}:
+                        st.session_state[widget_key(session_id, "stem_select")] = ev.stem_name
 
-        if st.button(
-            "종합 초안 저장", type="primary", key=widget_key(session_id, "save_synthesis"),
-            help="session_summary_reviewed.json으로 저장합니다.",
-        ):
-            updated = synthesis.model_copy(
-                update={
-                    "recurring_patterns": edited_patterns,
-                    "behavioral_observation": edited_observation,
-                    "strengths": edited_strengths,
-                    "support_areas": edited_support_areas,
-                    "recommendations": [
-                        line.strip() for line in edited_recommendations_text.splitlines() if line.strip()
-                    ],
-                }
-            )
-            storage.save_session_synthesis(session_id, updated, reviewed=True)
-            st.success("저장했습니다.")
+    st.header("강점과 지원이 필요한 영역")
+    strengths_text = plain(synthesis.strengths)
+    edited_strengths = st.text_area(
+        "강점 (수정 가능)", value=strengths_text, height=fit_height(strengths_text, chars_per_line=80),
+        key=widget_key(session_id, "strengths"),
+    )
+    support_text = plain(synthesis.support_areas)
+    edited_support_areas = st.text_area(
+        "지원이 필요한 영역 (수정 가능)", value=support_text, height=fit_height(support_text, chars_per_line=80),
+        key=widget_key(session_id, "support_areas"),
+    )
+
+    st.header("제언")
+    st.caption("AI가 작성한 초안입니다. 진단·위험 판단이 섞이지 않았는지 반드시 확인하고 수정하세요.")
+    recommendations_text = "\n".join(plain(r) for r in synthesis.recommendations)
+    edited_recommendations_text = st.text_area(
+        "제언 (한 줄에 하나씩, 수정 가능)", value=recommendations_text,
+        height=fit_height(recommendations_text, chars_per_line=80),
+        key=widget_key(session_id, "recommendations"),
+    )
+
+    if st.button(
+        "종합 초안 저장", type="primary", key=widget_key(session_id, "save_synthesis"),
+        help="session_summary_reviewed.json으로 저장합니다.",
+    ):
+        updated = synthesis.model_copy(
+            update={
+                "recurring_patterns": edited_patterns,
+                "behavioral_observation": edited_observation,
+                "strengths": edited_strengths,
+                "support_areas": edited_support_areas,
+                "recommendations": [
+                    line.strip() for line in edited_recommendations_text.splitlines() if line.strip()
+                ],
+            }
+        )
+        storage.save_session_synthesis(session_id, updated, reviewed=True)
+        st.success("저장했습니다.")
 
     st.divider()
     st.header("이야기별 상세 검토")
